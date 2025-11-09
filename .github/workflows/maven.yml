@@ -28,7 +28,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven (with testing)
-      run: mvn --batch-mode --update-snapshots -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" verify
+      run: mvn --batch-mode -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" verify
       env:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       
