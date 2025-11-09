@@ -17,7 +17,10 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    permissions:
+      contents: read
+      id-token: write  # needed for dependency submission
 
     steps:
     - uses: actions/checkout@v4
