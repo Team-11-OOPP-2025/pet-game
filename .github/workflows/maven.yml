@@ -27,9 +27,11 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
+    - name: Build with Maven (with testing)
+      run: mvn --batch-mode --update-snapshots -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" verify
+      env:
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      
     # This step uploads the .jar file from the 'target' directory
     # as an "artifact" attached to the workflow run.
     - name: Upload build artifact
