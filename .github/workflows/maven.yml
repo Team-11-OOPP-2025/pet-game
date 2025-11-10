@@ -10,10 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      id-token: write  # needed for dependency submission
-
     steps:
       - uses: actions/checkout@v4
 
@@ -38,8 +34,3 @@ jobs:
             !target/*-sources.jar
             !target/*-javadoc.jar
           retention-days: 7
-
-      # Optional: submit dependency graph on pushes only
-      - name: Submit dependencies
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: advanced-security/maven-dependency-submission-action@v4
