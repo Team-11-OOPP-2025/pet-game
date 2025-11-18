@@ -2,30 +2,31 @@ package com.eleven.pet.weather;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
-public class WeatherSystem implements WeatherState {
-    private ObjectProperty<WeatherState> currentState;
+import java.util.Random;
 
-    public void updateWeather(){
+public class WeatherSystem {
+
+    private final ObjectProperty<WeatherState> currentState =
+            new SimpleObjectProperty<>(new WeatherStates.SunnyState());
+
+    private final Random random = new Random();
+
+    public WeatherSystem() {}
+
+    /** Randomly changes the weather state (example implementation). */
+    public void updateWeather() {
 
     }
 
-    public WeatherState getCurrentState(){
-        WeatherState state = null;
-        return state;
-    }
-    public ReadOnlyObjectProperty<WeatherState> getCurrentWeatherProperty(){
-        WeatherState state = null;
-        return (ReadOnlyObjectProperty<WeatherState>) state;
+    /** Returns current weather state (traditional getter). */
+    public WeatherState getCurrentState() {
+        return currentState.get();
     }
 
-    @Override
-    public String getName() {
-        return "";
-    }
-
-    @Override
-    public double getHappinessModifier() {
-        return 0;
+    /** Returns the property for JavaFX UI binding. */
+    public ReadOnlyObjectProperty<WeatherState> currentStateProperty() {
+        return currentState;
     }
 }
