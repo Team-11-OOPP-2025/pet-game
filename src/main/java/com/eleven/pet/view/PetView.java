@@ -26,7 +26,7 @@ public class PetView {
         try {
             System.out.println("=== Loading background images ===");
             
-            var dayStream = getClass().getResourceAsStream("/images/living-room-background-day.png");
+            var dayStream = getClass().getResourceAsStream("/images/DayBackground.png");
             if (dayStream != null) {
                 dayBackground = new Image(dayStream);
                 if (!dayBackground.isError()) {
@@ -35,10 +35,10 @@ public class PetView {
                     System.err.println("✗ Day background failed to load!");
                 }
             } else {
-                System.err.println("✗ Day background not found at /images/living-room-background-day.png");
+                System.err.println("✗ Day background not found at /images/DayBackground.png");
             }
             
-            var nightStream = getClass().getResourceAsStream("/images/living-room-background-night.png");
+            var nightStream = getClass().getResourceAsStream("/images/NightBackground.png");
             if (nightStream != null) {
                 nightBackground = new Image(nightStream);
                 if (!nightBackground.isError()) {
@@ -47,7 +47,7 @@ public class PetView {
                     System.err.println("✗ Night background failed to load!");
                 }
             } else {
-                System.err.println("✗ Night background not found at /images/living-room-background-night.png");
+                System.err.println("✗ Night background not found at /images/NightBackground.png");
                 if (dayBackground != null) {
                     nightBackground = dayBackground;
                     System.out.println("⚠ Using day background as night background fallback");
