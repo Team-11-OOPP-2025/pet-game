@@ -1,5 +1,6 @@
 package com.eleven.pet.model;
 
+import com.eleven.pet.time.GameClock;
 import com.eleven.pet.weather.WeatherSystem;
 
 public class PetModel {
@@ -11,9 +12,11 @@ public class PetModel {
     private int happiness;
     private boolean isAsleep;
     private WeatherSystem weatherSystem;
+    private GameClock gameClock;
 
     public PetModel(String name){
-     this.name = name;
+        this.name = name;
+        this.gameClock = new GameClock();
     }
 
     public void clean(){
@@ -36,6 +39,11 @@ public class PetModel {
         WeatherSystem res = null;
         return res;
     }
+    
+    public GameClock getGameClock(){
+        return gameClock;
+    }
+    
     public int getCleanliness(){
         int clean = 0;
         return clean;
