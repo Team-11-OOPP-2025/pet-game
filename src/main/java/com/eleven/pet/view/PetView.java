@@ -8,12 +8,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 public class PetView {
     private PetModel petModel;
@@ -23,6 +25,8 @@ public class PetView {
     private Image nightBackground;
     private StackPane feedButtonContainer;
     private Rectangle feedFillRect;
+    private Text foodCounterText;
+    private Rectangle hungerFillRect;
     
     public PetView(PetModel petModel, PetController controller) {
         this.petModel = petModel;
@@ -70,10 +74,20 @@ public class PetView {
         
         root.getChildren().add(backgroundView);
         
+        StackPane hungerBar = createHungerBar();
+        StackPane.setAlignment(hungerBar, Pos.TOP_LEFT);
+        StackPane.setMargin(hungerBar, new Insets(20));
+        root.getChildren().add(hungerBar);
+        
         feedButtonContainer = createFeedButton();
         StackPane.setAlignment(feedButtonContainer, Pos.BOTTOM_LEFT);
         StackPane.setMargin(feedButtonContainer, new Insets(20));
         root.getChildren().add(feedButtonContainer);
+        
+        HBox foodCounter = createFoodCounter();
+        StackPane.setAlignment(foodCounter, Pos.TOP_RIGHT);
+        StackPane.setMargin(foodCounter, new Insets(20));
+        root.getChildren().add(foodCounter);
         
         return root;
     }
@@ -114,9 +128,41 @@ public class PetView {
             if (controller != null) {
                 controller.handleFeed();
             }
+            updateHungerBarOnFeed();
         });
         
         return container;
+    }
+    
+    private HBox createFoodCounter() {
+        HBox container = new HBox(10);
+        container.setAlignment(Pos.CENTER);
+        container.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9); -fx-background-radius: 10; -fx-padding: 10;");
+        container.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
+        
+        Text label = new Text("Food: ");
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        label.setFill(Color.BLACK);
+        
+        foodCounterText = new Text("0");
+        foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        foodCounterText.setFill(Color.web("#e74c3c"));
+        
+        container.getChildren().addAll(label, foodCounterText);
+        
+        if (petModel != null) {
+            updateFoodCounter();
+            petModel.getFoodCountProperty().addListener((obs, oldVal, newVal) -> {
+                updateFoodCounter();
+            });
+        }
+        
+        return container;
+    }
+    
+    private void updateFoodCounter() {
+        if (petModel == null || foodCounterText == null) return;
+        foodCounterText.setText(String.valueOf(petModel.getFoodCount()));
     }
     
     private void updateFeedButtonAppearance(Button button) {
@@ -126,7 +172,7 @@ public class PetView {
         double percentage = foodCount / 100.0;
         
         feedFillRect.setWidth(120 * percentage);
-        button.setText("FEED (" + foodCount + ")");
+        button.setText("FEED");
     }
     
     private void updateBackground(boolean isDaytime) {
@@ -136,5 +182,47 @@ public class PetView {
                 backgroundView.setImage(newBackground);
             }
         }
+    }
+    
+    private StackPane createHungerBar() {
+        StackPane container = new StackPane();
+        container.setPrefSize(200, 30);
+        container.setMaxSize(200, 30);
+        container.setMinSize(200, 30);
+        
+        Rectangle bgRect = new Rectangle(200, 30);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+        
+        hungerFillRect = new Rectangle(0, 30);
+        hungerFillRect.setFill(Color.web("#2ecc71"));
+        StackPane.setAlignment(hungerFillRect, Pos.CENTER_LEFT);
+        
+        Text label = new Text("Hunger");
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setFill(Color.BLACK);
+        
+        container.getChildren().addAll(bgRect, hungerFillRect, label);
+        
+        return container;
+    }
+    
+    private void updateHungerBarOnFeed() {
+        if (hungerFillRect == null) return;
+        
+        double currentWidth = hungerFillRect.getWidth();
+        double newWidth = Math.min(currentWidth + 20, 200);
+        
+        hungerFillRect.setWidth(newWidth);
+    }
+    
+    private void updateHungerBar() {
+        if (petModel == null || hungerFillRect == null) return;
+        
+        double hunger = petModel.getHunger();
+        double percentage = hunger / 100.0;
+        
+        hungerFillRect.setWidth(200 * percentage);
     }
 }
