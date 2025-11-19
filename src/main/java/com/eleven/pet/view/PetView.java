@@ -27,11 +27,16 @@ public class PetView {
     private Rectangle feedFillRect;
     private Text foodCounterText;
     private Rectangle hungerFillRect;
+    private ImageView petImageView;
+    private Image petImage1;
+    private Image petImage2;
+    private boolean showingFirstImage = true;
     
     public PetView(PetModel petModel, PetController controller) {
         this.petModel = petModel;
         this.controller = controller;
         loadBackgroundImages();
+        loadPetImages();
     }
     
 
@@ -47,6 +52,22 @@ public class PetView {
                 nightBackground = new Image(nightStream);
             } else if (dayBackground != null) {
                 nightBackground = dayBackground;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadPetImages() {
+        try {
+            var image1Stream = getClass().getResourceAsStream("/images/Bear.png");
+            if (image1Stream != null) {
+                petImage1 = new Image(image1Stream);
+            }
+            
+            var image2Stream = getClass().getResourceAsStream("/images/SleepyBear.png");
+            if (image2Stream != null) {
+                petImage2 = new Image(image2Stream);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,6 +95,11 @@ public class PetView {
         
         root.getChildren().add(backgroundView);
         
+        petImageView = createPetImage();
+        StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(petImageView, new Insets(0, 0, 70, 0));
+        root.getChildren().add(petImageView);
+        
         StackPane hungerBar = createHungerBar();
         StackPane.setAlignment(hungerBar, Pos.TOP_LEFT);
         StackPane.setMargin(hungerBar, new Insets(20));
@@ -90,6 +116,23 @@ public class PetView {
         root.getChildren().add(foodCounter);
         
         return root;
+    }
+    
+    private ImageView createPetImage() {
+        ImageView imageView = new ImageView();
+        imageView.setImage(petImage1);
+        imageView.setFitWidth(250);
+        imageView.setFitHeight(250);
+        imageView.setPreserveRatio(true);
+        
+        imageView.setOnMouseClicked(e -> {
+            showingFirstImage = !showingFirstImage;
+            imageView.setImage(showingFirstImage ? petImage1 : petImage2);
+        });
+        
+        imageView.setStyle("-fx-cursor: hand;");
+        
+        return imageView;
     }
     
     private StackPane createFeedButton() {
