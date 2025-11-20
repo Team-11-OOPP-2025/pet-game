@@ -24,9 +24,12 @@ public class PetView {
     private Image dayBackground;
     private Image nightBackground;
     private StackPane feedButtonContainer;
-    private Rectangle feedFillRect;
+    private StackPane miniGamesButtonContainer;
     private Text foodCounterText;
     private Rectangle hungerFillRect;
+    private Rectangle energyFillRect;
+    private Rectangle cleanFillRect;
+    private Rectangle happinessFillRect;
     private ImageView petImageView;
     private Image petImage1;
     private Image petImage2;
@@ -100,19 +103,39 @@ public class PetView {
         StackPane.setMargin(petImageView, new Insets(0, 0, 70, 0));
         root.getChildren().add(petImageView);
         
+        StackPane happinessBar = createHappinessBar();
+        StackPane.setAlignment(happinessBar, Pos.TOP_LEFT);
+        StackPane.setMargin(happinessBar, new Insets(90, 20, 20, 20));
+        root.getChildren().add(happinessBar);
+        
         StackPane hungerBar = createHungerBar();
         StackPane.setAlignment(hungerBar, Pos.TOP_LEFT);
-        StackPane.setMargin(hungerBar, new Insets(20));
+        StackPane.setMargin(hungerBar, new Insets(148, 20, 20, 20));
         root.getChildren().add(hungerBar);
+
+        StackPane energyBar = createEnergyBar();
+        StackPane.setAlignment(energyBar, Pos.TOP_LEFT);
+        StackPane.setMargin(energyBar, new Insets(193, 20, 20, 20));
+        root.getChildren().add(energyBar);
+        
+        StackPane cleanBar = createCleanBar();
+        StackPane.setAlignment(cleanBar, Pos.TOP_LEFT);
+        StackPane.setMargin(cleanBar, new Insets(238, 20, 20, 20));
+        root.getChildren().add(cleanBar);
         
         feedButtonContainer = createFeedButton();
         StackPane.setAlignment(feedButtonContainer, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(feedButtonContainer, new Insets(20));
+        StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
+        
+        miniGamesButtonContainer = createMiniGamesButton();
+        StackPane.setAlignment(miniGamesButtonContainer, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(miniGamesButtonContainer, new Insets(20, 20, 90, 20));
+        root.getChildren().add(miniGamesButtonContainer);
         
         HBox foodCounter = createFoodCounter();
         StackPane.setAlignment(foodCounter, Pos.TOP_RIGHT);
-        StackPane.setMargin(foodCounter, new Insets(20));
+        StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
         root.getChildren().add(foodCounter);
         
         return root;
@@ -146,10 +169,6 @@ public class PetView {
         bgRect.setStroke(Color.BLACK);
         bgRect.setStrokeWidth(3);
         
-        feedFillRect = new Rectangle(0, 50);
-        feedFillRect.setFill(Color.RED);
-        StackPane.setAlignment(feedFillRect, Pos.CENTER_LEFT);
-        
         Button button = new Button("FEED");
         button.setPrefSize(120, 50);
         button.setMaxSize(120, 50);
@@ -157,21 +176,41 @@ public class PetView {
         button.setTextFill(Color.BLACK);
         button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
         
-        container.getChildren().addAll(bgRect, feedFillRect, button);
-        
-        updateFeedButtonAppearance(button);
-        
-        if (petModel != null) {
-            petModel.getFoodCountProperty().addListener((obs, oldVal, newVal) -> {
-                updateFeedButtonAppearance(button);
-            });
-        }
+        container.getChildren().addAll(bgRect, button);
         
         button.setOnAction(e -> {
             if (controller != null) {
                 controller.handleFeed();
             }
             updateHungerBarOnFeed();
+        });
+        
+        return container;
+    }
+    
+    private StackPane createMiniGamesButton() {
+        StackPane container = new StackPane();
+        container.setPrefSize(140, 50);
+        container.setMaxSize(140, 50);
+        container.setMinSize(140, 50);
+        
+        Rectangle bgRect = new Rectangle(140, 50);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+        
+        Button button = new Button("PLAY");
+        button.setPrefSize(140, 50);
+        button.setMaxSize(140, 50);
+        button.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        button.setTextFill(Color.BLACK);
+        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        
+        container.getChildren().addAll(bgRect, button);
+        
+        // Button does nothing for now
+        button.setOnAction(e -> {
+            // Placeholder for future mini games functionality
         });
         
         return container;
@@ -208,16 +247,6 @@ public class PetView {
         foodCounterText.setText(String.valueOf(petModel.getFoodCount()));
     }
     
-    private void updateFeedButtonAppearance(Button button) {
-        if (petModel == null || feedFillRect == null) return;
-        
-        int foodCount = petModel.getFoodCount();
-        double percentage = foodCount / 100.0;
-        
-        feedFillRect.setWidth(120 * percentage);
-        button.setText("FEED");
-    }
-    
     private void updateBackground(boolean isDaytime) {
         if (backgroundView != null) {
             Image newBackground = isDaytime ? dayBackground : nightBackground;
@@ -227,26 +256,126 @@ public class PetView {
         }
     }
     
-    private StackPane createHungerBar() {
+    private StackPane createHappinessBar() {
         StackPane container = new StackPane();
-        container.setPrefSize(200, 30);
-        container.setMaxSize(200, 30);
-        container.setMinSize(200, 30);
+        container.setPrefSize(225, 38);
+        container.setMaxSize(225, 38);
+        container.setMinSize(225, 38);
         
-        Rectangle bgRect = new Rectangle(200, 30);
+        Rectangle bgRect = new Rectangle(225, 38);
         bgRect.setFill(Color.WHITE);
         bgRect.setStroke(Color.BLACK);
         bgRect.setStrokeWidth(3);
         
-        hungerFillRect = new Rectangle(0, 30);
+        happinessFillRect = new Rectangle(225, 38);
+        happinessFillRect.setFill(Color.web("#f4d03f"));
+        StackPane.setAlignment(happinessFillRect, Pos.CENTER_LEFT);
+        
+        Text symbol = new Text("😃");
+        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
+        StackPane.setMargin(symbol, new Insets(0, 0, 0, 10));
+        
+        Text label = new Text("Happiness");
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        label.setFill(Color.BLACK);
+        StackPane.setMargin(label, new Insets(0, 0, 0, 35));
+        StackPane.setAlignment(label, Pos.CENTER_LEFT);
+        
+        container.getChildren().addAll(bgRect, happinessFillRect, symbol, label);
+        
+        return container;
+    }
+
+    private StackPane createHungerBar() {
+        StackPane container = new StackPane();
+        container.setPrefSize(150, 25);
+        container.setMaxSize(150, 25);
+        container.setMinSize(150, 25);
+        
+        Rectangle bgRect = new Rectangle(150, 25);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+        
+        hungerFillRect = new Rectangle(0, 25);
         hungerFillRect.setFill(Color.web("#2ecc71"));
         StackPane.setAlignment(hungerFillRect, Pos.CENTER_LEFT);
+     
+        Text symbol = new Text("🍖 ");
+        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
+        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
         
         Text label = new Text("Hunger");
         label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         label.setFill(Color.BLACK);
+        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
+        StackPane.setAlignment(label, Pos.CENTER_LEFT);
         
-        container.getChildren().addAll(bgRect, hungerFillRect, label);
+        container.getChildren().addAll(bgRect, hungerFillRect, symbol, label);
+        
+        return container;
+    }
+
+    private StackPane createEnergyBar() {
+        StackPane container = new StackPane();
+        container.setPrefSize(150, 25);
+        container.setMaxSize(150, 25);
+        container.setMinSize(150, 25);
+        
+        Rectangle bgRect = new Rectangle(150, 25);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+        
+        energyFillRect = new Rectangle(150, 25);
+        energyFillRect.setFill(Color.web("#f39c12"));
+        StackPane.setAlignment(energyFillRect, Pos.CENTER_LEFT);
+
+        Text symbol = new Text("⚡️ ");
+        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
+        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
+        
+        Text label = new Text("Energy");
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setFill(Color.BLACK);
+        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
+        StackPane.setAlignment(label, Pos.CENTER_LEFT);
+        
+        container.getChildren().addAll(bgRect, energyFillRect, symbol, label);
+        
+        return container;
+    }
+
+    private StackPane createCleanBar() {
+        StackPane container = new StackPane();
+        container.setPrefSize(150, 25);
+        container.setMaxSize(150, 25);
+        container.setMinSize(150, 25);
+        
+        Rectangle bgRect = new Rectangle(150, 25);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+        
+        cleanFillRect = new Rectangle(150, 25);
+        cleanFillRect.setFill(Color.web("#3498db"));
+        StackPane.setAlignment(cleanFillRect, Pos.CENTER_LEFT);
+        
+        Text symbol = new Text("🧽 ");
+        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
+        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
+        
+        Text label = new Text("Clean");
+        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        label.setFill(Color.BLACK);
+        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
+        StackPane.setAlignment(label, Pos.CENTER_LEFT);
+        
+        container.getChildren().addAll(bgRect, cleanFillRect, symbol, label);
         
         return container;
     }
@@ -255,7 +384,7 @@ public class PetView {
         if (hungerFillRect == null) return;
         
         double currentWidth = hungerFillRect.getWidth();
-        double newWidth = Math.min(currentWidth + 20, 200);
+        double newWidth = Math.min(currentWidth + 20, 150);
         
         hungerFillRect.setWidth(newWidth);
     }
@@ -266,6 +395,6 @@ public class PetView {
         double hunger = petModel.getHunger();
         double percentage = hunger / 100.0;
         
-        hungerFillRect.setWidth(200 * percentage);
+        hungerFillRect.setWidth(150 * percentage);
     }
 }
