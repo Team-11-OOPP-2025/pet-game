@@ -2,8 +2,8 @@ package com.eleven.pet.model;
 
 import java.util.Random;
 
-import com.eleven.pet.time.GameClock;
-import com.eleven.pet.weather.WeatherSystem;
+import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.environment.weather.WeatherSystem;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -19,12 +19,19 @@ public class PetModel {
     private WeatherSystem weatherSystem;
     private GameClock gameClock;
     private Random random;
+    private PetStats stats;
 
     public PetModel(String name){
         this.name = name;
         this.gameClock = new GameClock();
         this.foodCount = new SimpleIntegerProperty(50); // Start with 50 food
         this.random = new Random();
+
+        this.stats = new PetStats();
+        stats.registerStat(PetStats.STAT_HUNGER, 50);
+        stats.registerStat(PetStats.STAT_HAPPINESS, 50);
+        stats.registerStat(PetStats.STAT_ENERGY, 50);
+        stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
     }
 
     public void clean(){
@@ -36,6 +43,7 @@ public class PetModel {
     public void feed(){
         if (foodCount.get() > 0) {
             foodCount.set(foodCount.get() - 1);
+            stats.modifyStat(PetStats.STAT_HUNGER, 30);
             System.out.println("Fed pet! Remaining food: " + foodCount.get());
         } else {
             System.out.println("No food left!");
@@ -44,12 +52,17 @@ public class PetModel {
     public void play(){
 
     }
+
     public void replenishDailyFood(){
         // Add random amount between 3-8 food each day
         int newFood = 3 + random.nextInt(6); // Random from 3 to 8
         int currentFood = foodCount.get();
         int newTotal = Math.min(currentFood + newFood, 100); // Cap at 100
         foodCount.set(newTotal);
+    }
+
+    public PetStats getStats() {
+        return stats;
     }
 
     public WeatherSystem getWeatherSystem(){
@@ -114,4 +127,7 @@ public class PetModel {
 
     }
 
+    public String getName() {
+        return name;
+    }
 }
