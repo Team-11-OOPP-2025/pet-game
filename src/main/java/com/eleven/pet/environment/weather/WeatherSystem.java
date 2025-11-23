@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.ServiceLoader;
 
 public class WeatherSystem {
     private final List<WeatherListener> listeners = new ArrayList<>();
@@ -15,10 +16,10 @@ public class WeatherSystem {
     private final Random random = new Random();
 
     public WeatherSystem() {
-        availableStates.add(new SunnyState());
-        availableStates.add(new RainyState());
-        availableStates.add(new CloudyState());
-
+        ServiceLoader<WeatherState> loader = ServiceLoader.load(WeatherState.class);
+        for (WeatherState ws : loader) {
+            availableStates.add(ws);
+        }
     }
 
     public void subscribe(WeatherListener listener) {

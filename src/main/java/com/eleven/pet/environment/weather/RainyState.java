@@ -1,5 +1,8 @@
 package com.eleven.pet.environment.weather;
 
+import com.google.auto.service.AutoService;
+
+@AutoService(WeatherState.class)
 public class RainyState implements WeatherState {
     @Override
     public String getName() {
