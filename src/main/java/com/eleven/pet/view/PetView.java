@@ -1,16 +1,26 @@
 package com.eleven.pet.view;
 
 import com.eleven.pet.controller.PetController;
+import com.eleven.pet.environment.time.DayCycle;
+import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.model.PetStats;          //new Idk if right
+import com.eleven.pet.particle.ParticleSystem;
+import com.eleven.pet.util.AssetLoader;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -18,8 +28,28 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class PetView {
-    private PetModel petModel;
-    private PetController controller;
+    private final PetModel model;
+    private final PetController controller;
+    private final GameClock clock;
+    private final WeatherSystem weatherSystem;
+    private final AssetLoader assetLoader;
+    private final ParticleSystem particleSystem;
+    
+    private ImageView petImageView;
+    private StackPane backgroundPane;
+    private Pane weatherOverlay;
+    private ProgressBar hungerBar;
+    private ProgressBar happinessBar;
+    private ProgressBar energyBar;
+    private ProgressBar cleanlinessBar;
+    private Button feedButton;
+    private Button sleepButton;
+    private Button playButton;
+    private Button cleanButton;
+    private ImageView saveIcon;
+    private Label weatherLabel;
+    private Label timeLabel;
+    
     private ImageView backgroundView;
     private Image dayBackground;
     private Image nightBackground;
@@ -30,19 +60,21 @@ public class PetView {
     private Rectangle energyFillRect;
     private Rectangle cleanFillRect;
     private Rectangle happinessFillRect;
-    private ImageView petImageView;
     private Image petImage1;
     private Image petImage2;
     private boolean showingFirstImage = true;
     
-    public PetView(PetModel petModel, PetController controller) {
-        this.petModel = petModel;
+    public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
+        this.model = model;
         this.controller = controller;
+        this.clock = clock;
+        this.weatherSystem = weather;
+        this.assetLoader = AssetLoader.getInstance();
+        this.particleSystem = new ParticleSystem(800, 600);
         loadBackgroundImages();
         loadPetImages();
     }
     
-
     private void loadBackgroundImages() {
         try {
             var dayStream = getClass().getResourceAsStream("/images/DayBackground.png");
@@ -76,16 +108,16 @@ public class PetView {
             e.printStackTrace();
         }
     }
-
+    
     public Pane initializeUI() {
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: #1a1a2e;");
         
         backgroundView = new ImageView();
         
-        if (petModel != null && petModel.getGameClock() != null) {
-            updateBackground(petModel.getGameClock().isDaytime());
-            petModel.getGameClock().isDaytimeProperty().addListener((obs, oldVal, newVal) -> {
+        if (clock != null) {
+            updateBackground(clock.isDaytime());
+            clock.isDaytimeProperty().addListener((obs, oldVal, newVal) -> {
                 updateBackground(newVal);
             });
         } else {
@@ -103,42 +135,158 @@ public class PetView {
         StackPane.setMargin(petImageView, new Insets(0, 0, 70, 0));
         root.getChildren().add(petImageView);
         
-        StackPane happinessBar = createHappinessBar();
-        StackPane.setAlignment(happinessBar, Pos.TOP_LEFT);
-        StackPane.setMargin(happinessBar, new Insets(90, 20, 20, 20));
-        root.getChildren().add(happinessBar);
+        StackPane happinessBarPane = createHappinessBar();
+        StackPane.setAlignment(happinessBarPane, Pos.TOP_LEFT);
+        StackPane.setMargin(happinessBarPane, new Insets(90, 20, 20, 20));
+        root.getChildren().add(happinessBarPane);
         
-        StackPane hungerBar = createHungerBar();
-        StackPane.setAlignment(hungerBar, Pos.TOP_LEFT);
-        StackPane.setMargin(hungerBar, new Insets(148, 20, 20, 20));
-        root.getChildren().add(hungerBar);
+        StackPane hungerBarPane = createHungerBar();
+        StackPane.setAlignment(hungerBarPane, Pos.TOP_LEFT);
+        StackPane.setMargin(hungerBarPane, new Insets(148, 20, 20, 20));
+        root.getChildren().add(hungerBarPane);
 
-        StackPane energyBar = createEnergyBar();
-        StackPane.setAlignment(energyBar, Pos.TOP_LEFT);
-        StackPane.setMargin(energyBar, new Insets(193, 20, 20, 20));
-        root.getChildren().add(energyBar);
+        StackPane energyBarPane = createEnergyBar();
+        StackPane.setAlignment(energyBarPane, Pos.TOP_LEFT);
+        StackPane.setMargin(energyBarPane, new Insets(193, 20, 20, 20));
+        root.getChildren().add(energyBarPane);
         
-        StackPane cleanBar = createCleanBar();
-        StackPane.setAlignment(cleanBar, Pos.TOP_LEFT);
-        StackPane.setMargin(cleanBar, new Insets(238, 20, 20, 20));
-        root.getChildren().add(cleanBar);
+        StackPane cleanBarPane = createCleanBar();
+        StackPane.setAlignment(cleanBarPane, Pos.TOP_LEFT);
+        StackPane.setMargin(cleanBarPane, new Insets(238, 20, 20, 20));
+        root.getChildren().add(cleanBarPane);
         
         feedButtonContainer = createFeedButton();
         StackPane.setAlignment(feedButtonContainer, Pos.BOTTOM_LEFT);
         StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
         
+        // Add food counter text
+        foodCounterText = new Text("Food: " + model.getFoodCount());
+        foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        foodCounterText.setFill(Color.WHITE);
+        foodCounterText.setStroke(Color.BLACK);
+        foodCounterText.setStrokeWidth(1);
+        StackPane.setAlignment(foodCounterText, Pos.TOP_RIGHT);
+        StackPane.setMargin(foodCounterText, new Insets(20, 20, 50, 30));
+        root.getChildren().add(foodCounterText);
+        
+        // Bind food counter to model
+        model.getFoodCountProperty().addListener((obs, oldVal, newVal) -> {
+            foodCounterText.setText("Food: " + newVal);
+        });
+        
+        // Bind stat bars to model
+        bindStatBars();
+        
         miniGamesButtonContainer = createMiniGamesButton();
         StackPane.setAlignment(miniGamesButtonContainer, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(miniGamesButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(miniGamesButtonContainer);
         
-        HBox foodCounter = createFoodCounter();
-        StackPane.setAlignment(foodCounter, Pos.TOP_RIGHT);
-        StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
-        root.getChildren().add(foodCounter);
-        
         return root;
+    }
+    
+    public void showSaveIcon(boolean visible) {
+        if (saveIcon != null) {
+            saveIcon.setVisible(visible);
+        }
+    }
+    
+    private HBox createTopPanel() {
+        HBox topPanel = new HBox(20);
+        topPanel.setAlignment(Pos.CENTER_LEFT);
+        topPanel.setPadding(new Insets(10));
+        
+        if (weatherLabel == null) {
+            weatherLabel = new Label("Weather: Sunny");
+        }
+        if (timeLabel == null) {
+            timeLabel = new Label("Time: Day");
+        }
+        
+        topPanel.getChildren().addAll(weatherLabel, timeLabel);
+        return topPanel;
+    }
+    
+    private VBox createStatsPanel() {
+        VBox statsPanel = new VBox(10);
+        statsPanel.setPadding(new Insets(10));
+        return statsPanel;
+    }
+    
+    private VBox createStatRow(String label, ProgressBar bar) {
+        VBox row = new VBox(5);
+        Label statLabel = new Label(label);
+        row.getChildren().addAll(statLabel, bar);
+        return row;
+    }
+    
+    private ProgressBar createStatBar(String name) {
+        ProgressBar bar = new ProgressBar(1.0);
+        bar.setPrefWidth(200);
+        return bar;
+    }
+    
+    private HBox createButtonPanel() {
+        HBox buttonPanel = new HBox(10);
+        buttonPanel.setAlignment(Pos.CENTER);
+        buttonPanel.setPadding(new Insets(10));
+        
+        if (feedButton == null) feedButton = new Button("Feed");
+        if (sleepButton == null) sleepButton = new Button("Sleep");
+        if (playButton == null) playButton = new Button("Play");
+        if (cleanButton == null) cleanButton = new Button("Clean");
+        
+        buttonPanel.getChildren().addAll(feedButton, sleepButton, playButton, cleanButton);
+        return buttonPanel;
+    }
+    
+    private void setupEventHandlers() {
+        if (feedButton != null) {
+            feedButton.setOnAction(e -> controller.handleFeedAction());
+        }
+        if (sleepButton != null) {
+            sleepButton.setOnAction(e -> controller.handleSleepAction());
+        }
+        if (playButton != null) {
+            playButton.setOnAction(e -> controller.handlePlayAction());
+        }
+        if (cleanButton != null) {
+            cleanButton.setOnAction(e -> controller.handleCleanAction());
+        }
+    }
+    
+    private void bindToModel() {
+    }
+    
+    private void observeEnvironment() {
+        if (clock != null) {
+            clock.cycleProperty().addListener((obs, oldVal, newVal) -> {
+                updateBaseBackground(newVal);
+            });
+        }
+        
+        if (weatherSystem != null) {
+            weatherSystem.getWeatherProperty().addListener((obs, oldVal, newVal) -> {
+                updateWeatherOverlay(newVal);
+            });
+        }
+    }
+    
+    private void updateVisuals() {
+        updatePetSprite();
+    }
+    
+    private void updatePetSprite() {
+        if (petImageView != null && model != null) {
+        }
+    }
+    
+    private void updateBaseBackground(DayCycle cycle) {
+        updateBackground(cycle == DayCycle.DAY);
+    }
+    
+    private void updateWeatherOverlay(WeatherState weather) {
     }
     
     private ImageView createPetImage() {
@@ -180,9 +328,8 @@ public class PetView {
         
         button.setOnAction(e -> {
             if (controller != null) {
-                controller.handleFeed();
+                controller.handleFeedAction();
             }
-            updateHungerBarOnFeed();
         });
         
         return container;
@@ -199,52 +346,22 @@ public class PetView {
         bgRect.setStroke(Color.BLACK);
         bgRect.setStrokeWidth(3);
         
-        Button button = new Button("PLAY");
-        button.setPrefSize(140, 50);
-        button.setMaxSize(140, 50);
-        button.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        button.setTextFill(Color.BLACK);
-        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        Button playBtn = new Button("PLAY");
+        playBtn.setPrefSize(140, 50);
+        playBtn.setMaxSize(140, 50);
+        playBtn.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        playBtn.setTextFill(Color.BLACK);
+        playBtn.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
         
-        container.getChildren().addAll(bgRect, button);
+        container.getChildren().addAll(bgRect, playBtn);
         
-        // Button does nothing for now
-        button.setOnAction(e -> {
-            // Placeholder for future mini games functionality
+        playBtn.setOnAction(e -> {
+            if (controller != null) {
+                controller.handlePlayAction();
+            }
         });
         
         return container;
-    }
-    
-    private HBox createFoodCounter() {
-        HBox container = new HBox(10);
-        container.setAlignment(Pos.CENTER);
-        container.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9); -fx-background-radius: 10; -fx-padding: 10;");
-        container.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
-        
-        Text label = new Text("Food: ");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        label.setFill(Color.BLACK);
-        
-        foodCounterText = new Text("0");
-        foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        foodCounterText.setFill(Color.web("#e74c3c"));
-        
-        container.getChildren().addAll(label, foodCounterText);
-        
-        if (petModel != null) {
-            updateFoodCounter();
-            petModel.getFoodCountProperty().addListener((obs, oldVal, newVal) -> {
-                updateFoodCounter();
-            });
-        }
-        
-        return container;
-    }
-    
-    private void updateFoodCounter() {
-        if (petModel == null || foodCounterText == null) return;
-        foodCounterText.setText(String.valueOf(petModel.getFoodCount()));
     }
     
     private void updateBackground(boolean isDaytime) {
@@ -380,21 +497,38 @@ public class PetView {
         return container;
     }
     
-    private void updateHungerBarOnFeed() {
-        if (hungerFillRect == null) return;
+    private void bindStatBars() {
+        // Bind hunger bar
+        if (model.getStats().getStat(PetStats.STAT_HUNGER) != null) {
+            model.getStats().getStat(PetStats.STAT_HUNGER).addListener((obs, oldVal, newVal) -> {
+                hungerFillRect.setWidth((newVal.doubleValue() / 100.0) * 150);
+            });
+            // Set initial value
+            hungerFillRect.setWidth((model.getStats().getStat(PetStats.STAT_HUNGER).get() / 100.0) * 150);
+        }
         
-        double currentWidth = hungerFillRect.getWidth();
-        double newWidth = Math.min(currentWidth + 20, 150);
+        // Bind happiness bar
+        if (model.getStats().getStat(PetStats.STAT_HAPPINESS) != null) {
+            model.getStats().getStat(PetStats.STAT_HAPPINESS).addListener((obs, oldVal, newVal) -> {
+                happinessFillRect.setWidth((newVal.doubleValue() / 100.0) * 150);
+            });
+            happinessFillRect.setWidth((model.getStats().getStat(PetStats.STAT_HAPPINESS).get() / 100.0) * 150);
+        }
         
-        hungerFillRect.setWidth(newWidth);
-    }
-    
-    private void updateHungerBar() {
-        if (petModel == null || hungerFillRect == null) return;
+        // Bind energy bar
+        if (model.getStats().getStat(PetStats.STAT_ENERGY) != null) {
+            model.getStats().getStat(PetStats.STAT_ENERGY).addListener((obs, oldVal, newVal) -> {
+                energyFillRect.setWidth((newVal.doubleValue() / 100.0) * 150);
+            });
+            energyFillRect.setWidth((model.getStats().getStat(PetStats.STAT_ENERGY).get() / 100.0) * 150);
+        }
         
-        double hunger = petModel.getHunger();
-        double percentage = hunger / 100.0;
-        
-        hungerFillRect.setWidth(150 * percentage);
+        // Bind clean bar
+        if (model.getStats().getStat(PetStats.STAT_CLEANLINESS) != null) {
+            model.getStats().getStat(PetStats.STAT_CLEANLINESS).addListener((obs, oldVal, newVal) -> {
+                cleanFillRect.setWidth((newVal.doubleValue() / 100.0) * 150);
+            });
+            cleanFillRect.setWidth((model.getStats().getStat(PetStats.STAT_CLEANLINESS).get() / 100.0) * 150);
+        }
     }
 }

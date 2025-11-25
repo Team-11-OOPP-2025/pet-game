@@ -2,116 +2,96 @@ package com.eleven.pet.model;
 
 import java.util.Random;
 
-import com.eleven.pet.time.GameClock;
-import com.eleven.pet.weather.WeatherSystem;
+import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.time.TimeListener;
+import com.eleven.pet.environment.weather.WeatherListener;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.state.PetState;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.IntegerProperty;       //new
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;    //new
+import javafx.beans.property.SimpleObjectProperty;
 
-public class PetModel {
-    private String name;
-    private int Cleanliness;
-    private int Sleepiness;
-    private IntegerProperty foodCount;
-    private int hunger;
-    private int happiness;
-    private boolean isAsleep;
-    private WeatherSystem weatherSystem;
-    private GameClock gameClock;
-    private Random random;
-
-    public PetModel(String name){
+public class PetModel implements TimeListener, WeatherListener {
+    private final String name;
+    private final PetStats stats;
+    private final ObjectProperty<PetState> currentState;
+    private final WeatherSystem weatherSystem;
+    private final GameClock clock;
+    private final IntegerProperty foodCount;          //new
+    private final Random random;              //new
+    
+    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
-        this.gameClock = new GameClock();
-        this.foodCount = new SimpleIntegerProperty(50); // Start with 50 food
-        this.random = new Random();
+        this.weatherSystem = weatherSystem;
+        this.clock = clock;
+        this.stats = new PetStats(0, 100);
+        this.currentState = new SimpleObjectProperty<>();
+        this.foodCount = new SimpleIntegerProperty(50);     //new
+        this.random = new Random();             //new
     }
-
-    public void clean(){
-
+    
+    public void changeState(PetState newState) {
     }
-    public void sleep(){
-
-    }
-    public void feed(){
+    
+    public void performFeed() {
         if (foodCount.get() > 0) {
             foodCount.set(foodCount.get() - 1);
+            stats.modifyStat(PetStats.STAT_HUNGER, 20); // Increase hunger by 20
             System.out.println("Fed pet! Remaining food: " + foodCount.get());
         } else {
             System.out.println("No food left!");
         }
     }
-    public void play(){
-
-    }
-    public void replenishDailyFood(){
-        // Add random amount between 3-8 food each day
-        int newFood = 3 + random.nextInt(6); // Random from 3 to 8
+    
+    public void replenishDailyFood() {
+        int newFood = 3 + random.nextInt(6);
         int currentFood = foodCount.get();
-        int newTotal = Math.min(currentFood + newFood, 100); // Cap at 100
+        int newTotal = Math.min(currentFood + newFood, 100);
         foodCount.set(newTotal);
     }
-
-    public WeatherSystem getWeatherSystem(){
-        WeatherSystem res = null;
-        return res;
+    
+    public void performSleep() {
     }
     
-    public GameClock getGameClock(){
-        return gameClock;
+    public void performPlay() {
     }
     
-    public int getCleanliness(){
-        int clean = 0;
-        return clean;
+    public void performClean() {
     }
-    public int getSleepiness(){
-        int sleep = 0;
-        return sleep;
+    
+    public PetStats getStats() {
+        return stats;
     }
-    public int getHunger(){
-        int sleep = 0;
-        return sleep;
+    
+    public ReadOnlyObjectProperty<PetState> getStateProperty() {
+        return currentState;
     }
-    public int getHappiness(){
-        int sleep = 0;
-        return sleep;
+    
+    public PetState getCurrentState() {
+        return currentState.get();
     }
-    public int getFoodCount(){
+    
+    public String getName() {
+        return name;
+    }
+    
+    public int getFoodCount() {
         return foodCount.get();
     }
-
-    public IntegerProperty getFoodCountProperty(){
+    
+    public IntegerProperty getFoodCountProperty() {
         return foodCount;
     }
-
-    public void setHunger(int val){
-
+    
+    @Override
+    public void onTick(double timeDelta) {
     }
-    public void setHappiness(int val){
-
+    
+    @Override
+    public void onWeatherChanged(WeatherState newWeather) {
     }
-    public void setCleanliness(int val){
-
-    }
-    public void setFoodCount(int val){
-
-    }
-    public void setSleepiness(int val){
-
-    }
-
-    public void getSleepinessProperty(){
-
-    }
-    public void getCleanlinessProperty(){
-
-    }
-    public void getHungerProperty(){
-
-    }
-    public void getHappinessProperty(){
-
-    }
-
 }

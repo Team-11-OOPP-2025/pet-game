@@ -1,5 +1,7 @@
 package com.eleven.pet.controller;
 
+import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.persistence.PersistenceService;
 
@@ -7,33 +9,34 @@ import javafx.animation.AnimationTimer;
 
 public class PetController {
     private final PetModel model;
+    private final GameClock clock;
+    private final WeatherSystem weather;
     private final PersistenceService persistence;
     private long lastUpdateTime = 0;
     
-    public PetController(PetModel model, PersistenceService pService) {
+    public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
         this.model = model;
-        this.persistence = pService;
+        this.clock = clock;
+        this.weather = weather;
+        this.persistence = persistence;
     }
     
-    public void handleClean() {
-        model.clean();
+    public void handleFeedAction() {
+        model.performFeed();
     }
     
-    public void handleFeed() {
-        model.feed();
+    public void handleSleepAction() {
+        model.performSleep();
     }
     
-    public void handlePlay() {
-        model.play();
+    public void handlePlayAction() {
+        model.performPlay();
     }
     
-    public void handleSleep() {
-        model.sleep();
+    public void handleCleanAction() {
+        model.performClean();
     }
     
-    /**
-     * Starts the main game loop that updates the GameClock and model.
-     */
     public void startGameLoop() {
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
@@ -48,8 +51,8 @@ public class PetController {
                 lastUpdateTime = now;
                 
                 // Update the game clock
-                if (model.getGameClock() != null) {
-                    boolean newDayStarted = model.getGameClock().tick(elapsedSeconds);
+                if (clock != null) {
+                    boolean newDayStarted = clock.tick(elapsedSeconds);
                     
                     if (newDayStarted) {
                         model.replenishDailyFood();

@@ -1,5 +1,7 @@
-package com.eleven.pet.time;
+package com.eleven.pet.environment.time;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
@@ -51,6 +53,16 @@ public class GameClock {
         return isDaytime;
     }
     
+    public DayCycle getCycle() {
+        return isDaytime.get() ? DayCycle.DAY : DayCycle.NIGHT;
+    }
+    
+    public ObjectBinding<DayCycle> cycleProperty() {
+        return Bindings.createObjectBinding(
+            () -> isDaytime.get() ? DayCycle.DAY : DayCycle.NIGHT,
+            isDaytime
+        );
+    }
 
     public double getCurrentGameTime() {
         return currentGameTime;

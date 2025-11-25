@@ -1,15 +1,17 @@
-package com.eleven.pet.weather;
+package com.eleven.pet.environment.weather;
+
+import java.util.Random;
+
+import com.eleven.pet.environment.weather.states.SunnyState;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import java.util.Random;
-
 public class WeatherSystem {
 
     private final ObjectProperty<WeatherState> currentState =
-            new SimpleObjectProperty<>(new WeatherStates.SunnyState());
+            new SimpleObjectProperty<>(new SunnyState());
 
     private final Random random = new Random();
 
@@ -27,6 +29,11 @@ public class WeatherSystem {
 
     /** Returns the property for JavaFX UI binding. */
     public ReadOnlyObjectProperty<WeatherState> currentStateProperty() {
+        return currentState;
+    }
+    
+    /** Alias for currentStateProperty() to match UML. */
+    public ReadOnlyObjectProperty<WeatherState> getWeatherProperty() {
         return currentState;
     }
 }
