@@ -1,4 +1,4 @@
-package com.eleven.pet.crypto;
+package com.eleven.pet.persistence;
 
 public class GcmEncryptionService {
 }
