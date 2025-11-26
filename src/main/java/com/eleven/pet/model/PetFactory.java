@@ -5,6 +5,12 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 
 public class PetFactory {
     public static PetModel createNewPet(String name, WeatherSystem weatherSystem, GameClock clock) {
-        return null;
+        PetModel pet = new PetModel(name, weatherSystem, clock);
+        
+        // Subscribe pet to systems
+        clock.subscribe(pet);
+        weatherSystem.subscribe(pet);
+        
+        return pet;
     }
 }

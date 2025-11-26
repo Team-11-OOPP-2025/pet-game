@@ -116,9 +116,10 @@ public class PetView {
         backgroundView = new ImageView();
         
         if (clock != null) {
-            updateBackground(clock.isDaytime());
-            clock.isDaytimeProperty().addListener((obs, oldVal, newVal) -> {
-                updateBackground(newVal);
+            DayCycle initialCycle = clock.getCycle();
+            updateBackground(initialCycle == DayCycle.DAY);
+            clock.cycleProperty().addListener((obs, oldVal, newVal) -> {
+                updateBackground(newVal == DayCycle.DAY);
             });
         } else {
             backgroundView.setImage(dayBackground);
@@ -160,8 +161,9 @@ public class PetView {
         StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
         
-        // Add food counter text
-        foodCounterText = new Text("Food: " + model.getFoodCount());
+        // Add food counter text (showing inventory count)
+        com.eleven.pet.model.FoodItem basicFood = new com.eleven.pet.model.FoodItem("Basic Food", 20);
+        foodCounterText = new Text("Food: " + model.getInventory().getQuantity(basicFood));
         foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         foodCounterText.setFill(Color.WHITE);
         foodCounterText.setStroke(Color.BLACK);
@@ -170,8 +172,8 @@ public class PetView {
         StackPane.setMargin(foodCounterText, new Insets(20, 20, 50, 30));
         root.getChildren().add(foodCounterText);
         
-        // Bind food counter to model
-        model.getFoodCountProperty().addListener((obs, oldVal, newVal) -> {
+        // Bind food counter to model inventory
+        model.getInventory().getQuantityProperty(basicFood).addListener((obs, oldVal, newVal) -> {
             foodCounterText.setText("Food: " + newVal);
         });
         
@@ -530,5 +532,23 @@ public class PetView {
             });
             cleanFillRect.setWidth((model.getStats().getStat(PetStats.STAT_CLEANLINESS).get() / 100.0) * 150);
         }
+    }
+    
+    public void promptSleep() {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Sleep Time");
+        alert.setHeaderText(model.getName() + " is tired!");
+        alert.setContentText("Your pet's energy is low. Consider putting them to sleep.");
+        alert.showAndWait();
+    }
+    
+    public void showMinigameResult(com.eleven.pet.model.MinigameResult result) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+            result.isWon() ? javafx.scene.control.Alert.AlertType.INFORMATION : javafx.scene.control.Alert.AlertType.WARNING
+        );
+        alert.setTitle("Minigame Result");
+        alert.setHeaderText(result.isWon() ? "Victory!" : "Try Again");
+        alert.setContentText(result.getMessage() + "\nHappiness " + (result.getHappinessDelta() > 0 ? "+" : "") + result.getHappinessDelta());
+        alert.showAndWait();
     }
 }

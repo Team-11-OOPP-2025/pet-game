@@ -2,6 +2,7 @@ package com.eleven.pet.state;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 public class StateRegistry {
     private static StateRegistry instance;
@@ -24,5 +25,10 @@ public class StateRegistry {
     }
     
     private void loadStatesViaSPI() {
+        ServiceLoader<PetState> loader = ServiceLoader.load(PetState.class);
+        for (PetState state : loader) {
+            stateMap.put(state.getStateName(), state);
+            System.out.println("Loaded state: " + state.getStateName());
+        }
     }
 }

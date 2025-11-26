@@ -3,26 +3,28 @@ package com.eleven.pet.environment.weather.states;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.particle.NoParticleEffect;
 import com.eleven.pet.particle.ParticleEffect;
+import com.google.auto.service.AutoService;
 
+@AutoService(WeatherState.class)
 public class CloudyState implements WeatherState {
     @Override
     public String getName() {
-        return null;
+        return "Cloudy";
     }
     
     @Override
     public String getOverlayImageName() {
-        return null;
+        return "clouds_overlay.png";
     }
     
     @Override
     public double getOverlayOpacity() {
-        return 0;
+        return 0.15;
     }
     
     @Override
     public double getHappinessModifier() {
-        return 0;
+        return 0.0; // Neutral
     }
     
     @Override

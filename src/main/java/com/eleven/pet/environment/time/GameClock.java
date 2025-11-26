@@ -1,75 +1,87 @@
 package com.eleven.pet.environment.time;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.eleven.pet.config.GameConfig;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 
 public class GameClock {
-    private double currentGameTime;
-    private final double gameDayLength; 
-    private final SimpleBooleanProperty isDaytime;
-    
+    private final List<TimeListener> listeners;
+    private final DoubleProperty gameTime;
+    private final ObjectBinding<DayCycle> currentCycle;
+    private final double TIME_SCALE = 1.0;
+    private final double NIGHT_THRESHOLD;
+    private boolean paused;
 
     public GameClock() {
-        this.gameDayLength = 24.0; // 24 seconds for a full day/night cycle
-        this.currentGameTime = 0.0;
-        this.isDaytime = new SimpleBooleanProperty(true); // Start with daytime
+        this.listeners = new ArrayList<>();
+        this.gameTime = new SimpleDoubleProperty(0.0);
+        this.NIGHT_THRESHOLD = GameConfig.NIGHT_START_TIME;
+        this.paused = false;
+        
+        this.currentCycle = Bindings.createObjectBinding(
+            this::calculateCycle,
+            gameTime
+        );
     }
     
+    public void subscribe(TimeListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
 
     public boolean tick(double realTimeElapsed) {
-        currentGameTime += realTimeElapsed;
+        if (paused) {
+            return false;
+        }
+        
+        double scaledTime = realTimeElapsed * TIME_SCALE;
+        gameTime.set(gameTime.get() + scaledTime);
+        
+        // Notify all listeners
+        for (TimeListener listener : listeners) {
+            listener.onTick(scaledTime);
+        }
         
         boolean newDayStarted = false;
         
-        if (currentGameTime >= gameDayLength) {
-            triggerNextDay();
+        if (gameTime.get() >= GameConfig.DAY_LENGTH_SECONDS) {
+            startNewDay();
             newDayStarted = true;
-        }
-        
-        boolean shouldBeDaytime = currentGameTime < (gameDayLength / 2.0);
-        if (isDaytime.get() != shouldBeDaytime) {
-            isDaytime.set(shouldBeDaytime);
-            System.out.println(shouldBeDaytime ? "☀️ Daytime begins!" : "🌙 Nighttime begins!");
         }
         
         return newDayStarted;
     }
-    
 
-    public void triggerNextDay() {
-        currentGameTime = currentGameTime % gameDayLength; // Wrap around
+    public void startNewDay() {
+        gameTime.set(gameTime.get() % GameConfig.DAY_LENGTH_SECONDS);
         System.out.println("🔄 New day cycle started!");
     }
     
-
-    public boolean isDaytime() {
-        return isDaytime.get();
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+        System.out.println(paused ? "⏸️ Game paused" : "▶️ Game resumed");
     }
     
-
-    public ReadOnlyBooleanProperty isDaytimeProperty() {
-        return isDaytime;
+    public boolean isPaused() {
+        return paused;
+    }
+    
+    private DayCycle calculateCycle() {
+        return gameTime.get() < NIGHT_THRESHOLD ? DayCycle.DAY : DayCycle.NIGHT;
     }
     
     public DayCycle getCycle() {
-        return isDaytime.get() ? DayCycle.DAY : DayCycle.NIGHT;
+        return currentCycle.get();
     }
     
     public ObjectBinding<DayCycle> cycleProperty() {
-        return Bindings.createObjectBinding(
-            () -> isDaytime.get() ? DayCycle.DAY : DayCycle.NIGHT,
-            isDaytime
-        );
-    }
-
-    public double getCurrentGameTime() {
-        return currentGameTime;
-    }
-    
-
-    public double getGameDayLength() {
-        return gameDayLength;
+        return currentCycle;
     }
 }

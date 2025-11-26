@@ -47,6 +47,22 @@ public class PetStats {
         }
     }
     
+    public void calculateDerivedHappiness() {
+        // Happiness is influenced by other stats
+        int hunger = getStat(STAT_HUNGER).get();
+        int energy = getStat(STAT_ENERGY).get();
+        int clean = getStat(STAT_CLEANLINESS).get();
+        
+        // Average of other stats with some weighting
+        int derived = (hunger + energy + clean) / 3;
+        
+        // Blend current happiness with derived value (gradual adjustment)
+        int current = getStat(STAT_HAPPINESS).get();
+        int blended = (int)(current * 0.8 + derived * 0.2);
+        
+        getStat(STAT_HAPPINESS).set(validate(blended));
+    }
+    
     private int validate(int val) {
         return Math.max(MIN_VALUE, Math.min(MAX_VALUE, val));
     }

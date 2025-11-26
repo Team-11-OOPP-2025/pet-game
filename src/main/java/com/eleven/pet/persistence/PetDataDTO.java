@@ -8,6 +8,8 @@ public class PetDataDTO {
     private String currentStateName;
     private Map<String, Integer> statsData;
     private long lastSaveTimestamp;
+    private long sleepStartTime;
+    private boolean sleptThisNight;
     
     public PetDataDTO() {
     }
@@ -54,5 +56,21 @@ public class PetDataDTO {
     
     public void setLastSaveTimestamp(long ts) {
         this.lastSaveTimestamp = ts;
+    }
+    
+    public long getSleepStartTime() {
+        return sleepStartTime;
+    }
+    
+    public void setSleepStartTime(long ts) {
+        this.sleepStartTime = ts;
+    }
+    
+    public boolean isSleptThisNight() {
+        return sleptThisNight;
+    }
+    
+    public void setSleptThisNight(boolean slept) {
+        this.sleptThisNight = slept;
     }
 }
