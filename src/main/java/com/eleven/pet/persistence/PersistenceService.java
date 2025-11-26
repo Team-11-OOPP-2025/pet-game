@@ -7,6 +7,7 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetModel;
 import com.google.gson.Gson;
 
+@SuppressWarnings("unused")
 public class PersistenceService {
     private final EncryptionService crypto;
     private final Path savePath;

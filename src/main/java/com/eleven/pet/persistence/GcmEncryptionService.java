@@ -5,6 +5,7 @@ import java.io.OutputStream;
 
 import javax.crypto.SecretKey;
 
+@SuppressWarnings("unused")
 public class GcmEncryptionService implements EncryptionService {
     private static final int GCM_IV_LENGTH = 12;
     private static final int GCM_TAG_LENGTH = 128;

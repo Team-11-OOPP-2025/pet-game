@@ -7,7 +7,6 @@ import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.state.AwakeState;
 import com.eleven.pet.state.PetState;
-import com.eleven.pet.state.StateRegistry;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -17,6 +16,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private final String name;
     private final PetStats stats;
     private final ObjectProperty<PetState> currentState;
+    @SuppressWarnings("unused")
     private final WeatherSystem weatherSystem;
     private final GameClock clock;
     private final Inventory inventory;

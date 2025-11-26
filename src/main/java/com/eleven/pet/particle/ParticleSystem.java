@@ -7,6 +7,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
+@SuppressWarnings("unused")
 public class ParticleSystem {
     private final List<Particle> particles;
     private final Canvas canvas;

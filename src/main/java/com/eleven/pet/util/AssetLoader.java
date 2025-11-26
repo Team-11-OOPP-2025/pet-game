@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javafx.scene.image.Image;
 
+@SuppressWarnings("unused")
 public class AssetLoader {
     private static AssetLoader instance;
     private final Map<String, Image> imageCache;

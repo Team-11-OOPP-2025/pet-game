@@ -1,6 +1,7 @@
 package com.eleven.pet.particle;
 
 public class SnowParticleEffect implements ParticleEffect {
+    @SuppressWarnings("unused")
     private final int intensity;
     
     public SnowParticleEffect(int intensity) {

@@ -33,14 +33,22 @@ public class PetView {
     private final GameClock clock;
     private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
+    @SuppressWarnings("unused")
     private final ParticleSystem particleSystem;
     
+    @SuppressWarnings("unused")
     private ImageView petImageView;
+    @SuppressWarnings("unused")
     private StackPane backgroundPane;
+    @SuppressWarnings("unused")
     private Pane weatherOverlay;
+    @SuppressWarnings("unused")
     private ProgressBar hungerBar;
+    @SuppressWarnings("unused")
     private ProgressBar happinessBar;
+    @SuppressWarnings("unused")
     private ProgressBar energyBar;
+    @SuppressWarnings("unused")
     private ProgressBar cleanlinessBar;
     private Button feedButton;
     private Button sleepButton;

@@ -1,6 +1,7 @@
 package com.eleven.pet.particle;
 
 public class LeavesParticleEffect implements ParticleEffect {
+    @SuppressWarnings("unused")
     private final int intensity;
     
     public LeavesParticleEffect(int intensity) {

@@ -21,11 +21,11 @@ public class PetStats {
         this.MAX_VALUE = maxValue;
         this.stats = new HashMap<>();
         
-        // Initialize all stats
-        registerStat(STAT_HUNGER, 50);
-        registerStat(STAT_HAPPINESS, 50);
-        registerStat(STAT_ENERGY, 50);
-        registerStat(STAT_CLEANLINESS, 50);
+        // Initialize all stats (direct initialization to avoid overridable method warnings)
+        stats.put(STAT_HUNGER, new SimpleIntegerProperty(validate(50)));
+        stats.put(STAT_HAPPINESS, new SimpleIntegerProperty(validate(50)));
+        stats.put(STAT_ENERGY, new SimpleIntegerProperty(validate(50)));
+        stats.put(STAT_CLEANLINESS, new SimpleIntegerProperty(validate(50)));
     }
     
     public void registerStat(String name, int val) {
