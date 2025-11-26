@@ -1,6 +1,7 @@
 # Virtual Pet Evolution (Björni)
 
 🐻 Meet Björni
+
 Björni is more than just a collection of pixels; he is a fully simulated digital companion designed to live on your desktop. Built with a focus on autonomous behavior and environmental awareness, Björni mimics the lifecycle of a real pet through advanced state management and environmental simulation.
 
 Unlike static virtual pets that wait for user input, Björni lives in a breathing world:
