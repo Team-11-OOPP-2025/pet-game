@@ -75,4 +75,19 @@ public class PetModel {
     public char[] getFoodCount() {
         return null;
     }
+
+    public void clean() {
+    }
+
+    public void feed() {
+    }
+
+    public void play() {
+    }
+
+    public void sleep() {
+    }
+
+    public void replenishDailyFood() {
+    }
 }

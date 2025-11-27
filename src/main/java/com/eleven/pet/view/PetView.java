@@ -257,9 +257,9 @@ public class PetView {
 
         if (petModel != null) {
             updateFoodCounter();
-            petModel.getFoodCountProperty().addListener((_, _, _) -> {
+            /*petModel.getFoodCountProperty().addListener((_, _, _) -> {
                 updateFoodCounter();
-            });
+            });*/
         }
 
         return container;
