@@ -23,8 +23,18 @@ public final class GameConfig {
     // State thresholds
     public static final int SLEEP_ENERGY_THRESHOLD = 20;
     public static final int WAKE_ENERGY_THRESHOLD = 80;
+    public static final long SLEEP_DURATION_MS = 5000; // 5 seconds minimum sleep
 
     // Stat bounds
     public static final int MIN_STAT_VALUE = 0;
     public static final int MAX_STAT_VALUE = 100;
+    
+    // Autosave
+    public static final double AUTOSAVE_INTERVAL_SECONDS = 60.0;
+    
+    // Save file
+    public static final int SAVE_FILE_VERSION = 1;
+    
+    // Weather
+    public static final int WEATHER_CHANGE_INTERVAL = 30; // seconds
 }
