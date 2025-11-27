@@ -52,8 +52,11 @@ public class PetView {
     private Image petImage1;
     private Image petImage2;
     private Image petImage3;
+    private Image cryingBear1;
+    private Image cryingBear2;
     private Timeline petImageSwitcher;
     private Random random = new Random();
+    private boolean isSleepy = false;
 
     public PetView(PetModel petModel, PetController controller) {
         this.petModel = petModel;
@@ -119,6 +122,18 @@ public class PetView {
             var image3Stream = getClass().getResourceAsStream("/images/Bear.png");
             if (image3Stream != null) {
                 petImage3 = new Image(image3Stream);
+            }
+
+            // Load sleepy images (using same images as fallback if sleepy versions don't exist)
+            var crying1Stream = getClass().getResourceAsStream("/images/CryingBear1.png");
+            if (crying1Stream != null) {
+                cryingBear1 = new Image(crying1Stream);
+            } 
+
+
+            var crying2Stream = getClass().getResourceAsStream("/images/CryingBear2.png");
+            if (crying2Stream != null) {
+                cryingBear2 = new Image(crying2Stream);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,6 +220,10 @@ public class PetView {
         imageView.setFitWidth(250);
         imageView.setFitHeight(250);
         imageView.setPreserveRatio(true);
+
+        // Make pet clickable to toggle sleepy state
+        imageView.setOnMouseClicked(_ -> toggleSleepyState());
+        imageView.setStyle("-fx-cursor: hand;");
 
         return imageView;
     }
@@ -517,17 +536,52 @@ public class PetView {
         if (petImageView == null) return;
         
         Image currentImage = petImageView.getImage();
-        if (currentImage == petImage1) {
-            petImageView.setImage(petImage2);
-        } else if (currentImage == petImage2) {
-            petImageView.setImage(petImage3);
+        
+        if (isSleepy) {
+            // Switch between sleepy images
+            if (currentImage == cryingBear1) {
+                petImageView.setImage(cryingBear2);
+            } 
+            else {
+                petImageView.setImage(cryingBear1);
+            }
         } else {
-            petImageView.setImage(petImage1);
+            // Switch between normal images
+            if (currentImage == petImage1) {
+                petImageView.setImage(petImage2);
+            } else if (currentImage == petImage2) {
+                petImageView.setImage(petImage3);
+            } else {
+                petImageView.setImage(petImage1);
+            }
         }
     }
 
     // NEW: Generate random interval between 3-10 seconds
     private double getRandomInterval() {
-        return 3 + random.nextDouble() * 7; // Random between 3 and 10 seconds
+        if (isSleepy) {
+            return 0.5 + random.nextDouble() * 1.0; // Fast: 0.5-1.5 seconds when sleepy
+        }
+        return 3 + random.nextDouble() * 7; // Normal: 3-10 seconds when awake
+    }
+
+    // Toggle between awake and sleepy state
+    private void toggleSleepyState() {
+        isSleepy = !isSleepy;
+        
+        // Stop current animation
+        if (petImageSwitcher != null) {
+            petImageSwitcher.stop();
+        }
+        
+        // Set initial image for new state
+        if (isSleepy) {
+            petImageView.setImage(cryingBear1);
+        } else {
+            petImageView.setImage(petImage1);
+        }
+        
+        // Restart animation with new interval
+        startPetImageSwitching();
     }
 }
