@@ -1,6 +1,8 @@
 package com.eleven.pet;
 
 import com.eleven.pet.controller.PetController;
+import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
 
@@ -14,7 +16,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Create Model
-        PetModel model = new PetModel("MyPet");
+        PetModel model = new PetModel(new WeatherSystem("weather"), new GameClock("clock"));
 
         // Create Controller
         PetController controller = new PetController(model, null);
