@@ -1,5 +1,7 @@
 package com.eleven.pet.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.eleven.pet.behavior.PetState;
@@ -124,12 +126,32 @@ public class PetModel implements TimeListener, WeatherListener {
     // Minigame system
     public boolean canPlayMinigame() {
         // TODO: Implement minigame eligibility check
-        return false;
+        return true; // For now, always allow minigames
     }
     
     public MinigameResult playMinigame(Minigame minigame) {
-        // TODO: Implement minigame play logic
-        return null;
+        if (minigame == null) return null;
+        
+        MinigameResult result = minigame.play(this);
+        
+        if (result != null) {
+            // Apply happiness delta from the minigame result
+            stats.modifyStat(PetStats.STAT_HAPPINESS, result.getHappinessDelta());
+            System.out.println(result.getMessage());
+        }
+        
+        return result;
+    }
+    
+    public MinigameResult playRandomMinigame() {
+        // Create list of available minigames
+        List<Minigame> availableGames = new ArrayList<>();
+        availableGames.add(new TimingGame());
+        // Add more minigames here in the future
+        
+        // Pick a random minigame
+        Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
+        return playMinigame(randomGame);
     }
     
     // Daily management

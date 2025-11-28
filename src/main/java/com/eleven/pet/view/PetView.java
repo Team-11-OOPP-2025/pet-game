@@ -176,6 +176,12 @@ public class PetView {
         StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
         root.getChildren().add(foodCounter);
 
+        // Add digital clock
+        Label clockLabel = createDigitalClock();
+        StackPane.setAlignment(clockLabel, Pos.TOP_CENTER);
+        StackPane.setMargin(clockLabel, new Insets(20, 0, 0, 0));
+        root.getChildren().add(clockLabel);
+
         // Bind UI to model
         bindToModel();
 
@@ -293,6 +299,32 @@ public class PetView {
     private void updateFoodCounter() {
         if (model == null || foodCounterText == null) return;
         foodCounterText.setText(String.valueOf(model.getFoodCount()));
+    }
+    
+    private Label createDigitalClock() {
+        timeLabel = new Label("00:00");
+        timeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
+        timeLabel.setTextFill(Color.WHITE);
+        timeLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
+        
+        if (clock != null) {
+            updateClockDisplay();
+            clock.gameTimeProperty().addListener((_, _, _) -> updateClockDisplay());
+        }
+        
+        return timeLabel;
+    }
+    
+    private void updateClockDisplay() {
+        if (clock == null || timeLabel == null) return;
+        
+        double gameTime = clock.getGameTime();
+        // DAY_LENGTH_SECONDS is 24 seconds = full day (24 hours)
+        // So each second = 1 hour in game time
+        int hours = (int) gameTime % 24;
+        
+        String timeString = String.format("%02d:00", hours);
+        timeLabel.setText(timeString);
     }
 
     // Moved to updateBaseBackground (UML method)
