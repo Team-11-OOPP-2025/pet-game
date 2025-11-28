@@ -17,7 +17,7 @@ public class GameClock {
     private final double NIGHT_THRESHOLD = GameConfig.NIGHT_START_TIME;
     private boolean paused = false;
 
-    public GameClock(String clock) {
+    public GameClock() {
         currentCycle = Bindings.createObjectBinding(
                 this::calculateCycle,
                 gameTime

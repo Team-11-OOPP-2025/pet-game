@@ -1,18 +1,45 @@
-// src/main/java/com/eleven/pet/model/Inventory.java
 package com.eleven.pet.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Inventory {
 
-    private final Map<String, Integer> items = new HashMap<>();
+    // List<Item> i UML, men gör den direkt som ObservableList
+    private final ObservableList<Item> items =
+            FXCollections.observableArrayList();
 
-    public void addItem(String name, int amount) {
-        items.merge(name, amount, Integer::sum);
+    public void addItem(Item item) {
+        items.add(item);
     }
 
-    public int getItemCount(String name) {
-        return items.getOrDefault(name, 0);
+    /**
+     * Add multiple copies of the same item type.
+     */
+    public void addItem(Item item, int amount) {
+        for (int i = 0; i < amount; i++) {
+            items.add(item);
+        }
+    }
+
+    public void removeItem(Item item) {
+        items.remove(item);
+    }
+
+    public void useItem(Item item, PetModel pet) {
+        // Använd bara om den faktiskt finns i inventory
+        if (items.remove(item)) {
+            item.use(pet);
+        }
+    }
+
+    public int getAmount(Class<? extends Item> type) {
+        int count = 0;
+        for (Item item : items) {
+            if (type.isInstance(item)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

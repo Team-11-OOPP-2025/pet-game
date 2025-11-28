@@ -15,7 +15,7 @@ public class WeatherSystem {
     private final List<WeatherState> availableStates = new ArrayList<>();
     private final Random random = new Random();
 
-    public WeatherSystem(String name) {
+    public WeatherSystem() {
         ServiceLoader<WeatherState> loader = ServiceLoader.load(WeatherState.class);
         for (WeatherState ws : loader) {
             availableStates.add(ws);

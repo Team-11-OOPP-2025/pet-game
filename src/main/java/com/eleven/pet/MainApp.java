@@ -16,7 +16,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Create Model
-        PetModel model = new PetModel(new WeatherSystem("weather"), new GameClock("clock"));
+        PetModel model = new PetModel(new WeatherSystem(), new GameClock());
 
         // Create Controller
         PetController controller = new PetController(model, null);
