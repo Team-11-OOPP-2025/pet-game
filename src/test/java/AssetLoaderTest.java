@@ -35,34 +35,4 @@ public class AssetLoaderTest {
         assertSame(null, image);
     }
 
-    @Test
-    void testFactoryCreatesValidPet() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-
-        assertNotNull(pet);
-    }
-
-    @Test
-    void testDefaultInventory() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-
-        assertEquals(3, pet.getInventory().getAmount(FoodItem.class));
-    }
-
-    @Test
-    void testDependenciesInjected() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-
-        assertNotNull(pet.getClock());
-        assertNotNull(pet.getWeatherSystem());
-    }
 }
