@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class AssetLoaderTests {
+public class AssetLoaderTest {
     @Test
     public void testAssetLoading() {
         AssetLoader assetLoader = AssetLoader.getInstance();
