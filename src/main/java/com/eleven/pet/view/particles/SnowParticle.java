@@ -1,4 +1,4 @@
-package com.eleven.pet.particle;
+package com.eleven.pet.view.particles;
 
 import javafx.scene.canvas.GraphicsContext;
 

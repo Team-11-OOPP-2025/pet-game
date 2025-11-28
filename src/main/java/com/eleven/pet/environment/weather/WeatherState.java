@@ -1,6 +1,6 @@
 package com.eleven.pet.environment.weather;
 
-import com.eleven.pet.particle.ParticleEffect;
+import com.eleven.pet.view.particles.effects.ParticleEffect;
 
 public interface WeatherState {
     String getName();

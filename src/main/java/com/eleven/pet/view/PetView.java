@@ -8,8 +8,7 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.particle.ParticleSystem;
-
+import com.eleven.pet.view.particles.ParticleSystem;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

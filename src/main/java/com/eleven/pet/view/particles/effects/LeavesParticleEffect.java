@@ -1,10 +1,12 @@
-package com.eleven.pet.particle;
+package com.eleven.pet.view.particles.effects;
 
-public class RainParticleEffect implements ParticleEffect {
+import com.eleven.pet.view.particles.ParticleSystem;
+
+public class LeavesParticleEffect implements ParticleEffect {
     @SuppressWarnings("unused")
     private final int intensity;
     
-    public RainParticleEffect(int intensity) {
+    public LeavesParticleEffect(int intensity) {
         this.intensity = intensity;
     }
     
