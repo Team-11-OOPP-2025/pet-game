@@ -69,8 +69,9 @@ public class MainApp extends Application {
         primaryStage.setTitle("Pet Game - Björni");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
-        primaryStage.setHeight(100);
-        primaryStage.setWidth(1000);
+        // maintains a proper aspect ratio of 1:0.75 for 980x720 window
+        primaryStage.setHeight(720);
+        primaryStage.setWidth(980);
         primaryStage.show();
 
 
