@@ -69,75 +69,28 @@ public class PetView {
 
     // YOUR EXACT CODE - KEPT AS-IS!
     private void loadBackgroundImages() {
-        try {
-            var earlyMorningStream = getClass().getResourceAsStream("/images/Dawn.png");
-            if (earlyMorningStream != null) {
-                earlyMorningBackground = new Image(earlyMorningStream);
-            }
-
-            var lateMorningStream = getClass().getResourceAsStream("/images/Morning.png");
-            if (lateMorningStream != null) {
-                lateMorningBackground = new Image(lateMorningStream);
-            }
-
-            var dayStream = getClass().getResourceAsStream("/images/Day.png");
-            if (dayStream != null) {
-                dayBackground = new Image(dayStream);
-            }
-
-            var eveningStream = getClass().getResourceAsStream("/images/Evening.png");
-            if (eveningStream != null) {
-                eveningBackground = new Image(eveningStream);
-            }
-
-            var earlyNightStream = getClass().getResourceAsStream("/images/EarlyNight.png");
-            if (earlyNightStream != null) {
-                earlyNightBackground = new Image(earlyNightStream);
-            }
-
-            var deepNightStream = getClass().getResourceAsStream("/images/DeepNight.png");
-            if (deepNightStream != null) {
-                deepNightBackground = new Image(deepNightStream);
-            } else if (dayBackground != null) {
-                deepNightBackground = dayBackground;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        AssetLoader loader = AssetLoader.getInstance();
+        earlyMorningBackground = loader.getImage("Dawn");
+        lateMorningBackground = loader.getImage("Morning");
+        dayBackground = loader.getImage("Day");
+        eveningBackground = loader.getImage("Evening");
+        earlyNightBackground = loader.getImage("EarlyNight");
+        deepNightBackground = loader.getImage("DeepNight");
+        
+        // Fallback if DeepNight doesn't exist
+        if (deepNightBackground == null && dayBackground != null) {
+            deepNightBackground = dayBackground;
         }
     }
 
     // YOUR EXACT CODE - KEPT AS-IS!
     private void loadPetImages() {
-        try {
-            var image1Stream = getClass().getResourceAsStream("/images/LookingLeftBear.png");
-            if (image1Stream != null) {
-                petImage1 = new Image(image1Stream);
-            }
-
-            var image2Stream = getClass().getResourceAsStream("/images/LookingRightBear.png");
-            if (image2Stream != null) {
-                petImage2 = new Image(image2Stream);
-            }
-
-            var image3Stream = getClass().getResourceAsStream("/images/Bear.png");
-            if (image3Stream != null) {
-                petImage3 = new Image(image3Stream);
-            }
-
-            // Load sleepy images (using same images as fallback if sleepy versions don't exist)
-            var crying1Stream = getClass().getResourceAsStream("/images/CryingBear1.png");
-            if (crying1Stream != null) {
-                cryingBear1 = new Image(crying1Stream);
-            } 
-
-
-            var crying2Stream = getClass().getResourceAsStream("/images/CryingBear2.png");
-            if (crying2Stream != null) {
-                cryingBear2 = new Image(crying2Stream);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AssetLoader loader = AssetLoader.getInstance();
+        petImage1 = loader.getImage("LookingLeftBear");
+        petImage2 = loader.getImage("LookingRightBear");
+        petImage3 = loader.getImage("Bear");
+        cryingBear1 = loader.getImage("CryingBear1");
+        cryingBear2 = loader.getImage("CryingBear2");
     }
 
     // YOUR LAYOUT CODE - KEPT AS-IS!

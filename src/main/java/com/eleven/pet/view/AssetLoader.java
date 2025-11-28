@@ -11,8 +11,8 @@ public class AssetLoader {
     private final Map<String, Image> imageCache = new HashMap<>();
 
 
+    /// This class is a singleton and therefore never initialized outside itself.
     private AssetLoader() {
-       // Singleton isn't initialized
     }
 
     public static AssetLoader getInstance() {
@@ -39,6 +39,7 @@ public class AssetLoader {
 
             if (stream == null) {
                 System.err.println("Warning: Image not found: " + path);
+                // TODO: Return a default "missing image" placeholder instead of null
                 return null;
             }
 
@@ -51,5 +52,28 @@ public class AssetLoader {
 
     public void loadAll() {
         // Placeholder for loading all assets
+        // Assets which are required and should be preloaded for performance
+        // TODO: Update the list as more assets are added or updated
+        String[] assets = {
+                "Bear.png",
+                "LookingLeftBear",
+                "LookingRightBear",
+                "CryingBear1",
+                "CryingBear2",
+                "SleepyBear",
+
+                "Dawn",
+                "Morning",
+                "Day",
+                "Evening",
+                "EarlyNight",
+                "LateNight",
+
+
+        };
+
+        for (String ass : assets) {
+            getImage(ass);
+        }
     }
 }
