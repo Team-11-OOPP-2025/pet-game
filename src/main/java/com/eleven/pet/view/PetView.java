@@ -56,7 +56,7 @@ public class PetView {
     private Image cryingBear2;
     private Timeline petImageSwitcher;
     private Random random = new Random();
-    private boolean isSleepy = false;
+    private boolean isCrying = false;
 
     public PetView(PetModel petModel, PetController controller) {
         this.petModel = petModel;
@@ -490,7 +490,7 @@ public class PetView {
         
         Image currentImage = petImageView.getImage();
         
-        if (isSleepy) {
+        if (isCrying) {
             // Switch between sleepy images
             if (currentImage == cryingBear1) {
                 petImageView.setImage(cryingBear2);
@@ -512,15 +512,15 @@ public class PetView {
 
     // NEW: Generate random interval between 3-10 seconds
     private double getRandomInterval() {
-        if (isSleepy) {
+        if (isCrying) {
             return 0.5 + random.nextDouble() * 1.0; // Fast: 0.5-1.5 seconds when sleepy
         }
         return 3 + random.nextDouble() * 7; // Normal: 3-10 seconds when awake
     }
 
-    // Toggle between awake and sleepy state
+    // Just a dummy to show crying state
     private void toggleSleepyState() {
-        isSleepy = !isSleepy;
+        isCrying = !isCrying;
         
         // Stop current animation
         if (petImageSwitcher != null) {
@@ -528,7 +528,7 @@ public class PetView {
         }
         
         // Set initial image for new state
-        if (isSleepy) {
+        if (isCrying) {
             petImageView.setImage(cryingBear1);
         } else {
             petImageView.setImage(petImage1);
