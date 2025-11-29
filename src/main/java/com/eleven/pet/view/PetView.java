@@ -1,18 +1,26 @@
 package com.eleven.pet.view;
 
 import com.eleven.pet.controller.PetController;
+import com.eleven.pet.environment.clock.DayCycle;
+import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.particle.ParticleSystem;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -20,34 +28,54 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 /**
- * Your beautiful UI - migrated to new architecture!
- * All your visual design preserved, now with proper bindings.
+ * PetView - UML-compliant implementation integrating existing UI design
  */
 public class PetView {
-    private final PetModel petModel;
+    // UML Fields
+    private final PetModel model;
     private final PetController controller;
     private final GameClock clock;
-
-    // Your existing UI fields - ALL PRESERVED!
+    private final WeatherSystem weatherSystem;
+    private final AssetLoader assetLoader;
+    private ParticleSystem particleSystem;
+    
+    // UI Components (UML standard controls)
+    private ImageView petImageView;
+    private StackPane backgroundPane;
+    private Pane weatherOverlay;
+    private ProgressBar hungerBar;
+    private ProgressBar happinessBar;
+    private ProgressBar energyBar;
+    private ProgressBar cleanlinessBar;
+    private Button feedButton;
+    private Button sleepButton;
+    private Button playButton;
+    private Button cleanButton;
+    private ImageView saveIcon;
+    private Label weatherLabel;
+    private Label timeLabel;
+    
+    // Legacy fields for existing visual design
     private ImageView backgroundView;
     private Image dayBackground;
     private Image nightBackground;
     private StackPane feedButtonContainer;
-    private StackPane playButtonContainer;  // Renamed from miniGamesButtonContainer
+    private StackPane playButtonContainer;
     private Text foodCounterText;
     private Rectangle hungerFillRect;
     private Rectangle energyFillRect;
     private Rectangle cleanFillRect;
     private Rectangle happinessFillRect;
-    private ImageView petImageView;
     private Image petImage1;
     private Image petImage2;
     private boolean showingFirstImage = true;
 
-    public PetView(PetModel petModel, PetController controller) {
-        this.petModel = petModel;
+    public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
+        this.model = model;
         this.controller = controller;
-        this.clock = petModel.getGameClock();
+        this.clock = clock;
+        this.weatherSystem = weather;
+        this.assetLoader = AssetLoader.getInstance();
         loadBackgroundImages();
         loadPetImages();
     }
@@ -95,13 +123,9 @@ public class PetView {
 
         backgroundView = new ImageView();
 
-        // Updated to use cleaner clock access
-        if (clock != null) {
-            updateBackground(clock.getCycle() == com.eleven.pet.environment.clock.DayCycle.DAY);
-            clock.cycleProperty().addListener((_, _, newVal) -> {
-                updateBackground(newVal == com.eleven.pet.environment.clock.DayCycle.DAY);
-            });
-        } else {
+        // Observe environment (clock/weather)
+        observeEnvironment();
+        if (clock == null && backgroundView != null) {
             backgroundView.setImage(dayBackground);
         }
 
@@ -152,8 +176,8 @@ public class PetView {
         StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
         root.getChildren().add(foodCounter);
 
-        // NEW: Bind stat bars to model
-        bindStatBarsToModel();
+        // Bind UI to model
+        bindToModel();
 
         return root;
     }
@@ -255,9 +279,9 @@ public class PetView {
 
         container.getChildren().addAll(label, foodCounterText);
 
-        if (petModel != null) {
+        if (model != null) {
             updateFoodCounter();
-            /*petModel.getFoodCountProperty().addListener((_, _, _) -> {
+            model.getFoodCountProperty().addListener((_, _, _) -> {
                 updateFoodCounter();
             });*/
         }
@@ -267,19 +291,11 @@ public class PetView {
 
     // YOUR EXACT CODE!
     private void updateFoodCounter() {
-        if (petModel == null || foodCounterText == null) return;
-        foodCounterText.setText(String.valueOf(petModel.getFoodCount()));
+        if (model == null || foodCounterText == null) return;
+        foodCounterText.setText(String.valueOf(model.getFoodCount()));
     }
 
-    // YOUR EXACT CODE!
-    private void updateBackground(boolean isDaytime) {
-        if (backgroundView != null) {
-            Image newBackground = isDaytime ? dayBackground : nightBackground;
-            if (newBackground != null && !newBackground.isError()) {
-                backgroundView.setImage(newBackground);
-            }
-        }
-    }
+    // Moved to updateBaseBackground (UML method)
 
     // YOUR EXACT STAT BAR CODE - ALL PRESERVED!
     private StackPane createHappinessBar() {
@@ -408,9 +424,9 @@ public class PetView {
 
     // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
-        if (petModel == null || petModel.getStats() == null) return;
+        if (model == null || model.getStats() == null) return;
 
-        PetStats stats = petModel.getStats();
+        PetStats stats = model.getStats();
 
         // Bind each bar to its stat (0-100 mapped to width)
         stats.getStat(PetStats.STAT_HUNGER).addListener((obs, oldVal, newVal) -> {
@@ -438,5 +454,83 @@ public class PetView {
         happinessFillRect.setWidth(225 * stats.getStat(PetStats.STAT_HAPPINESS).get() / 100.0);
         energyFillRect.setWidth(150 * stats.getStat(PetStats.STAT_ENERGY).get() / 100.0);
         cleanFillRect.setWidth(150 * stats.getStat(PetStats.STAT_CLEANLINESS).get() / 100.0);
+    }
+    
+    // ========== UML Methods (Skeleton Implementation) ==========
+    
+    public void showSaveIcon(boolean visible) {
+        // TODO: Implement save icon visibility toggle
+    }
+    
+    public void promptSleep() {
+        // TODO: Implement sleep prompt dialog
+    }
+    
+    public void showMinigameResult(MinigameResult result) {
+        // TODO: Implement minigame result display
+    }
+    
+    private HBox createTopPanel() {
+        // TODO: Implement top panel with weather and time labels
+        return new HBox();
+    }
+    
+    private VBox createStatsPanel() {
+        // TODO: Implement stats panel with progress bars
+        return new VBox();
+    }
+    
+    private VBox createStatRow(String label, ProgressBar bar) {
+        // TODO: Implement stat row layout
+        return new VBox();
+    }
+    
+    private ProgressBar createStatBar(String name) {
+        // TODO: Implement progress bar creation
+        return new ProgressBar();
+    }
+    
+    private HBox createButtonPanel() {
+        // TODO: Implement button panel with all action buttons
+        return new HBox();
+    }
+    
+    private void setupEventHandlers() {
+        // TODO: Implement event handler setup
+    }
+    
+    private void bindToModel() {
+        bindStatBarsToModel();
+    }
+    
+    private void observeEnvironment() {
+        if (clock != null) {
+            updateBaseBackground(clock.getCycle());
+            clock.cycleProperty().addListener((_, _, newCycle) -> {
+                updateBaseBackground(newCycle);
+            });
+        }
+    }
+    
+    private void updateVisuals() {
+        // TODO: Implement visual update logic
+    }
+    
+    private void updatePetSprite() {
+        // TODO: Implement pet sprite update based on state
+    }
+    
+    private void updateBaseBackground(DayCycle cycle) {
+        if (backgroundView != null) {
+            boolean isDaytime = (cycle == com.eleven.pet.environment.clock.DayCycle.DAY);
+            Image newBackground = isDaytime ? dayBackground : nightBackground;
+            if (newBackground != null && !newBackground.isError()) {
+                backgroundView.setImage(newBackground);
+            }
+        }
+    }
+    
+    private void updateWeatherOverlay(WeatherState weather) {
+        // TODO: Implement weather overlay update
     }
 }

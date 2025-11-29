@@ -3,6 +3,7 @@ package com.eleven.pet;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
 
@@ -15,19 +16,23 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Create Model
-        PetModel model = new PetModel(new WeatherSystem(), new GameClock());
+        // Create environment systems
+        GameClock clock = new GameClock();
+        WeatherSystem weatherSystem = new WeatherSystem();
+        
+        // Create Model using Factory
+        PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 
         // Create Controller
-        PetController controller = new PetController(model, null);
+        PetController controller = new PetController(model, clock, weatherSystem, null);
 
         // Create View
-        PetView view = new PetView(model, controller);
+        PetView view = new PetView(model, controller, clock, weatherSystem);
         Pane root = view.initializeUI();
 
         // Setup Scene and Stage
         Scene scene = new Scene(root, 800, 600);
-        primaryStage.setTitle("Pet Game");
+        primaryStage.setTitle("Pet Game - Björni");
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
         primaryStage.show();
