@@ -1,4 +1,4 @@
-package com.eleven.pet.persistence;
+package com.eleven.pet.service.persistence;
 
 public class GameException extends RuntimeException {
     public GameException(String message) {

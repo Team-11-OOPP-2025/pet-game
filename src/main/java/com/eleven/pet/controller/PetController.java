@@ -4,8 +4,7 @@ import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
-import com.eleven.pet.persistence.PersistenceService;
-
+import com.eleven.pet.service.persistence.PersistenceService;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 

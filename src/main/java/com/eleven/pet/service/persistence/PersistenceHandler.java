@@ -1,9 +1,8 @@
-package com.eleven.pet.service;
+package com.eleven.pet.service.persistence;
 
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.model.Consumable;
 import com.eleven.pet.model.Inventory;
-import com.eleven.pet.persistence.PetDataDTO;
 
 import java.util.HashMap;
 import java.util.Map;

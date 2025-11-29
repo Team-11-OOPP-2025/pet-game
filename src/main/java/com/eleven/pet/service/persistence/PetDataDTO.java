@@ -1,4 +1,4 @@
-package com.eleven.pet.persistence;
+package com.eleven.pet.service.persistence;
 
 import com.eleven.pet.config.GameConfig;
 
