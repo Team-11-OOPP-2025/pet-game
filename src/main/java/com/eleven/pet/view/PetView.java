@@ -562,6 +562,7 @@ public class PetView {
         
         // Restart animation with new interval
         startPetImageSwitching();
+    }
     
     // ========== UML Methods (Skeleton Implementation) ==========
     
@@ -628,12 +629,36 @@ public class PetView {
     }
     
     private void updateBaseBackground(DayCycle cycle) {
-        if (backgroundView != null) {
-            boolean isDaytime = (cycle == com.eleven.pet.environment.clock.DayCycle.DAY);
-            Image newBackground = isDaytime ? dayBackground : nightBackground;
-            if (newBackground != null && !newBackground.isError()) {
-                backgroundView.setImage(newBackground);
-            }
+        if (backgroundView == null) return;
+
+        Image newBackground;
+
+        switch (cycle) {
+            case DEEP_NIGHT:
+                newBackground = deepNightBackground != null ? deepNightBackground : dayBackground;
+                break;
+            case DAWN:
+                newBackground = earlyMorningBackground != null ? earlyMorningBackground : dayBackground;
+                break;
+            case MORNING:
+                newBackground = lateMorningBackground != null ? lateMorningBackground : dayBackground;
+                break;
+            case DAY:
+                newBackground = dayBackground;
+                break;
+            case EVENING:
+                newBackground = eveningBackground != null ? eveningBackground : dayBackground;
+                break;
+            case EARLY_NIGHT:
+                newBackground = earlyNightBackground != null ? earlyNightBackground : deepNightBackground;
+                break;
+            default:
+                newBackground = dayBackground;
+                break;
+        }
+
+        if (newBackground != null && !newBackground.isError()) {
+            backgroundView.setImage(newBackground);
         }
     }
     
@@ -641,5 +666,7 @@ public class PetView {
         // TODO: Implement weather overlay update
     }
 }
+
+
 
 
