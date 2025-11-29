@@ -7,7 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"unused", "all"})
 public class ParticleSystem {
     private final List<Particle> particles;
     private final Canvas canvas;
