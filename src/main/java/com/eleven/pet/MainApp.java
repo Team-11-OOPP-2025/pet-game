@@ -1,12 +1,12 @@
 package com.eleven.pet;
 
+import com.eleven.pet.config.GameItems;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -19,7 +19,10 @@ public class MainApp extends Application {
         // Create environment systems
         GameClock clock = new GameClock();
         WeatherSystem weatherSystem = new WeatherSystem();
-        
+
+        // Initialize all Items
+        GameItems.init();
+
         // Create Model using Factory
         PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 

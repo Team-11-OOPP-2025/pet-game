@@ -1,8 +1,6 @@
 package com.eleven.pet.config;
 
 public final class GameConfig {
-    private GameConfig() {}
-
     // Stat decay rates (per second)
     public static final double HUNGER_DECAY_RATE = 0.5;
     public static final double ENERGY_DECAY_RATE = 0.3;
