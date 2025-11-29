@@ -1,45 +1,53 @@
 package com.eleven.pet.model;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Inventory {
 
-    // List<Item> i UML, men gör den direkt som ObservableList
-    private final ObservableList<Item> items =
-            FXCollections.observableArrayList();
+    // Key: item name (e.g. "Apple")
+    private final Map<String, IntegerProperty> items = new HashMap<>();
 
+    // Add single
     public void addItem(Item item) {
-        items.add(item);
+        addItem(item, 1);
     }
 
-    /**
-     * Add multiple copies of the same item type.
-     */
+    // Add multiple items
     public void addItem(Item item, int amount) {
-        for (int i = 0; i < amount; i++) {
-            items.add(item);
-        }
+        if (amount <= 0) return;
+
+        String name = item.getName();
+        IntegerProperty prop = items.computeIfAbsent(
+                name, n -> new SimpleIntegerProperty(0)
+        );
+        prop.set(prop.get() + amount);
     }
 
-    public void removeItem(Item item) {
-        items.remove(item);
+    // Consume one item
+    public boolean consumeItem(Item item) {
+        String name = item.getName();
+        IntegerProperty prop = items.get(name);
+
+        if (prop == null || prop.get() <= 0) return false;
+
+        prop.set(prop.get() - 1);
+        return true;
     }
 
-    public void useItem(Item item, PetModel pet) {
-        // Använd bara om den faktiskt finns i inventory
-        if (items.remove(item)) {
-            item.use(pet);
-        }
+    // Get how many of that item we have
+    public int getAmount(Item item) {
+        return amountProperty(item).get();
     }
 
-    public int getAmount(Class<? extends Item> type) {
-        int count = 0;
-        for (Item item : items) {
-            if (type.isInstance(item)) {
-                count++;
-            }
-        }
-        return count;
+    // Property for JavaFX binding
+    public IntegerProperty amountProperty(Item item) {
+        return items.computeIfAbsent(
+                item.getName(),
+                n -> new SimpleIntegerProperty(0)
+        );
     }
 }

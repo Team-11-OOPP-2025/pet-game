@@ -18,7 +18,9 @@ public final class PetFactory {
         PetModel pet = new PetModel(weatherSystem, clock);
 
         // Initialize default inventory items (e.g. 3 Apples)
-        pet.getInventory().addItem(new FoodItem("apple", 10, 10), 3);
+        Item apple = new FoodItem("Apple", 5, 3);
+
+        pet.getInventory().addItem(apple, 3);
 
         // Optionally set up default stats here:
         pet.getStats().registerStat("hunger", 50);

@@ -1,5 +1,6 @@
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.model.Item;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.FoodItem;
@@ -26,8 +27,8 @@ public class FactoryTest {
         GameClock clock = new GameClock();
 
         PetModel pet = PetFactory.createNewPet(weather, clock);
-
-        assertEquals(3, pet.getInventory().getAmount(FoodItem.class));
+        Item apple = new FoodItem("Apple", 5, 3);
+        assertEquals(3, pet.getInventory().getAmount(apple));
     }
 
     @Test
