@@ -175,7 +175,7 @@ public class PetView {
         imageView.setPreserveRatio(true);
 
         // Make pet clickable to toggle sleepy state
-        imageView.setOnMouseClicked(_ -> toggleSleepyState());
+        imageView.setOnMouseClicked(_ -> toggleCryingState());
         imageView.setStyle("-fx-cursor: hand;");
 
         return imageView;
@@ -519,7 +519,7 @@ public class PetView {
     }
 
     // Just a dummy to show crying state
-    private void toggleSleepyState() {
+    private void toggleCryingState() {
         isCrying = !isCrying;
         
         // Stop current animation
@@ -538,3 +538,5 @@ public class PetView {
         startPetImageSwitching();
     }
 }
+
+

@@ -13,6 +13,7 @@ public class AssetLoader {
 
     /// This class is a singleton and therefore never initialized outside itself.
     private AssetLoader() {
+        // Singleton isn't initialized
     }
 
     public static AssetLoader getInstance() {
