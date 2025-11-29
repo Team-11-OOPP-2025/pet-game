@@ -10,4 +10,9 @@ public interface PetState {
     void handleClean(PetModel pet);
     void onTick(PetModel pet);
     String getStateName();
+
+    void onEnter(PetModel pet);
+    void onExit(PetModel pet);
 }
+
+
