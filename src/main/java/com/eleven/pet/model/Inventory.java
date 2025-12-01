@@ -56,4 +56,9 @@ public class Inventory {
         // Don't allow external modification
         return Collections.unmodifiableMap(items);
     }
+
+    // Property for JavaFX binding
+    public IntegerProperty amountProperty(Item item) {
+        return items.computeIfAbsent(item.name(), n -> new SimpleIntegerProperty(0));
+    }
 }
