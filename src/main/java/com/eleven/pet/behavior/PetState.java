@@ -1,10 +1,10 @@
 package com.eleven.pet.behavior;
 
-import com.eleven.pet.model.Consumable;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.model.items.Item;
 
 public interface PetState {
-    boolean handleConsume(PetModel pet, Consumable item);
+    boolean handleConsume(PetModel pet, Item item);
     void handlePlay(PetModel pet);
     void handleSleep(PetModel pet);
     void handleClean(PetModel pet);

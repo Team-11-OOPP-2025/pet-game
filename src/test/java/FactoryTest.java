@@ -1,6 +1,5 @@
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.model.Item;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.FoodItem;
@@ -10,35 +9,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FactoryTest {
+    WeatherSystem weather = new WeatherSystem();
+    GameClock clock = new GameClock();
 
     @Test
     void testFactoryCreatesValidPet() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-
+        PetModel pet = PetFactory.createNewPet("TestPet", weather, clock);
         assertNotNull(pet);
     }
 
     @Test
     void testDefaultInventory() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-        Item apple = new FoodItem("Apple", 5, 3);
-        assertEquals(3, pet.getInventory().getAmount(apple));
+        PetModel pet = PetFactory.createNewPet("TestInventory", weather, clock);
+        FoodItem food = new FoodItem("Food", 30);
+        assertEquals(1, pet.getInventory().getQuantity(food));
     }
 
     @Test
     void testDependenciesInjected() {
-        WeatherSystem weather = new WeatherSystem();
-        GameClock clock = new GameClock();
-
-        PetModel pet = PetFactory.createNewPet(weather, clock);
-
-        assertNotNull(pet.getClock());
+        PetModel pet = PetFactory.createNewPet("TestDep", weather, clock);
         assertNotNull(pet.getWeatherSystem());
+        assertNotNull(pet.getInventory());
     }
 }

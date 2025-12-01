@@ -8,10 +8,9 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.environment.clock.GameClock;
-import com.eleven.pet.environment.clock.DayCycle;
 import com.eleven.pet.particle.ParticleSystem;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -28,9 +27,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.util.Duration;
+
 import java.util.Random;
 
 /**
@@ -291,20 +289,7 @@ public class PetView {
 
         container.getChildren().addAll(label, foodCounterText);
 
-        if (model != null) {
-            updateFoodCounter();
-            model.getFoodCountProperty().addListener((_, _, _) -> {
-                updateFoodCounter();
-            });*/
-        }
-
         return container;
-    }
-
-    // YOUR EXACT CODE!
-    private void updateFoodCounter() {
-        if (model == null || foodCounterText == null) return;
-        foodCounterText.setText(String.valueOf(model.getFoodCount()));
     }
     
     private Label createDigitalClock() {
