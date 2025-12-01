@@ -6,6 +6,7 @@ import java.util.Map;
 import com.eleven.pet.config.GameConfig;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 public class PetStats {
     public static final String STAT_HUNGER = "hunger";
@@ -18,21 +19,24 @@ public class PetStats {
     private final int MAX_VALUE = GameConfig.MAX_STAT_VALUE;
 
     public void registerStat(String name, int initialValue) {
-        // TODO: Implement stat registration with validation
+        int validValue = validate(initialValue);
+        stats.put(name, new SimpleIntegerProperty(validValue));
     }
 
     public IntegerProperty getStat(String name) {
-        // TODO: Implement get stat property
-        return null;
+        return stats.get(name);
     }
 
     public Map<String, IntegerProperty> getAllStats() {
-        // TODO: Implement get all stats
-        return null;
+        return new HashMap<>(stats);
     }
 
     public void modifyStat(String name, int delta) {
-        // TODO: Implement modify stat with validation
+        IntegerProperty stat = getStat(name);
+        if (stat != null) {
+            int newVal = validate(stat.get() + delta);
+            stat.set(newVal);
+        }
     }
     
     public void calculateDerivedHappiness() {
@@ -40,7 +44,6 @@ public class PetStats {
     }
     
     private int validate(int value) {
-        // TODO: Implement validation (clamp between MIN and MAX)
-        return 0;
+        return Math.max(MIN_VALUE, Math.min(MAX_VALUE, value));
     }
 }

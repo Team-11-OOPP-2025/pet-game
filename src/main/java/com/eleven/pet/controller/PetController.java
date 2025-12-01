@@ -33,11 +33,12 @@ public class PetController {
     }
     
     public void handlePlayAction() {
-        model.play();
+        // Play a random minigame
+        model.playRandomMinigame();
     }
     
     public void handlePlayMinigame(Minigame minigame) {
-        // TODO: Implement minigame handling
+        model.playMinigame(minigame);
     }
     
     public void handleCleanAction() {
