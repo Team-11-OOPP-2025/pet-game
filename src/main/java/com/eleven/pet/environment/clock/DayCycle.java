@@ -1,6 +1,10 @@
 package com.eleven.pet.environment.clock;
 
 public enum DayCycle {
+    DAWN,
+    MORNING,
     DAY,
-    NIGHT
+    EVENING,
+    EARLY_NIGHT,
+    DEEP_NIGHT
 }
