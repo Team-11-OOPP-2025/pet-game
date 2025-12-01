@@ -38,4 +38,16 @@ public class AwakeState implements PetState {
     public String getStateName() {
         return STATE_NAME;
     }
+
+    @Override
+    public void onEnter(PetModel pet) {
+        //Todo: Implement onEnter behavior for asleep state
+        return;
+    }
+
+    @Override
+    public void onExit(PetModel pet) {
+        //Todo: Implement onExit behavior for asleep state
+        return;
+    }
 }
