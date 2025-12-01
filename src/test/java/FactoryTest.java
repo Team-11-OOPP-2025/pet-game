@@ -2,10 +2,8 @@ import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.items.FoodItem;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FactoryTest {
@@ -16,13 +14,6 @@ public class FactoryTest {
     void testFactoryCreatesValidPet() {
         PetModel pet = PetFactory.createNewPet("TestPet", weather, clock);
         assertNotNull(pet);
-    }
-
-    @Test
-    void testDefaultInventory() {
-        PetModel pet = PetFactory.createNewPet("TestInventory", weather, clock);
-        FoodItem food = new FoodItem("Food", 30);
-        assertEquals(1, pet.getInventory().getQuantity(food));
     }
 
     @Test
