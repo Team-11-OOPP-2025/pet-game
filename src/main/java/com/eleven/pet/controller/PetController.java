@@ -5,9 +5,15 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.persistence.PersistenceService;
+import com.eleven.pet.view.MiniGameView;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class PetController {
     private final PetModel model;
@@ -78,7 +84,18 @@ public class PetController {
     }
     
     public void handlePlay() {
-        handlePlayAction();
+        // Create Swing minigame in a separate window
+        SwingUtilities.invokeLater(() -> {
+            JFrame gameFrame = new JFrame("Guessing Game");
+            MiniGameView miniGameView = new MiniGameView();
+            MiniGameController miniGameController = new MiniGameController(miniGameView, model);
+            
+            gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            gameFrame.add(miniGameView);
+            gameFrame.setSize(500, 400);
+            gameFrame.setLocationRelativeTo(null);
+            gameFrame.setVisible(true);
+        });
     }
     
     public void handleSleep() {
