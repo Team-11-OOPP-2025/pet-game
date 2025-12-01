@@ -35,17 +35,10 @@ public class PetModel {
         this.sleptThisNight = false;
     }
 
-    public WeatherSystem getWeatherSystem() {
-        return weatherSystem;
-    }
-
     public GameClock getClock() {
         return clock;
     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
     
     public void sleep() {
         if (currentState.get() != null) {
