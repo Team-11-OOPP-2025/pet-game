@@ -1,39 +1,64 @@
 package com.eleven.pet.model;
 
+import com.eleven.pet.model.items.Item;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class Inventory {
-    private final Map<Consumable, IntegerProperty> items;
-    
-    public Inventory() {
-        // TODO: Initialize inventory storage
-        this.items = null;
+    private final Map<String, IntegerProperty> items = new HashMap<>();
+
+    /**
+     * Add multiple items.
+     *
+     * @param item     non-null item
+     * @param quantity number to add (0 = no-op, negative = IllegalArgumentException)
+     */
+    public void add(Item item, int quantity) {
+        if (item == null || quantity <= 0) return;
+        IntegerProperty count = items.computeIfAbsent(item.name(), _ -> new SimpleIntegerProperty(0));
+        count.set(count.get() + quantity);
     }
-    
-    public void add(Consumable item, int quantity) {
-        // TODO: Implement add item to inventory
+
+    /**
+     * Consume one item instance.
+     *
+     * @return 1 if an item was consumed; 0 if none is consumed (item not found or quantity is zero)
+     */
+    public boolean remove(Item item, int quantity) {
+        if (item == null || quantity <= 0) return false;
+        IntegerProperty count = items.get(item.name());
+        if (count == null || count.get() < quantity) return false;
+
+        int newCount = count.get() - quantity;
+        if (newCount == 0) {
+            items.remove(item.name());
+        } else {
+            count.set(newCount);
+        }
+        return true;
     }
-    
-    public boolean remove(Consumable item, int quantity) {
-        // TODO: Implement remove item from inventory
-        return false;
+
+    // Get how many of that item we have
+    public int getQuantity(Item item) {
+        IntegerProperty count = items.get(item.name());
+        return count == null ? 0 : count.get();
     }
-    
-    public int getQuantity(Consumable item) {
-        // TODO: Implement get quantity of item
-        return 0;
+
+    public boolean has(Item item) {
+        return getQuantity(item) > 0;
     }
-    
-    public boolean has(Consumable item) {
-        // TODO: Implement check if item exists in inventory
-        return false;
+
+    public Map<String, IntegerProperty> getAll() {
+        // Don't allow external modification
+        return Collections.unmodifiableMap(items);
     }
-    
-    public Set<Consumable> allItems() {
-        // TODO: Implement return all items in inventory
-        return null;
+
+    // Property for JavaFX binding
+    public IntegerProperty amountProperty(Item item) {
+        return items.computeIfAbsent(item.name(), n -> new SimpleIntegerProperty(0));
     }
 }
