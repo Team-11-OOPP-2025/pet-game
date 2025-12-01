@@ -1,44 +1,121 @@
 package com.eleven.pet.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import com.eleven.pet.behavior.PetState;
+import com.eleven.pet.behavior.StateRegistry;
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.clock.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import jdk.jfr.FlightRecorder;
 
-import java.util.Objects;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
-/**
- * Main domain entity representing the pet.
- */
-public class PetModel {
-
-    private final WeatherSystem weatherSystem;
-    private final GameClock clock;      // TODO: define GameClock class/package if not existing
-
-    // Sleep tracking
-    private long sleepStartTime;
-    private boolean sleptThisNight;
-
-    // Core components
-    private final Inventory inventory;  // TODO: ensure Inventory class exists
+public class PetModel implements TimeListener, WeatherListener {
+    private static final Random random = new Random();
+    private final String name;
     private final PetStats stats;
+    private final ObjectProperty<PetState> currentState;
+    private final WeatherSystem weatherSystem;
+    private final GameClock clock;
+    private final Inventory inventory;
+    private final IntegerProperty foodCount;
+    
+    private boolean sleptThisNight;
+    private long sleepStartTime;
 
-    public PetModel(WeatherSystem weatherSystem, GameClock clock) {
-        this.weatherSystem = Objects.requireNonNull(weatherSystem, "weatherSystem");
-        this.clock = Objects.requireNonNull(clock, "clock");
-
-        this.inventory = new Inventory();      // empty inventory
-        this.stats = new PetStats();           // you can seed defaults in factory
-        this.sleepStartTime = 0L;
+    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
+        this.name = name;
+        this.weatherSystem = weatherSystem;
+        this.clock = clock;
+        this.foodCount = new SimpleIntegerProperty(50);
+        this.inventory = new Inventory();
         this.sleptThisNight = false;
+        this.sleepStartTime = 0;
+        
+        // Initialize stats
+        this.stats = new PetStats();
+        stats.registerStat(PetStats.STAT_HUNGER, 50);
+        stats.registerStat(PetStats.STAT_HAPPINESS, 50);
+        stats.registerStat(PetStats.STAT_ENERGY, 50);
+        stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
+        
+        // Initialize state
+        StateRegistry registry = StateRegistry.getInstance();
+        PetState awakeState = registry.getState("awake");
+        this.currentState = new SimpleObjectProperty<>(awakeState);
+        
+        // Subscribe to environment systems
+        if (clock != null) {
+            clock.subscribe(this);
+        }
+        if (weatherSystem != null) {
+            weatherSystem.subscribe(this);
+        }
     }
-
-    public GameClock getClock() {
-        return clock;
+    
+    // State management
+    public void changeState(PetState newState) {
+        if (newState != null) {
+            currentState.set(newState);
+            System.out.println(name + " changed state to: " + newState.getStateName());
+        }
     }
-
+    
+    public PetState getCurrentState() {
+        return currentState.get();
+    }
+    
+    public ReadOnlyObjectProperty<PetState> getStateProperty() {
+        return currentState;
+    }
+    
+    // Consumable interaction
+    public boolean consume(Consumable item) {
+        // TODO: Implement consumable interaction
+        return false;
+    }
+    
+    // Actions
+    public void performSleep() {
+        // TODO: Implement sleep logic
+    }
+    
+    public void wakeUp() {
+        // TODO: Implement wake up logic
+    }
+    
+    public void performClean() {
+        // TODO: Implement clean logic
+    }
+    
+    public void feed() {
+        if (foodCount.get() > 0) {
+            foodCount.set(foodCount.get() - 1);
+            stats.modifyStat(PetStats.STAT_HUNGER, GameConfig.FEED_HUNGER_RESTORE);
+            System.out.println("Fed " + name + "! Remaining food: " + foodCount.get());
+        } else {
+            System.out.println("No food left!");
+        }
+    }
+    
+    public void play() {
+        if (currentState.get() != null) {
+            currentState.get().handlePlay(this);
+        }
+    }
+    
+    public void clean() {
+        performClean();
+    }
     
     public void sleep() {
         if (currentState.get() != null) {
@@ -49,12 +126,32 @@ public class PetModel {
     // Minigame system
     public boolean canPlayMinigame() {
         // TODO: Implement minigame eligibility check
-        return false;
+        return true; // For now, always allow minigames
     }
     
     public MinigameResult playMinigame(Minigame minigame) {
-        // TODO: Implement minigame play logic
-        return null;
+        if (minigame == null) return null;
+        
+        MinigameResult result = minigame.play(this);
+        
+        if (result != null) {
+            // Apply happiness delta from the minigame result
+            stats.modifyStat(PetStats.STAT_HAPPINESS, result.getHappinessDelta());
+            System.out.println(result.getMessage());
+        }
+        
+        return result;
+    }
+    
+    public MinigameResult playRandomMinigame() {
+        // Create list of available minigames
+        List<Minigame> availableGames = new ArrayList<>();
+        availableGames.add(new TimingGame());
+        // Add more minigames here in the future
+        
+        // Pick a random minigame
+        Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
+        return playMinigame(randomGame);
     }
     
     // Daily management

@@ -1,20 +1,21 @@
 package com.eleven.pet.environment.clock;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.eleven.pet.config.GameConfig;
+
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GameClock {
     private final List<TimeListener> listeners = new ArrayList<>();
     private final DoubleProperty gameTime = new SimpleDoubleProperty(0.0);
     private final ObjectBinding<DayCycle> currentCycle;
     private final double TIME_SCALE = 1.0;
-    private final double NIGHT_THRESHOLD = GameConfig.NIGHT_START_TIME;
+    //private final double NIGHT_THRESHOLD = GameConfig.NIGHT_START_TIME;
     private boolean paused = false;
 
     public GameClock() {
@@ -51,8 +52,42 @@ public class GameClock {
     }
 
     private DayCycle calculateCycle() {
+        // === STEP 1: NORMALIZE TIME ===
+        // Convert game time to fraction of full day (0.0 = midnight, 1.0 = next midnight)
         double normalizedTime = gameTime.get() / GameConfig.DAY_LENGTH_SECONDS;
-        return normalizedTime >= NIGHT_THRESHOLD ? DayCycle.NIGHT : DayCycle.DAY;
+        
+        // === STEP 2: MAP TIME TO CYCLE ===
+        // Check thresholds from latest to earliest to handle wrap-around
+        
+        // DEEP_NIGHT: 00:00 (91.7%) to 04:00 (20.8%)
+        if (normalizedTime >= 0.0 && normalizedTime < 0.1667) {
+            return DayCycle.DEEP_NIGHT;
+        }
+        
+        // DAWN: 04:00 (16.67%) to 07:00 (29.17%)
+        else if (normalizedTime >= 0.1667 && normalizedTime < 0.2917) {
+            return DayCycle.DAWN;
+        }
+        
+        // MORNING: 07:00 (29.17%) to 11:00 (45.83%)
+        else if (normalizedTime >= 0.2917 && normalizedTime < 0.4583) {
+            return DayCycle.MORNING;
+        }
+        
+        // DAY: 11:00 (45.83%) to 17:00 (70.83%)
+        else if (normalizedTime >= 0.4583 && normalizedTime < 0.7083) {
+            return DayCycle.DAY;
+        }
+        
+        // EVENING: 17:00 (70.83%) to 21:00 (87.5%)
+        else if (normalizedTime >= 0.7083 && normalizedTime < 0.875) {
+            return DayCycle.EVENING;
+        }
+        
+        // EARLY_NIGHT: 21:00 (87.5%) to 00:00 (100%)
+        else {
+            return DayCycle.EARLY_NIGHT;
+        }
     }
     public DayCycle getCycle() {
         return currentCycle.get();
@@ -60,5 +95,13 @@ public class GameClock {
 
     public ObjectBinding<DayCycle> cycleProperty() {
         return currentCycle;
+    }
+    
+    public double getGameTime() {
+        return gameTime.get();
+    }
+    
+    public DoubleProperty gameTimeProperty() {
+        return gameTime;
     }
 }

@@ -13,6 +13,7 @@ public class AssetLoader {
 
     /// This class is a singleton and therefore never initialized outside itself.
     private AssetLoader() {
+        // Singleton isn't initialized
     }
 
     public static AssetLoader getInstance() {
@@ -51,12 +52,25 @@ public class AssetLoader {
     }
 
     public void loadAll() {
+        // Placeholder for loading all assets
         // Assets which are required and should be preloaded for performance
         // TODO: Update the list as more assets are added or updated
         String[] assets = {
-                "living_room_background_night",
-                "living_room_background_day",
                 "Bear.png",
+                "LookingLeftBear",
+                "LookingRightBear",
+                "CryingBear1",
+                "CryingBear2",
+                "SleepyBear",
+
+                "Dawn",
+                "Morning",
+                "Day",
+                "Evening",
+                "EarlyNight",
+                "LateNight",
+
+
         };
 
         for (String ass : assets) {
