@@ -24,6 +24,10 @@ public class StateRegistry {
         return stateMap.get(name);
     }
     
+    public void registerState(PetState state) {
+        stateMap.put(state.getStateName(), state);
+    }
+    
     private void loadStatesViaSPI() {
         ServiceLoader<PetState> loader = ServiceLoader.load(PetState.class);
         for (PetState state : loader) {

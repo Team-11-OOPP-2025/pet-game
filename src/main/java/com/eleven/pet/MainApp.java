@@ -6,20 +6,24 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
-
+import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class MainApp extends Application {
 
+    private final GameClock clock = new GameClock();
+    private final WeatherSystem weatherSystem = new WeatherSystem();
+    private AnimationTimer gameLoop;
+    private Timeline weatherTimer;
+
     @Override
     public void start(Stage primaryStage) {
-        // Create environment systems
-        GameClock clock = new GameClock();
-        WeatherSystem weatherSystem = new WeatherSystem();
-        
         // Create Model using Factory
         PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 
@@ -30,15 +34,47 @@ public class MainApp extends Application {
         PetView view = new PetView(model, controller, clock, weatherSystem);
         Pane root = view.initializeUI();
 
+        final long[] lastUpdate = {System.nanoTime()};
+        gameLoop = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                // Calculate delta time in seconds (ns / 1_000_000_000)
+                double deltaSeconds = (now - lastUpdate[0]) / 1_000_000_000.0;
+                lastUpdate[0] = now;
+
+                boolean newDayStarted = clock.tick(deltaSeconds);
+
+                if (newDayStarted) {
+                    model.replenishDailyFood();
+                }
+            }
+        };
+        gameLoop.start();
+
+        // Weather changes every 30 seconds
+        weatherTimer = new Timeline(new KeyFrame(
+                Duration.seconds(30),
+                event -> {
+                    weatherSystem.changeWeather();
+                    System.out.println("Weather changed to: " + weatherSystem.getCurrentWeather().getName());
+                }
+        ));
+        weatherTimer.setCycleCount(Timeline.INDEFINITE);
+        weatherTimer.play();
+
+        controller.initAutosave();
+
         // Setup Scene and Stage
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setTitle("Pet Game - Björni");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(true);
+        primaryStage.setResizable(false);
+        // maintains a proper aspect ratio of 1:0.75 for 980x720 window
+        primaryStage.setHeight(720);
+        primaryStage.setWidth(980);
         primaryStage.show();
 
-        // Start game loop
-        controller.startGameLoop();
+
     }
 
     public static void initializeApplication(String[] args) {
