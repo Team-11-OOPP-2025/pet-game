@@ -30,7 +30,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
     private boolean sleptThisNight;
     private long sleepStartTime;
-    private boolean passedEightAM;
+    private boolean passedEightAM = true; // Track if we've passed 8 AM check (starts true since game starts at 12:00)
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -39,9 +39,6 @@ public class PetModel implements TimeListener, WeatherListener {
         this.inventory = new Inventory();
         this.sleptThisNight = false;
         this.sleepStartTime = 0;
-        
-        // Initialize based on starting time (12:00)
-        this.passedEightAM = true;
 
         // Initialize stats
         this.stats = new PetStats();
@@ -122,11 +119,9 @@ public class PetModel implements TimeListener, WeatherListener {
         sleptThisNight = true;
         System.out.println(name + " had a good night's sleep! Energy and happiness restored.");
     }
-
-    public void applyMissedSleepPenalty() {
-        stats.modifyStat(PetStats.STAT_ENERGY, -30);
-        stats.modifyStat(PetStats.STAT_HAPPINESS, -20);
-        System.out.println(name + " didn't sleep last night! Energy and happiness decreased.");
+    
+    public void resetSleepFlag() {
+        sleptThisNight = false;
     }
     
     public boolean hasSleptThisNight() {
@@ -182,25 +177,6 @@ public class PetModel implements TimeListener, WeatherListener {
         if (currentState.get() != null) {
             currentState.get().onTick(this);
         }
-        
-        // Check sleep cycle
-        if (clock != null) {
-            double currentHour = (clock.getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
-            
-            // Check if pet slept at 8 AM
-            if (currentHour >= 8.0 && currentHour < 20.0 && !passedEightAM) {
-                if (!sleptThisNight) {
-                    applyMissedSleepPenalty();
-                }
-                passedEightAM = true;
-            }
-            
-            // Reset sleep flag at 20:00 (sleep window starts)
-            if ((currentHour >= 20.0 || currentHour < 8.0) && passedEightAM) {
-                sleptThisNight = false;
-                passedEightAM = false;
-            }
-        }
     }
 
     @Override
@@ -243,5 +219,13 @@ public class PetModel implements TimeListener, WeatherListener {
 
     public void setSleepStartTime(long timestamp) {
         this.sleepStartTime = timestamp;
+    }
+
+    public boolean hasPassedEightAM() {
+        return passedEightAM;
+    }
+
+    public void setPassedEightAM(boolean value) {
+        passedEightAM = value;
     }
 }
