@@ -39,7 +39,7 @@ public class PetController {
     }
     
     public void handlePlayAction() {
-        model.play();
+        model.playRandomMinigame();
     }
     
     public void handlePlayMinigame(Minigame minigame) {
