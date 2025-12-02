@@ -1,5 +1,7 @@
 package com.eleven.pet.model;
 
+import java.util.Random;
+
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
@@ -141,7 +143,7 @@ public class PetModel implements TimeListener, WeatherListener {
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
         return playMinigame(randomGame);
     }
-
+    
     // Daily management
     public void replenishDailyFood() {
         Item apple = new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE);
