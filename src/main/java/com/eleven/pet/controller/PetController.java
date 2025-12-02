@@ -85,17 +85,7 @@ public class PetController {
     
     public void handlePlay() {
         // Create Swing minigame in a separate window
-        SwingUtilities.invokeLater(() -> {
-            JFrame gameFrame = new JFrame("Guessing Game");
-            MiniGameView miniGameView = new MiniGameView();
-            MiniGameController miniGameController = new MiniGameController(miniGameView, model);
-            
-            gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            gameFrame.add(miniGameView);
-            gameFrame.setSize(500, 400);
-            gameFrame.setLocationRelativeTo(null);
-            gameFrame.setVisible(true);
-        });
+        MiniGameView.showMiniGame(model);
     }
     
     public void handleSleep() {

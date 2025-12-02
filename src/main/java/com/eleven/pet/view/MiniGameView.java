@@ -2,6 +2,8 @@ package com.eleven.pet.view;
 
 import javax.swing.*;
 import java.awt.*;
+import com.eleven.pet.model.PetModel;
+import com.eleven.pet.controller.MiniGameController;
 
 public class MiniGameView extends JPanel {
     
@@ -83,5 +85,23 @@ public class MiniGameView extends JPanel {
     
     public JButton getPlayAgainButton() {
         return playAgainButton;
+    }
+    
+    /**
+     * Creates and displays the mini-game in a new window.
+     * @param model The PetModel to interact with
+     */
+    public static void showMiniGame(PetModel model) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame gameFrame = new JFrame("Guessing Game");
+            MiniGameView miniGameView = new MiniGameView();
+            MiniGameController miniGameController = new MiniGameController(miniGameView, model);
+            
+            gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            gameFrame.add(miniGameView);
+            gameFrame.setSize(500, 400);
+            gameFrame.setLocationRelativeTo(null);
+            gameFrame.setVisible(true);
+        });
     }
 }
