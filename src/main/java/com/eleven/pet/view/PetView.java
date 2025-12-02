@@ -1,5 +1,8 @@
 package com.eleven.pet.view;
 
+import java.util.Random;
+
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.DayCycle;
 import com.eleven.pet.environment.clock.GameClock;
@@ -9,6 +12,7 @@ import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
 import com.eleven.pet.particle.ParticleSystem;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -28,8 +32,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
-import java.util.Random;
 
 /**
  * PetView - UML-compliant implementation integrating existing UI design
@@ -58,6 +60,7 @@ public class PetView {
     private ImageView saveIcon;
     private Label weatherLabel;
     private Label timeLabel;
+    private StackPane sleepButtonContainer;
     
     // Legacy fields for existing visual design
     private ImageView backgroundView;
@@ -170,6 +173,12 @@ public class PetView {
         StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
 
+        sleepButtonContainer = createSleepButton();
+        StackPane.setAlignment(sleepButtonContainer, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(sleepButtonContainer, new Insets(20, 20, 150, 20));
+        sleepButtonContainer.setVisible(false); // Initially hidden
+        root.getChildren().add(sleepButtonContainer);
+
         playButtonContainer = createPlayButton();  // Updated name
         StackPane.setAlignment(playButtonContainer, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(playButtonContainer, new Insets(20, 20, 90, 20));
@@ -235,6 +244,36 @@ public class PetView {
             if (controller != null) {
                 controller.handleFeed();
                 // No need to manually update bar - binding handles it!
+            }
+        });
+
+        return container;
+    }
+
+    // Sleep button for night time
+    private StackPane createSleepButton() {
+        StackPane container = new StackPane();
+        container.setPrefSize(120, 50);
+        container.setMaxSize(120, 50);
+        container.setMinSize(120, 50);
+
+        Rectangle bgRect = new Rectangle(120, 50);
+        bgRect.setFill(Color.web("#3498db")); // Blue color for sleep
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+
+        Button button = new Button("SLEEP");
+        button.setPrefSize(120, 50);
+        button.setMaxSize(120, 50);
+        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        button.setTextFill(Color.WHITE);
+        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        container.getChildren().addAll(bgRect, button);
+
+        button.setOnAction(_ -> {
+            if (controller != null) {
+                controller.handleSleepButton();
             }
         });
 
@@ -631,8 +670,14 @@ public class PetView {
     private void observeEnvironment() {
         if (clock != null) {
             updateBaseBackground(clock.getCycle());
+            updateSleepButtonVisibility();
+            
             clock.cycleProperty().addListener((_, _, newCycle) -> {
                 updateBaseBackground(newCycle);
+            });
+            
+            clock.gameTimeProperty().addListener((_, _, _) -> {
+                updateSleepButtonVisibility();
             });
         }
     }
@@ -681,6 +726,20 @@ public class PetView {
     
     private void updateWeatherOverlay(WeatherState weather) {
         // TODO: Implement weather overlay update
+    }
+    
+    private void updateSleepButtonVisibility() {
+        if (clock == null || sleepButtonContainer == null) return;
+        
+        double gameTime = clock.getGameTime();
+        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
+        
+        // Calculate hour (0-23)
+        double hour = normalizedTime * 24.0;
+        
+        // Show sleep button between 20:00-24:00 and 00:00-08:00
+        boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
+        sleepButtonContainer.setVisible(isSleepTime);
     }
 }
 

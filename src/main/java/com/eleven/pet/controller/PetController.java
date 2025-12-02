@@ -7,6 +7,7 @@ import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.persistence.PersistenceService;
+
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 
@@ -31,6 +32,30 @@ public class PetController {
 
     public void handleSleepAction() {
         model.sleep();
+    }
+
+    public void handleSleepButton() {
+        // Called when player clicks the sleep button during sleep hours
+        model.performNightSleep();
+        
+        // Jump time to 8:00 AM (8/24 = 0.3333... of the day)
+        if (clock != null) {
+            double targetTime = (8.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
+            // Set the game time directly by calculating the difference
+            double currentTime = clock.getGameTime();
+            double timeDelta;
+            
+            if (currentTime > targetTime) {
+                // Past midnight, need to go to next day's 8 AM
+                timeDelta = (GameConfig.DAY_LENGTH_SECONDS - currentTime) + targetTime;
+            } else {
+                // Before 8 AM, jump to 8 AM
+                timeDelta = targetTime - currentTime;
+            }
+            
+            // Advance time by the delta
+            clock.tick(timeDelta);
+        }
     }
 
     public void handlePlayAction() {
@@ -99,17 +124,11 @@ public class PetController {
                     return;
                 }
 
-                // Calculate elapsed time in seconds
                 double elapsedSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
                 lastUpdateTime = now;
 
-                // Update the game clock
                 if (clock != null) {
-                    boolean newDayStarted = clock.tick(elapsedSeconds);
-
-                    if (newDayStarted) {
-                        model.replenishDailyFood();
-                    }
+                    clock.tick(elapsedSeconds);
                 }
             }
         };

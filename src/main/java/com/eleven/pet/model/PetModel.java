@@ -1,5 +1,9 @@
 package com.eleven.pet.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
@@ -10,13 +14,10 @@ import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.model.items.Item;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final Random random = new Random();
@@ -29,6 +30,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
     private boolean sleptThisNight;
     private long sleepStartTime;
+    private boolean passedEightAM;
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -37,6 +39,9 @@ public class PetModel implements TimeListener, WeatherListener {
         this.inventory = new Inventory();
         this.sleptThisNight = false;
         this.sleepStartTime = 0;
+        
+        // Initialize based on starting time (12:00)
+        this.passedEightAM = true;
 
         // Initialize stats
         this.stats = new PetStats();
@@ -111,6 +116,23 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
+    public void performNightSleep() {
+        stats.modifyStat(PetStats.STAT_ENERGY, 40);
+        stats.modifyStat(PetStats.STAT_HAPPINESS, 20);
+        sleptThisNight = true;
+        System.out.println(name + " had a good night's sleep! Energy and happiness restored.");
+    }
+
+    public void applyMissedSleepPenalty() {
+        stats.modifyStat(PetStats.STAT_ENERGY, -30);
+        stats.modifyStat(PetStats.STAT_HAPPINESS, -20);
+        System.out.println(name + " didn't sleep last night! Energy and happiness decreased.");
+    }
+    
+    public boolean hasSleptThisNight() {
+        return sleptThisNight;
+    }
+
     // Minigame system
     public boolean canPlayMinigame() {
         // TODO: Implement minigame eligibility check
@@ -159,6 +181,25 @@ public class PetModel implements TimeListener, WeatherListener {
     public void onTick(double timeDelta) {
         if (currentState.get() != null) {
             currentState.get().onTick(this);
+        }
+        
+        // Check sleep cycle
+        if (clock != null) {
+            double currentHour = (clock.getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+            
+            // Check if pet slept at 8 AM
+            if (currentHour >= 8.0 && currentHour < 20.0 && !passedEightAM) {
+                if (!sleptThisNight) {
+                    applyMissedSleepPenalty();
+                }
+                passedEightAM = true;
+            }
+            
+            // Reset sleep flag at 20:00 (sleep window starts)
+            if ((currentHour >= 20.0 || currentHour < 8.0) && passedEightAM) {
+                sleptThisNight = false;
+                passedEightAM = false;
+            }
         }
     }
 
