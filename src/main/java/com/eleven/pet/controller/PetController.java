@@ -7,9 +7,6 @@ import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.persistence.PersistenceService;
-import com.eleven.pet.view.MiniGameView;
-
-import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 
 public class PetController {
@@ -82,42 +79,10 @@ public class PetController {
     }
 
     public void handlePlay() {
-        // Create Swing minigame in a separate window
-        MiniGameView.showMiniGame(model);
+        model.playRandomMinigame();
     }
 
     public void handleSleep() {
         handleSleepAction();
-    }
-
-    /**
-     * Starts the main game loop that updates the GameClock and model.
-     */
-    public void startGameLoop() {
-        AnimationTimer gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (lastUpdateTime == 0) {
-                    lastUpdateTime = now;
-                    return;
-                }
-
-                // Calculate elapsed time in seconds
-                double elapsedSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
-                lastUpdateTime = now;
-
-                // Update the game clock
-                if (clock != null) {
-                    boolean newDayStarted = clock.tick(elapsedSeconds);
-
-                    if (newDayStarted) {
-                        model.replenishDailyFood();
-                    }
-                }
-            }
-        };
-
-        gameLoop.start();
-        System.out.println("✓ Game loop started!");
     }
 }

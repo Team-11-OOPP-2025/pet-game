@@ -1,7 +1,5 @@
 package com.eleven.pet.model;
 
-import java.util.Random;
-
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
@@ -136,10 +134,11 @@ public class PetModel implements TimeListener, WeatherListener {
         // Create list of available minigames
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
-        // Add more minigames here in the future
+        availableGames.add(new GuessingGame());
 
         // Pick a random minigame
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
+
         return playMinigame(randomGame);
     }
     
