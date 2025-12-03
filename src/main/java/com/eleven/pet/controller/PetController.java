@@ -7,6 +7,11 @@ import com.eleven.pet.model.PetModel;
 import com.eleven.pet.service.persistence.PersistenceService;
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class PetController {
     private final PetModel model;
@@ -24,7 +29,7 @@ public class PetController {
     }
     
     public void handleFeedAction() {
-        model.feed();
+        model.performConsume(new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE));
     }
     
     public void handleSleepAction() {
@@ -32,11 +37,12 @@ public class PetController {
     }
     
     public void handlePlayAction() {
-        model.play();
+        // Play a random minigame
+        model.playRandomMinigame();
     }
     
     public void handlePlayMinigame(Minigame minigame) {
-        // TODO: Implement minigame handling
+        model.playMinigame(minigame);
     }
     
     public void handleCleanAction() {
@@ -77,7 +83,8 @@ public class PetController {
     }
     
     public void handlePlay() {
-        handlePlayAction();
+        // Create Swing minigame in a separate window
+        MiniGameView.showMiniGame(model);
     }
     
     public void handleSleep() {
