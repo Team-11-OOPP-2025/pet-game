@@ -53,14 +53,15 @@ public class Inventory {
         return getQuantity(item) > 0;
     }
 
-    // Item ID and quantity map
-    public Map<Integer, Integer> getAll() {
+    // Item ID and quantity map for persistence
+    public Map<Integer, Integer> getAllOwnedItems() {
         Map<Integer, Integer> result = new HashMap<>();
         for (Integer id : items.keySet()) {
             Item item = ItemRegistry.get(id);
-            if (item != null) {
-                result.put(item.id(), getQuantity(item));
-            }
+            int qty;
+            if (item == null) continue;
+            if ((qty = getQuantity(item)) <= 0) continue;
+            result.put(item.id(), qty);
         }
         return Collections.unmodifiableMap(result);
     }

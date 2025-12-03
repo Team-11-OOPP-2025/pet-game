@@ -27,7 +27,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private final Inventory inventory;
 
     private boolean sleptThisNight;
-    private long sleepStartTime;
+    private double sleepStartTime;
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -195,11 +195,11 @@ public class PetModel implements TimeListener, WeatherListener {
         this.sleptThisNight = slept;
     }
 
-    public long getSleepStartTime() {
+    public double getSleepStartTime() {
         return sleepStartTime;
     }
 
-    public void setSleepStartTime(long timestamp) {
+    public void setSleepStartTime(double timestamp) {
         this.sleepStartTime = timestamp;
     }
 }
