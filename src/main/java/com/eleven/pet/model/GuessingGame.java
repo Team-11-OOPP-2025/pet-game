@@ -1,5 +1,7 @@
 package com.eleven.pet.model;
 
+import com.eleven.pet.view.MiniGameView;
+
 import java.util.Random;
 
 public class GuessingGame implements Minigame {
@@ -23,8 +25,7 @@ public class GuessingGame implements Minigame {
     
     @Override
     public MinigameResult play(PetModel pet) {
-        // This method is called when the game ends
-        // The actual game logic is handled by the controller
+        MiniGameView.showMiniGame(pet);
         return null;
     }
     
