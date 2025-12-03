@@ -16,6 +16,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final Random random = new Random();
@@ -141,7 +142,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         return playMinigame(randomGame);
     }
-    
+
     // Daily management
     public void replenishDailyFood() {
         Item apple = new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE);
