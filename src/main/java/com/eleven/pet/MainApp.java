@@ -65,13 +65,13 @@ public class MainApp extends Application {
         controller.initAutosave();
 
         // Setup Scene and Stage
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1920, 1080);
         primaryStage.setTitle("Pet Game - Björni");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         // maintains a proper aspect ratio of 1:0.75 for 980x720 window
-        primaryStage.setHeight(720);
-        primaryStage.setWidth(980);
+        primaryStage.setHeight(1080);
+        primaryStage.setWidth(1920);
         primaryStage.show();
 
 

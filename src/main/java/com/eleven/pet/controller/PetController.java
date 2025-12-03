@@ -11,11 +11,6 @@ import com.eleven.pet.view.MiniGameView;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class PetController {
     private final PetModel model;

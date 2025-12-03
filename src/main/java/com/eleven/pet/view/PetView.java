@@ -133,7 +133,7 @@ public class PetView {
             backgroundView.setImage(dayBackground);
         }
 
-        backgroundView.setPreserveRatio(true);
+        backgroundView.setPreserveRatio(false);
         backgroundView.fitWidthProperty().bind(root.widthProperty());
         backgroundView.fitHeightProperty().bind(root.heightProperty());
 
