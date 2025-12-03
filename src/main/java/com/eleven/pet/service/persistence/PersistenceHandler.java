@@ -1,8 +1,8 @@
 package com.eleven.pet.service.persistence;
 
 import com.eleven.pet.data.ItemRegistry;
-import com.eleven.pet.model.Consumable;
 import com.eleven.pet.model.Inventory;
+import com.eleven.pet.model.items.Item;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,8 +11,10 @@ public class PersistenceHandler {
     public void saveInventoryToDTO(Inventory inventory, PetDataDTO dto) {
         Map<Integer, Integer> saveMap = new HashMap<>();
 
-        for (Consumable item : inventory.allItems()) {
-            saveMap.put(item.getId(), inventory.getQuantity(item));
+        for (Map.Entry<Integer, Integer> entry : inventory.getAll().entrySet()) {
+            int id = entry.getKey();
+            int qty = entry.getValue();
+            saveMap.put(id, qty);
         }
 
         dto.setInventoryData(saveMap);
@@ -26,7 +28,7 @@ public class PersistenceHandler {
             int id = entry.getKey();
             int qty = entry.getValue();
 
-            Consumable item = ItemRegistry.get(id);
+            Item item = ItemRegistry.get(id);
 
             if (item != null) {
                 inventory.add(item, qty);

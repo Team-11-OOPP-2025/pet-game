@@ -1,5 +1,6 @@
 package com.eleven.pet;
 
+import com.eleven.pet.config.GameItems;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
@@ -24,6 +25,8 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        GameItems.init();
+
         // Create Model using Factory
         PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 
