@@ -1,5 +1,8 @@
 package com.eleven.pet;
 
+import com.eleven.pet.behavior.AsleepState;
+import com.eleven.pet.behavior.AwakeState;
+import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
@@ -25,6 +28,11 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        // Manually register states (AutoService doesn't work in runtime)
+        StateRegistry registry = StateRegistry.getInstance();
+        registry.registerState(new AwakeState());
+        registry.registerState(new AsleepState());
+        
         // Create Model using Factory
         PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 
