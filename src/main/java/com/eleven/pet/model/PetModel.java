@@ -15,10 +15,9 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
-    private static final Random random = new Random();
+    private static final java.util.Random random = new java.util.Random();
     private final String name;
     private final PetStats stats;
     private final ObjectProperty<PetState> currentState;
