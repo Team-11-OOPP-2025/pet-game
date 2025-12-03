@@ -1,11 +1,11 @@
 package com.eleven.pet;
-
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
+
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -38,7 +38,6 @@ public class MainApp extends Application {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                // Calculate delta time in seconds (ns / 1_000_000_000)
                 double deltaSeconds = (now - lastUpdate[0]) / 1_000_000_000.0;
                 lastUpdate[0] = now;
 
