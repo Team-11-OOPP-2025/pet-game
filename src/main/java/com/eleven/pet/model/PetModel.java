@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-// psmo
 public class PetModel implements TimeListener, WeatherListener {
     private static final Random random = new Random();
     private final String name;
