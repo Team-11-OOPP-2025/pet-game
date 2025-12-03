@@ -7,6 +7,7 @@ import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.persistence.PersistenceService;
+import com.eleven.pet.view.MiniGameView;
 
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
@@ -105,7 +106,8 @@ public class PetController {
     }
 
     public void handlePlay() {
-        handlePlayAction();
+        // Create Swing minigame in a separate window
+        MiniGameView.showMiniGame(model);
     }
 
     public void handleSleep() {

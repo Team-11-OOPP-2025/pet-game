@@ -158,7 +158,7 @@ public class PetModel implements TimeListener, WeatherListener {
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
         return playMinigame(randomGame);
     }
-
+    
     // Daily management
     public void replenishDailyFood() {
         Item apple = new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE);

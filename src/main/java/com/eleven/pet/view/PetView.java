@@ -136,7 +136,7 @@ public class PetView {
             backgroundView.setImage(dayBackground);
         }
 
-        backgroundView.setPreserveRatio(true);
+        backgroundView.setPreserveRatio(false);
         backgroundView.fitWidthProperty().bind(root.widthProperty());
         backgroundView.fitHeightProperty().bind(root.heightProperty());
 
@@ -518,39 +518,53 @@ public class PetView {
 
         return container;
     }
-
+    
     // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
         if (model == null || model.getStats() == null) return;
 
         PetStats stats = model.getStats();
 
-        // Bind each bar to its stat (0-100 mapped to width)
-        stats.getStat(PetStats.STAT_HUNGER).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            hungerFillRect.setWidth(150 * percentage);
-        });
+        // Bind each bar to its stat (0-100 mapped to width) with null checks
+        var hungerStat = stats.getStat(PetStats.STAT_HUNGER);
+        if (hungerStat != null) {
+            hungerStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                hungerFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            hungerFillRect.setWidth(150 * hungerStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_HAPPINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            happinessFillRect.setWidth(225 * percentage);
-        });
+        var happinessStat = stats.getStat(PetStats.STAT_HAPPINESS);
+        if (happinessStat != null) {
+            happinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                happinessFillRect.setWidth(225 * percentage);
+            });
+            // Initial update
+            happinessFillRect.setWidth(225 * happinessStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_ENERGY).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            energyFillRect.setWidth(150 * percentage);
-        });
+        var energyStat = stats.getStat(PetStats.STAT_ENERGY);
+        if (energyStat != null) {
+            energyStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                energyFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            energyFillRect.setWidth(150 * energyStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_CLEANLINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            cleanFillRect.setWidth(150 * percentage);
-        });
-
-        // Initial update
-        hungerFillRect.setWidth(150 * stats.getStat(PetStats.STAT_HUNGER).get() / 100.0);
-        happinessFillRect.setWidth(225 * stats.getStat(PetStats.STAT_HAPPINESS).get() / 100.0);
-        energyFillRect.setWidth(150 * stats.getStat(PetStats.STAT_ENERGY).get() / 100.0);
-        cleanFillRect.setWidth(150 * stats.getStat(PetStats.STAT_CLEANLINESS).get() / 100.0);
+        var cleanlinessStat = stats.getStat(PetStats.STAT_CLEANLINESS);
+        if (cleanlinessStat != null) {
+            cleanlinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                cleanFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            cleanFillRect.setWidth(150 * cleanlinessStat.get() / 100.0);
+        }
     }
 
     // NEW: Start random pet image switching

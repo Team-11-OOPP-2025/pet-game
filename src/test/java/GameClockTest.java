@@ -28,4 +28,23 @@ public class GameClockTest {
         clock.tick(delta * GameConfig.DAY_LENGTH_SECONDS);
         assertEquals(expected, clock.getCycle());
     }
+
+    @Test
+    void testTickIncrementsTime() {
+        GameClock clock = new GameClock();
+        double initialTime = clock.getGameTime();
+        clock.tick(1.0);
+        double finalTime = clock.getGameTime();
+        assertTrue(finalTime > initialTime, "Game time should increase after tick");
+    }
+
+    @Test
+    void testPauseLogic() {
+        GameClock clock = new GameClock();
+        double initialTime = clock.getGameTime();
+        clock.setPaused(true);
+        clock.tick(1.0);
+        double finalTime = clock.getGameTime();
+        assertEquals(initialTime, finalTime, "Game time should not change when paused");
+    }
 }
