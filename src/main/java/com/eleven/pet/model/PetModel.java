@@ -65,8 +65,18 @@ public class PetModel implements TimeListener, WeatherListener {
     // State management
     public void changeState(PetState newState) {
         if (newState != null) {
+            // Call onExit on current state if exists
+            PetState oldState = currentState.get();
+            if (oldState != null) {
+                oldState.onExit(this);
+            }
+            
+            // Change to new state
             currentState.set(newState);
             System.out.println(name + " changed state to: " + newState.getStateName());
+            
+            // Call onEnter on new state
+            newState.onEnter(this);
         }
     }
 
@@ -86,7 +96,8 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // Actions
     public void performSleep() {
-        // TODO: Implement sleep logic
+        StateRegistry registry = StateRegistry.getInstance();
+        changeState(registry.getState("asleep"));
     }
 
     public void wakeUp() {
@@ -113,13 +124,6 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
-    public void performNightSleep() {
-        stats.modifyStat(PetStats.STAT_ENERGY, 40);
-        stats.modifyStat(PetStats.STAT_HAPPINESS, 20);
-        sleptThisNight = true;
-        System.out.println(name + " had a good night's sleep! Energy and happiness restored.");
-    }
-    
     public void resetSleepFlag() {
         sleptThisNight = false;
     }
@@ -127,6 +131,7 @@ public class PetModel implements TimeListener, WeatherListener {
     public boolean hasSleptThisNight() {
         return sleptThisNight;
     }
+    
 
     // Minigame system
     public boolean canPlayMinigame() {

@@ -3,6 +3,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.eleven.pet.behavior.AsleepState;
 import com.eleven.pet.behavior.AwakeState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
@@ -23,6 +24,7 @@ public class SleepSystemTest {
         // Manually register states for testing since AutoService doesn't work in tests
         StateRegistry registry = StateRegistry.getInstance();
         registry.registerState(new AwakeState());
+        registry.registerState(new AsleepState());
         
         clock = new GameClock();
         weather = new WeatherSystem();
@@ -41,7 +43,7 @@ public class SleepSystemTest {
         int happinessBefore = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
         
         // Press sleep button
-        pet.performNightSleep();
+        pet.performSleep();
         
         int energyAfter = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         int happinessAfter = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
@@ -94,7 +96,7 @@ public class SleepSystemTest {
         pet.onTick(timeDelta);
         
         // Sleep during the night
-        pet.performNightSleep();
+        pet.performSleep();
         
         int energyBefore = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         int happinessBefore = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();

@@ -1,5 +1,6 @@
 package com.eleven.pet.controller;
 
+import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
@@ -37,7 +38,8 @@ public class PetController {
 
     public void handleSleepButton() {
         // Called when player clicks the sleep button during sleep hours
-        model.performNightSleep();
+        // Switch to asleep state which will apply sleep rewards in onEnter
+        model.performSleep();
         
         // Jump time to 8:00 AM (8/24 = 0.3333... of the day)
         if (clock != null) {
@@ -57,6 +59,10 @@ public class PetController {
             // Advance time by the delta
             clock.tick(timeDelta);
         }
+        
+        // Wake up - switch back to awake state
+        StateRegistry registry = StateRegistry.getInstance();
+        model.changeState(registry.getState("awake"));
     }
 
     public void handlePlayAction() {
