@@ -12,10 +12,10 @@ public void testGuessGameWin() {
     GuessingGame game = new GuessingGame();
     PetModel pet = new PetModel(null, null, null);
     
-    // Try all possible numbers to ensure we get a win
+    // Generate the secret number once, then try all possible guesses
+    game.generateNewNumber();
     MinigameResult result = null;
     for (int guess = game.getMinNumber(); guess <= game.getMaxNumber(); guess++) {
-        game.generateNewNumber();
         result = game.checkGuess(guess, pet);
         if (result.isWon()) {
             break;
