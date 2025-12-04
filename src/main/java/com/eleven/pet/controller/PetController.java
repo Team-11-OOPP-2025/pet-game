@@ -24,11 +24,13 @@ public class PetController {
     private final PersistenceService persistence;
     private Timeline autosaveTimer;
     private long lastUpdateTime = 0;
-    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "SaveExecutor");
-        t.setDaemon(true);
-        return t;
-    });
+    /**
+     * Executor for async save operations. Initialized lazily in {@link #initAutosave()}.
+     * If this controller is used without calling {@link #initAutosave()}, no executor
+     * is created and no resource cleanup is required.
+     */
+    private ExecutorService saveExecutor;
+    private volatile boolean isShutdown = false;
 
     public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
         this.model = model;
@@ -100,6 +102,17 @@ public class PetController {
             return;
         }
 
+        // Lazily initialize the executor only when autosave is needed (thread-safe)
+        synchronized (this) {
+            if (saveExecutor == null) {
+                saveExecutor = Executors.newSingleThreadExecutor(r -> {
+                    Thread t = new Thread(r, "SaveExecutor");
+                    t.setDaemon(true);
+                    return t;
+                });
+            }
+        }
+
         autosaveTimer = new Timeline(
                 new javafx.animation.KeyFrame(
                         javafx.util.Duration.seconds(GameConfig.AUTOSAVE_INTERVAL_SECONDS),
@@ -132,15 +145,27 @@ public class PetController {
     }
 
     public void shutdown() {
+        // Make shutdown idempotent - only perform shutdown operations once
+        if (isShutdown) {
+            return;
+        }
+        isShutdown = true;
+        
         stopAutosave();
         
-        // Shutdown the executor and wait for pending saves to complete
-        saveExecutor.shutdown();
-        try {
-            // Wait for pending saves to complete
-            if (!saveExecutor.awaitTermination(GameConfig.SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                System.err.println("Save executor did not terminate in time, forcing shutdown");
+        // Shutdown the executor and wait for pending saves to complete (only if it was initialized)
+        if (saveExecutor != null) {
+            saveExecutor.shutdown();
+            try {
+                // Wait for pending saves to complete
+                if (!saveExecutor.awaitTermination(GameConfig.SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    System.err.println("Save executor did not terminate in time, forcing shutdown");
+                    saveExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                System.err.println("Interrupted while waiting for save executor shutdown");
                 saveExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         } catch (InterruptedException e) {
             System.err.println("Interrupted while waiting for save executor shutdown");
