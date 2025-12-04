@@ -34,7 +34,7 @@ public class KeyLoader {
 
     /**
      * Generate a deterministic, device-specific dev key.
-     * Same device \= same key, different devices \= different keys.
+     * Same device = same key, different devices = different keys.
      * WARNING: Not secure, only for development use!
      *
      * @return SecretKey instance

@@ -61,9 +61,9 @@ public class PersistenceService {
         }
     }
 
-    public PetModel load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
+    public Optional<PetModel> load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
         if (!Files.exists(savePath)) {
-            return null;
+            return Optional.empty();
         }
 
         try {
@@ -93,7 +93,7 @@ public class PersistenceService {
             model.setSleptThisNight(dto.isSleptThisNight());
 
             System.out.println("[" + dto.getVersion() + "] Game loaded successfully!");
-            return model;
+            return Optional.of(model);
 
         } catch (Exception e) {
             throw new GameException("Failed to load game data. File may be corrupted.", e);

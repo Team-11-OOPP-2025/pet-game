@@ -63,7 +63,7 @@ class PersistenceTest {
 
         assertTrue(Files.exists(savePath));
 
-        PetModel loaded = service.load(null, null);
+        PetModel loaded = service.load(null, null).orElseThrow(() -> new AssertionError("Loaded model should not be empty"));
 
         assertEquals(original.getName(), loaded.getName());
         assertEquals(50, loaded.getStats().getStat(PetStats.STAT_HAPPINESS).get());
@@ -75,7 +75,7 @@ class PersistenceTest {
     }
 
     @Test
-    void loadWhenFileMissingThrowsGameException() {
+    void loadWhenFileMissingReturnsNull() {
         Path missingPath = tempDir.resolve("missing.dat");
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, missingPath);

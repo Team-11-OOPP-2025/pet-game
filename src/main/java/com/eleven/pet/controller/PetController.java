@@ -96,7 +96,7 @@ public class PetController {
     }
 
     public void initAutosave() {
-        if (autosaveTimer != null) {
+        if (autosaveTimer != null || persistence == null) {
             return;
         }
 
@@ -150,8 +150,8 @@ public class PetController {
         
         // Perform final synchronous save on shutdown
         try {
-            System.out.println("Performing shutdown save");
             if (persistence != null) {
+                System.out.println("Performing async save: Shutdown Save");
                 persistence.save(model);
                 System.out.println("Game saved (Shutdown Save)");
             } else {
