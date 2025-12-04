@@ -121,14 +121,6 @@ public class PetModel implements TimeListener, WeatherListener {
             currentState.get().handleSleep(this);
         }
     }
-
-    public void resetSleepFlag() {
-        sleptThisNight = false;
-    }
-    
-    public boolean hasSleptThisNight() {
-        return sleptThisNight;
-    }
     
 
     // Minigame system
