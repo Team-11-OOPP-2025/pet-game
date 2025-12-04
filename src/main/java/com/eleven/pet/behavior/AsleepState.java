@@ -33,22 +33,24 @@ public class AsleepState implements PetState {
     
     @Override
     public void onTick(PetModel pet) {
-        // Check sleep cycle when in awake state
-        if (pet.getGameClock() != null) {
-            double currentHour = (pet.getGameClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+        // Auto-wake up at 8:00 AM when sleeping
+        if (pet.getGameClock() != null && pet.isSleepingWithTimeAcceleration()) {
+            double gameTime = pet.getGameClock().getGameTime();
+            double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
+            double hour = normalizedTime * 24.0;
             
-            // Check if pet slept at 8 AM
-            if (currentHour >= 8.0 && currentHour < 20.0 && !pet.hasPassedEightAM()) {
-                if (!pet.hasSleptThisNight()) {
-                    applyMissedSleepPenalty(pet);
-                }
+            // Wake up at 8:00 AM
+            if (hour >= 8.0 && hour < 9.0 && !pet.hasPassedEightAM()) {
+                pet.wakeUp();
                 pet.setPassedEightAM(true);
+                System.out.println(pet.getName() + " automatically woke up at 8:00 AM.");
             }
             
-            // Reset sleep flag at 20:00 (sleep window starts)
-            if ((currentHour >= 20.0 || currentHour < 8.0) && pet.hasPassedEightAM()) {
-                pet.resetSleepFlag();
-                pet.setPassedEightAM(false);
+            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
+            if (hour >= 9.0 || hour < 8.0) {
+                if (pet.hasPassedEightAM()) {
+                    pet.setPassedEightAM(false);
+                }
             }
         }
     }

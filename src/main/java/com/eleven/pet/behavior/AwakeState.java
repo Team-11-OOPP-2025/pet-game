@@ -23,7 +23,7 @@ public class AwakeState implements PetState {
     
     @Override
     public void handleSleep(PetModel pet) {
-        // TODO: Implement sleep behavior for awake state
+        pet.performSleep();
     }
     
     @Override
