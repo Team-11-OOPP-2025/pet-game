@@ -1,26 +1,23 @@
 package com.eleven.pet.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
-import com.eleven.pet.config.GameConfig;
+import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.clock.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.model.items.Item;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PetModel implements TimeListener, WeatherListener {
-    private static final Random random = new Random();
+    private static final java.util.Random random = new java.util.Random();
     private final String name;
     private final PetStats stats;
     private final ObjectProperty<PetState> currentState;
@@ -29,7 +26,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private final Inventory inventory;
 
     private boolean sleptThisNight;
-    private long sleepStartTime;
+    private double sleepStartTime;
     private boolean passedEightAM = true; // Track if we've passed 8 AM check (starts true since game starts at 12:00)
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
@@ -163,11 +160,11 @@ public class PetModel implements TimeListener, WeatherListener {
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
         return playMinigame(randomGame);
     }
-    
+
     // Daily management
     public void replenishDailyFood() {
-        Item apple = new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE);
-        int amount = new Random().nextInt(3, 5);
+        Item apple = ItemRegistry.get(0);
+        int amount = random.nextInt(3, 5);
         inventory.add(apple, amount);
     }
 
@@ -218,11 +215,11 @@ public class PetModel implements TimeListener, WeatherListener {
         this.sleptThisNight = slept;
     }
 
-    public long getSleepStartTime() {
+    public double getSleepStartTime() {
         return sleepStartTime;
     }
 
-    public void setSleepStartTime(long timestamp) {
+    public void setSleepStartTime(double timestamp) {
         this.sleepStartTime = timestamp;
     }
 

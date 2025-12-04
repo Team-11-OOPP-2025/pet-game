@@ -1,8 +1,6 @@
 package com.eleven.pet.config;
 
 public final class GameConfig {
-    private GameConfig() {}
-
     // Stat decay rates (per second)
     public static final double HUNGER_DECAY_RATE = 0.5;
     public static final double ENERGY_DECAY_RATE = 0.3;
@@ -33,7 +31,7 @@ public final class GameConfig {
     public static final double AUTOSAVE_INTERVAL_SECONDS = 60.0;
     
     // Save file
-    public static final int SAVE_FILE_VERSION = 1;
+    public static final String SAVE_FILE_VERSION = "0.0.1";
     
     // Weather
     public static final int WEATHER_CHANGE_INTERVAL = 30; // seconds

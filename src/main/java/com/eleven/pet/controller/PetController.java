@@ -2,14 +2,13 @@ package com.eleven.pet.controller;
 
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
+import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.items.FoodItem;
-import com.eleven.pet.persistence.PersistenceService;
+import com.eleven.pet.service.persistence.PersistenceService;
 import com.eleven.pet.view.MiniGameView;
-
 import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
 
@@ -29,7 +28,7 @@ public class PetController {
     }
 
     public void handleFeedAction() {
-        model.performConsume(new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE));
+        model.performConsume(ItemRegistry.get(0));
     }
 
     public void handleSleepAction() {
