@@ -173,7 +173,6 @@ public class MainApp extends Application {
     private void shutdownApplication() {
         stop();
         Platform.exit();
-        System.exit(0);
     }
 
     @Override
