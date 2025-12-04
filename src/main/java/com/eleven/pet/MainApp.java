@@ -94,20 +94,16 @@ public class MainApp extends Application {
      * Loads existing save data or creates a fresh pet.
      */
     private void initializeModel() {
-        // Default new pet
-        model = PetFactory.createNewPet("Björni", weatherSystem, clock);
-
         // Attempt load
         if (persistenceService != null) {
             try {
-                PetModel loadedModel = persistenceService.load(weatherSystem, clock);
-                if (loadedModel != null) {
-                    System.out.println("Save file loaded successfully.");
-                    model = loadedModel;
-                }
+                model = persistenceService.load(weatherSystem, clock).orElse(PetFactory.createNewPet("Björni", weatherSystem, clock));
             } catch (Exception e) {
                 System.err.println("Warning: Failed to load save file. Starting new game.");
             }
+        }
+        if (model == null) {
+            model = PetFactory.createNewPet("Björni", weatherSystem, clock);
         }
     }
 
