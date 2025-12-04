@@ -1,3 +1,4 @@
+import com.eleven.pet.behavior.AwakeState;
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.model.PetModel;
@@ -8,7 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 
-class StateRegistryTest {
+public class PetStatesTest {
+
+    @Test
+    void testStateNames() {
+        AwakeState awakeState = new AwakeState();
+        assertEquals("awake", awakeState.getStateName());
+    }
+
     @Test
     void testRegistrySingleton() {
         StateRegistry instance1 = StateRegistry.getInstance();

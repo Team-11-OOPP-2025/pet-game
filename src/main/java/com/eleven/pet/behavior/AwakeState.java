@@ -65,13 +65,11 @@ public class AwakeState implements PetState {
 
     @Override
     public void onEnter(PetModel pet) {
-        //Todo: Implement onEnter behavior for asleep state
-        return;
+        // Todo: Implement onEnter behavior for awake state
     }
 
     @Override
     public void onExit(PetModel pet) {
-        //Todo: Implement onExit behavior for asleep state
-        return;
+        // Todo: Implement onExit behavior for awake state
     }
 }
