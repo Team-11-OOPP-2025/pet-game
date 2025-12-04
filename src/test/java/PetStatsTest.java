@@ -1,14 +1,14 @@
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class PetStatsTest {
 
-    static PetStats stats;
+    PetStats stats;
 
-    @BeforeAll
-    public static void setupAll() {
+    @BeforeEach
+    public void setup() {
         PetModel petModel = new PetModel(null, null, null);
         stats = petModel.getStats();
     }
