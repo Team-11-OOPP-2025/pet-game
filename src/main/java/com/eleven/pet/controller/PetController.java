@@ -87,8 +87,9 @@ public class PetController {
     }
 
     public void initAutosave() {
-        if (autosaveTimer != null)
+        if (autosaveTimer != null) {
             return;
+        }
 
         autosaveTimer = new Timeline(
                 new javafx.animation.KeyFrame(
