@@ -127,14 +127,14 @@ public class PetControllerTest {
     }
 
     @Test
-    void testMultipleShutdownCallsSaveMultipleTimes() {
+    void testMultipleShutdownCallsAreIdempotent() {
         PetController controller = new PetController(model, clock, null, persistence);
         
         controller.shutdown();
         controller.shutdown();
         
-        // Each shutdown should trigger a save
-        assertEquals(2, persistence.getSaveCallCount(), "Each shutdown should trigger a save");
+        // Only the first shutdown should trigger a save
+        assertEquals(1, persistence.getSaveCallCount(), "Multiple shutdowns should only save once");
     }
 
     @Test
