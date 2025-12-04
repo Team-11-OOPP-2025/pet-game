@@ -1,12 +1,12 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.eleven.pet.config.GameConfig;
+import com.eleven.pet.environment.clock.DayCycle;
+import com.eleven.pet.environment.clock.GameClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.environment.clock.DayCycle;
-import com.eleven.pet.environment.clock.GameClock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameClockTest {
     @ParameterizedTest
@@ -22,8 +22,7 @@ public class GameClockTest {
         GameClock clock = new GameClock();
         // Clock starts at 12:00 (0.5 of the day), so we need to calculate delta from there
         double currentNormalizedTime = 0.5; // 12:00
-        double targetNormalizedTime = normalizedTime;
-        double delta = targetNormalizedTime - currentNormalizedTime;
+        double delta = normalizedTime - currentNormalizedTime;
         if (delta < 0) {
             delta += 1.0; // Wrap around through midnight
         }
