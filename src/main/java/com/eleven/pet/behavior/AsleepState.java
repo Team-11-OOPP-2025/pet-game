@@ -1,7 +1,7 @@
 package com.eleven.pet.behavior;
 
-import com.eleven.pet.model.Consumable;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.model.items.Item;
 import com.google.auto.service.AutoService;
 
 @AutoService(PetState.class)
@@ -9,7 +9,7 @@ public class AsleepState implements PetState {
     public static final String STATE_NAME = "asleep";
     
     @Override
-    public boolean handleConsume(PetModel pet, Consumable item) {
+    public boolean handleConsume(PetModel pet, Item item) {
         // TODO: Implement consume behavior for asleep state
         return false;
     }
@@ -38,4 +38,17 @@ public class AsleepState implements PetState {
     public String getStateName() {
         return STATE_NAME;
     }
+
+    @Override
+    public void onEnter(PetModel pet) {
+        //Todo: Implement onEnter behavior for asleep state
+        return;
+    }
+
+    @Override
+    public void onExit(PetModel pet) {
+        //Todo: Implement onExit behavior for asleep state
+        return;
+    }
+
 }

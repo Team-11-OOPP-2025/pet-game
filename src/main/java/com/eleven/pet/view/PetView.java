@@ -9,7 +9,8 @@ import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
 import com.eleven.pet.particle.ParticleSystem;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -26,6 +27,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
+
+import java.util.Random;
 
 /**
  * PetView - UML-compliant implementation integrating existing UI design
@@ -57,8 +61,12 @@ public class PetView {
     
     // Legacy fields for existing visual design
     private ImageView backgroundView;
+    private Image earlyMorningBackground;
+    private Image lateMorningBackground;
     private Image dayBackground;
-    private Image nightBackground;
+    private Image eveningBackground;
+    private Image earlyNightBackground;
+    private Image deepNightBackground;
     private StackPane feedButtonContainer;
     private StackPane playButtonContainer;
     private Text foodCounterText;
@@ -68,7 +76,12 @@ public class PetView {
     private Rectangle happinessFillRect;
     private Image petImage1;
     private Image petImage2;
-    private boolean showingFirstImage = true;
+    private Image petImage3;
+    private Image cryingBear1;
+    private Image cryingBear2;
+    private Timeline petImageSwitcher;
+    private Random random = new Random();
+    private boolean isCrying = false;
 
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
         this.model = model;
@@ -80,40 +93,31 @@ public class PetView {
         loadPetImages();
     }
 
+
     // YOUR EXACT CODE - KEPT AS-IS!
     private void loadBackgroundImages() {
-        try {
-            var dayStream = getClass().getResourceAsStream("/images/DayBackground.png");
-            if (dayStream != null) {
-                dayBackground = new Image(dayStream);
-            }
-
-            var nightStream = getClass().getResourceAsStream("/images/NightBackground.png");
-            if (nightStream != null) {
-                nightBackground = new Image(nightStream);
-            } else if (dayBackground != null) {
-                nightBackground = dayBackground;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        AssetLoader loader = AssetLoader.getInstance();
+        earlyMorningBackground = loader.getImage("Dawn");
+        lateMorningBackground = loader.getImage("Morning");
+        dayBackground = loader.getImage("Day");
+        eveningBackground = loader.getImage("Evening");
+        earlyNightBackground = loader.getImage("EarlyNight");
+        deepNightBackground = loader.getImage("DeepNight");
+        
+        // Fallback if DeepNight doesn't exist
+        if (deepNightBackground == null && dayBackground != null) {
+            deepNightBackground = dayBackground;
         }
     }
 
     // YOUR EXACT CODE - KEPT AS-IS!
     private void loadPetImages() {
-        try {
-            var image1Stream = getClass().getResourceAsStream("/images/Bear.png");
-            if (image1Stream != null) {
-                petImage1 = new Image(image1Stream);
-            }
-
-            var image2Stream = getClass().getResourceAsStream("/images/SleepyBear.png");
-            if (image2Stream != null) {
-                petImage2 = new Image(image2Stream);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AssetLoader loader = AssetLoader.getInstance();
+        petImage1 = loader.getImage("LookingLeftBear");
+        petImage2 = loader.getImage("LookingRightBear");
+        petImage3 = loader.getImage("Bear");
+        cryingBear1 = loader.getImage("CryingBear1");
+        cryingBear2 = loader.getImage("CryingBear2");
     }
 
     // YOUR LAYOUT CODE - KEPT AS-IS!
@@ -176,8 +180,17 @@ public class PetView {
         StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
         root.getChildren().add(foodCounter);
 
+        // Add digital clock
+        Label clockLabel = createDigitalClock();
+        StackPane.setAlignment(clockLabel, Pos.TOP_CENTER);
+        StackPane.setMargin(clockLabel, new Insets(20, 0, 0, 0));
+        root.getChildren().add(clockLabel);
+
         // Bind UI to model
         bindToModel();
+
+        // Start random pet image switching
+        startPetImageSwitching();
 
         return root;
     }
@@ -190,11 +203,8 @@ public class PetView {
         imageView.setFitHeight(250);
         imageView.setPreserveRatio(true);
 
-        imageView.setOnMouseClicked(_ -> {
-            showingFirstImage = !showingFirstImage;
-            imageView.setImage(showingFirstImage ? petImage1 : petImage2);
-        });
-
+        // Make pet clickable to toggle sleepy state
+        imageView.setOnMouseClicked(_ -> toggleCryingState());
         imageView.setStyle("-fx-cursor: hand;");
 
         return imageView;
@@ -279,22 +289,70 @@ public class PetView {
 
         container.getChildren().addAll(label, foodCounterText);
 
-        if (model != null) {
-            updateFoodCounter();
-            model.getFoodCountProperty().addListener((_, _, _) -> {
-                updateFoodCounter();
-            });
-        }
-
         return container;
     }
-
-    // YOUR EXACT CODE!
-    private void updateFoodCounter() {
-        if (model == null || foodCounterText == null) return;
-        foodCounterText.setText(String.valueOf(model.getFoodCount()));
+    
+    private Label createDigitalClock() {
+        timeLabel = new Label("00:00");
+        timeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
+        timeLabel.setTextFill(Color.WHITE);
+        timeLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
+        
+        if (clock != null) {
+            updateClockDisplay();
+            clock.gameTimeProperty().addListener((_, _, _) -> updateClockDisplay());
+        }
+        
+        return timeLabel;
+    }
+    
+    private void updateClockDisplay() {
+        if (clock == null || timeLabel == null) return;
+        
+        double gameTime = clock.getGameTime();
+        // DAY_LENGTH_SECONDS is 24 seconds = full day (24 hours)
+        // So each second = 1 hour in game time
+        int hours = (int) gameTime % 24;
+        
+        String timeString = String.format("%02d:00", hours);
+        timeLabel.setText(timeString);
     }
 
+    // NEW: Update background based on time of day using DayCycle
+    private void updateBackgroundByTime() {
+        if (backgroundView == null || clock == null) return;
+
+        DayCycle cycle = clock.getCycle();
+        Image newBackground;
+
+        switch (cycle) {
+            case DEEP_NIGHT:
+                newBackground = deepNightBackground != null ? deepNightBackground : dayBackground;
+                break;
+            case DAWN:
+                newBackground = earlyMorningBackground != null ? earlyMorningBackground : dayBackground;
+                break;
+            case MORNING:
+                newBackground = lateMorningBackground != null ? lateMorningBackground : dayBackground;
+                break;
+            case DAY:
+                newBackground = dayBackground;
+                break;
+            case EVENING:
+                newBackground = eveningBackground != null ? eveningBackground : dayBackground;
+                break;
+            case EARLY_NIGHT:
+                newBackground = earlyNightBackground != null ? earlyNightBackground : deepNightBackground;
+                break;
+            default:
+                newBackground = dayBackground;
+                break;
+        }
+
+        if (newBackground != null && !newBackground.isError()) {
+            backgroundView.setImage(newBackground);
+        }
+    }
     // Moved to updateBaseBackground (UML method)
 
     // YOUR EXACT STAT BAR CODE - ALL PRESERVED!
@@ -421,39 +479,120 @@ public class PetView {
 
         return container;
     }
-
+    
     // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
         if (model == null || model.getStats() == null) return;
 
         PetStats stats = model.getStats();
 
-        // Bind each bar to its stat (0-100 mapped to width)
-        stats.getStat(PetStats.STAT_HUNGER).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            hungerFillRect.setWidth(150 * percentage);
-        });
+        // Bind each bar to its stat (0-100 mapped to width) with null checks
+        var hungerStat = stats.getStat(PetStats.STAT_HUNGER);
+        if (hungerStat != null) {
+            hungerStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                hungerFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            hungerFillRect.setWidth(150 * hungerStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_HAPPINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            happinessFillRect.setWidth(225 * percentage);
-        });
+        var happinessStat = stats.getStat(PetStats.STAT_HAPPINESS);
+        if (happinessStat != null) {
+            happinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                happinessFillRect.setWidth(225 * percentage);
+            });
+            // Initial update
+            happinessFillRect.setWidth(225 * happinessStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_ENERGY).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            energyFillRect.setWidth(150 * percentage);
-        });
+        var energyStat = stats.getStat(PetStats.STAT_ENERGY);
+        if (energyStat != null) {
+            energyStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                energyFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            energyFillRect.setWidth(150 * energyStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_CLEANLINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            cleanFillRect.setWidth(150 * percentage);
-        });
+        var cleanlinessStat = stats.getStat(PetStats.STAT_CLEANLINESS);
+        if (cleanlinessStat != null) {
+            cleanlinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                cleanFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            cleanFillRect.setWidth(150 * cleanlinessStat.get() / 100.0);
+        }
+    }
 
-        // Initial update
-        hungerFillRect.setWidth(150 * stats.getStat(PetStats.STAT_HUNGER).get() / 100.0);
-        happinessFillRect.setWidth(225 * stats.getStat(PetStats.STAT_HAPPINESS).get() / 100.0);
-        energyFillRect.setWidth(150 * stats.getStat(PetStats.STAT_ENERGY).get() / 100.0);
-        cleanFillRect.setWidth(150 * stats.getStat(PetStats.STAT_CLEANLINESS).get() / 100.0);
+    // NEW: Start random pet image switching
+    private void startPetImageSwitching() {
+        if (petImageView == null || petImage1 == null || petImage2 == null || petImage3 == null) return;
+
+        petImageSwitcher = new Timeline(new KeyFrame(Duration.seconds(getRandomInterval()), _ -> {
+            switchPetImage();
+            // Reschedule with new random interval
+            petImageSwitcher.stop();
+            startPetImageSwitching();
+        }));
+        petImageSwitcher.play();
+    }
+
+    // NEW: Switch between pet images randomly
+    private void switchPetImage() {
+        if (petImageView == null) return;
+        
+        Image currentImage = petImageView.getImage();
+        
+        if (isCrying) {
+            // Switch between sleepy images
+            if (currentImage == cryingBear1) {
+                petImageView.setImage(cryingBear2);
+            } 
+            else {
+                petImageView.setImage(cryingBear1);
+            }
+        } else {
+            // Switch between normal images
+            if (currentImage == petImage1) {
+                petImageView.setImage(petImage2);
+            } else if (currentImage == petImage2) {
+                petImageView.setImage(petImage3);
+            } else {
+                petImageView.setImage(petImage1);
+            }
+        }
+    }
+
+    // NEW: Generate random interval between 3-10 seconds
+    private double getRandomInterval() {
+        if (isCrying) {
+            return 0.5 + random.nextDouble() * 1.0; // Fast: 0.5-1.5 seconds when sleepy
+        }
+        return 3 + random.nextDouble() * 7; // Normal: 3-10 seconds when awake
+    }
+
+    // Just a dummy to show crying state
+    private void toggleCryingState() {
+        isCrying = !isCrying;
+        
+        // Stop current animation
+        if (petImageSwitcher != null) {
+            petImageSwitcher.stop();
+        }
+        
+        // Set initial image for new state
+        if (isCrying) {
+            petImageView.setImage(cryingBear1);
+        } else {
+            petImageView.setImage(petImage1);
+        }
+        
+        // Restart animation with new interval
+        startPetImageSwitching();
     }
     
     // ========== UML Methods (Skeleton Implementation) ==========
@@ -521,12 +660,36 @@ public class PetView {
     }
     
     private void updateBaseBackground(DayCycle cycle) {
-        if (backgroundView != null) {
-            boolean isDaytime = (cycle == com.eleven.pet.environment.clock.DayCycle.DAY);
-            Image newBackground = isDaytime ? dayBackground : nightBackground;
-            if (newBackground != null && !newBackground.isError()) {
-                backgroundView.setImage(newBackground);
-            }
+        if (backgroundView == null) return;
+
+        Image newBackground;
+
+        switch (cycle) {
+            case DEEP_NIGHT:
+                newBackground = deepNightBackground != null ? deepNightBackground : dayBackground;
+                break;
+            case DAWN:
+                newBackground = earlyMorningBackground != null ? earlyMorningBackground : dayBackground;
+                break;
+            case MORNING:
+                newBackground = lateMorningBackground != null ? lateMorningBackground : dayBackground;
+                break;
+            case DAY:
+                newBackground = dayBackground;
+                break;
+            case EVENING:
+                newBackground = eveningBackground != null ? eveningBackground : dayBackground;
+                break;
+            case EARLY_NIGHT:
+                newBackground = earlyNightBackground != null ? earlyNightBackground : deepNightBackground;
+                break;
+            default:
+                newBackground = dayBackground;
+                break;
+        }
+
+        if (newBackground != null && !newBackground.isError()) {
+            backgroundView.setImage(newBackground);
         }
     }
     
@@ -534,3 +697,7 @@ public class PetView {
         // TODO: Implement weather overlay update
     }
 }
+
+
+
+

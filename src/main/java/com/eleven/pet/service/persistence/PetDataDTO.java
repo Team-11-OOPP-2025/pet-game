@@ -9,12 +9,12 @@ import java.util.Map;
  * Data Transfer Object for saving and loading pet data.
  */
 public class PetDataDTO {
-    private int version;
+    private String version;
     private String petName;
     private String currentStateName;
     private Map<String, Integer> statsData;
     private long lastSaveTimestamp;
-    private long sleepStartTime;
+    private double sleepStartTime;
     private boolean sleptThisNight;
     private Map<Integer, Integer> inventoryData;
 
@@ -24,17 +24,17 @@ public class PetDataDTO {
         this.inventoryData = new HashMap<>();
     }
 
-    public PetDataDTO(int version) {
+    public PetDataDTO(String version) {
         this.version = version;
         this.statsData = new HashMap<>();
         this.inventoryData = new HashMap<>();
     }
 
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(int version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
@@ -70,11 +70,11 @@ public class PetDataDTO {
         this.lastSaveTimestamp = lastSaveTimestamp;
     }
 
-    public long getSleepStartTime() {
+    public double getSleepStartTime() {
         return sleepStartTime;
     }
 
-    public void setSleepStartTime(long sleepStartTime) {
+    public void setSleepStartTime(double sleepStartTime) {
         this.sleepStartTime = sleepStartTime;
     }
 
