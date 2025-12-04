@@ -46,7 +46,7 @@ class PersistenceTest {
     Path tempDir;
 
     @Test
-    void saveAndLoadRoundTripRestoresModelState() throws Exception {
+    void saveAndLoadRoundTripRestoresModelState() {
         Path savePath = tempDir.resolve("roundtrip.dat");
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, savePath);
