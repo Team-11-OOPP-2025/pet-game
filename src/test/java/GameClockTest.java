@@ -1,12 +1,12 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.eleven.pet.config.GameConfig;
+import com.eleven.pet.environment.clock.DayCycle;
+import com.eleven.pet.environment.clock.GameClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.environment.clock.DayCycle;
-import com.eleven.pet.environment.clock.GameClock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameClockTest {
     @ParameterizedTest
@@ -20,7 +20,13 @@ public class GameClockTest {
     })
     void testCycleCalculation(double normalizedTime, DayCycle expected) {
         GameClock clock = new GameClock();
-        clock.tick(normalizedTime * GameConfig.DAY_LENGTH_SECONDS);
+        // Clock starts at 12:00 (0.5 of the day), so we need to calculate delta from there
+        double currentNormalizedTime = 0.5; // 12:00
+        double delta = normalizedTime - currentNormalizedTime;
+        if (delta < 0) {
+            delta += 1.0; // Wrap around through midnight
+        }
+        clock.tick(delta * GameConfig.DAY_LENGTH_SECONDS);
         assertEquals(expected, clock.getCycle());
     }
 

@@ -31,7 +31,7 @@ public class AsleepState implements PetState {
     
     @Override
     public void onTick(PetModel pet) {
-        // TODO: Implement tick behavior for asleep state (e.g., energy recovery, wake up logic)
+        // Sleep state onTick - pet is sleeping, no actions needed per tick
     }
     
     @Override
@@ -41,8 +41,11 @@ public class AsleepState implements PetState {
 
     @Override
     public void onEnter(PetModel pet) {
-        //Todo: Implement onEnter behavior for asleep state
-        return;
+        // Apply sleep rewards when entering sleep state
+        pet.getStats().modifyStat("energy", 40);
+        pet.getStats().modifyStat("happiness", 20);
+        pet.setSleptThisNight(true);
+        System.out.println(pet.getName() + " had a good night's sleep! Energy and happiness restored.");
     }
 
     @Override

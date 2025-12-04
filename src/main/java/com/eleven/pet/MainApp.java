@@ -7,6 +7,7 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
+
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -41,7 +42,6 @@ public class MainApp extends Application {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                // Calculate delta time in seconds (ns / 1_000_000_000)
                 double deltaSeconds = (now - lastUpdate[0]) / 1_000_000_000.0;
                 lastUpdate[0] = now;
 
@@ -68,13 +68,13 @@ public class MainApp extends Application {
         controller.initAutosave();
 
         // Setup Scene and Stage
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1920, 1080);
         primaryStage.setTitle("Pet Game - Björni");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         // maintains a proper aspect ratio of 1:0.75 for 980x720 window
-        primaryStage.setHeight(720);
-        primaryStage.setWidth(980);
+        primaryStage.setHeight(1080);
+        primaryStage.setWidth(1920);
         primaryStage.show();
 
 
