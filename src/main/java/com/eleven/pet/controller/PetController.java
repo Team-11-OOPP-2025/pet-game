@@ -137,8 +137,8 @@ public class PetController {
         // Shutdown the executor and wait for pending saves to complete
         saveExecutor.shutdown();
         try {
-            // Wait for pending saves to complete (up to 5 seconds)
-            if (!saveExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+            // Wait for pending saves to complete
+            if (!saveExecutor.awaitTermination(GameConfig.SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 System.err.println("Save executor did not terminate in time, forcing shutdown");
                 saveExecutor.shutdownNow();
             }
