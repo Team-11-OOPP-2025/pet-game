@@ -151,7 +151,7 @@ public class PetController {
         // Perform final synchronous save on shutdown
         try {
             if (persistence != null) {
-                System.out.println("Performing async save: Shutdown Save");
+                System.out.println("Performing synchronous save: Shutdown Save");
                 persistence.save(model);
                 System.out.println("Game saved (Shutdown Save)");
             } else {
