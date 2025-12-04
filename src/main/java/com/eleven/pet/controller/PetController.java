@@ -127,8 +127,12 @@ public class PetController {
         stopAutosave();
         try {
             System.out.println("Performing async save: " + "Shutdown Save");
-            persistence.save(model);
-            System.out.println("Game saved (" + "Shutdown Save" + ")");
+            if (persistence != null) {
+                persistence.save(model);
+                System.out.println("Game saved (" + "Shutdown Save" + ")");
+            } else {
+                System.err.println("Cannot save game on shutdown: persistence is not initialized.");
+            }
         } catch (GameException e) {
             System.err.println("Error during autosave: " + e.getMessage());
         }
