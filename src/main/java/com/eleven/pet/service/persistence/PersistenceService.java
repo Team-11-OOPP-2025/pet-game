@@ -9,9 +9,7 @@ import com.eleven.pet.model.Inventory;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.model.items.Item;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.beans.property.IntegerProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,8 +17,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PersistenceService {
     private final EncryptionService encryptionService;
@@ -48,6 +49,7 @@ public class PersistenceService {
 
             ByteArrayOutputStream jsonBuffer = new ByteArrayOutputStream();
             jsonMapper.writeValue(jsonBuffer, dto);
+
             try (InputStream sourceStream = new ByteArrayInputStream(jsonBuffer.toByteArray());
                  OutputStream fileOutput = Files.newOutputStream(savePath)) {
                 encryptionService.encrypt(sourceStream, fileOutput);
@@ -59,9 +61,17 @@ public class PersistenceService {
         }
     }
 
-    public PetModel load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
+    /**
+     * Load pet data from the save file.
+     *
+     * @param weatherSystem the weather system to attach to the loaded pet
+     * @param gameClock the game clock to attach to the loaded pet
+     * @return Optional containing the loaded pet model, or empty if no save file exists
+     * @throws GameException if the save file exists but cannot be read or is corrupted
+     */
+    public Optional<PetModel> load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
         if (!Files.exists(savePath)) {
-            throw new GameException("Save file does not exist.");
+            return Optional.empty();
         }
 
         try {
@@ -91,7 +101,7 @@ public class PersistenceService {
             model.setSleptThisNight(dto.isSleptThisNight());
 
             System.out.println("[" + dto.getVersion() + "] Game loaded successfully!");
-            return model;
+            return Optional.of(model);
 
         } catch (Exception e) {
             throw new GameException("Failed to load game data. File may be corrupted.", e);
@@ -99,30 +109,35 @@ public class PersistenceService {
     }
 
     private Map<String, Integer> extractStats(PetStats stats) {
-        Map<String, Integer> data = new HashMap<>();
-        for (Map.Entry<String, IntegerProperty> entry : stats.getAllStats().entrySet()) {
-            data.put(entry.getKey(), entry.getValue().get());
-        }
-        return data;
+        return Optional.ofNullable(stats)
+                .map(PetStats::getAllStats)
+                .orElse(Collections.emptyMap()) // Returns empty map if stats or allStats is null
+                .entrySet().stream()
+                .filter(e -> e.getKey() != null && e.getValue() != null)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().get()
+                ));
     }
 
     private void applyStats(Map<String, Integer> data, PetStats stats) {
-        if (data == null) return;
+        if (data == null || stats == null) return;
         // if stats already registered, just set; otherwise you may register then set
         data.forEach(stats::registerStat);
     }
 
     private Map<Integer, Integer> extractInventory(Inventory inventory) {
-        return inventory.getAllOwnedItems();
+        if (inventory == null) return new HashMap<>();
+        // Return a copy to avoid external modification
+        return new HashMap<>(inventory.getAllOwnedItems());
     }
 
     private void applyInventory(Map<Integer, Integer> data, Inventory inventory) {
-        if (data == null) return;
+        if (data == null || inventory == null) return;
         data.forEach((id, qty) -> {
-            Item item = com.eleven.pet.data.ItemRegistry.get(id);
-            if (item != null) {
-                inventory.add(item, qty);
-            }
+            // Lookup item by ID and add to inventory
+            Optional.ofNullable(com.eleven.pet.data.ItemRegistry.get(id))
+                    .ifPresent(item -> inventory.add(item, qty));
         });
     }
 }

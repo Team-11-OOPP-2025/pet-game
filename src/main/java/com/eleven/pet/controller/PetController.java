@@ -7,10 +7,14 @@ import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.PersistenceService;
 import com.eleven.pet.view.MiniGameView;
-import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class PetController {
     private final PetModel model;
@@ -18,7 +22,13 @@ public class PetController {
     private final WeatherSystem weather;
     private final PersistenceService persistence;
     private Timeline autosaveTimer;
-    private long lastUpdateTime = 0;
+    /**
+     * Executor for async save operations. Initialized lazily in {@link #initAutosave()}.
+     * If this controller is used without calling {@link #initAutosave()}, no executor
+     * is created and no resource cleanup is required.
+     */
+    private ExecutorService saveExecutor;
+    private volatile boolean isShutdown = false;
 
     public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
         this.model = model;
@@ -39,14 +49,14 @@ public class PetController {
         // Called when player clicks the sleep button during sleep hours
         // Switch to asleep state which will apply sleep rewards in onEnter
         model.performSleep();
-        
+
         // Jump time to 8:00 AM (8/24 = 0.3333... of the day)
         if (clock != null) {
             double targetTime = (8.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
             // Set the game time directly by calculating the difference
             double currentTime = clock.getGameTime();
             double timeDelta;
-            
+
             if (currentTime > targetTime) {
                 // Past midnight, need to go to next day's 8 AM
                 timeDelta = (GameConfig.DAY_LENGTH_SECONDS - currentTime) + targetTime;
@@ -54,11 +64,11 @@ public class PetController {
                 // Before 8 AM, jump to 8 AM
                 timeDelta = targetTime - currentTime;
             }
-            
+
             // Advance time by the delta
             clock.tick(timeDelta);
         }
-        
+
         // Wake up - switch back to awake state
         StateRegistry registry = StateRegistry.getInstance();
         model.changeState(registry.getState("awake"));
@@ -86,20 +96,89 @@ public class PetController {
     }
 
     public void initAutosave() {
-        // TODO: Implement autosave initialization
+        if (autosaveTimer != null || persistence == null) {
+            return;
+        }
+
+        // Lazily initialize the executor only when autosave is needed (thread-safe)
+        synchronized (this) {
+            if (saveExecutor == null) {
+                saveExecutor = Executors.newSingleThreadExecutor(r -> {
+                    Thread t = new Thread(r, "SaveExecutor");
+                    t.setDaemon(true);
+                    return t;
+                });
+            }
+        }
+
+        autosaveTimer = new Timeline(
+                new javafx.animation.KeyFrame(
+                        javafx.util.Duration.seconds(GameConfig.AUTOSAVE_INTERVAL_SECONDS),
+                        _ -> performAsyncSave("Autosave")
+                )
+        );
+        autosaveTimer.setCycleCount(Timeline.INDEFINITE);
+        autosaveTimer.play();
     }
 
     public void stopAutosave() {
-        // TODO: Implement autosave stop
+        if (autosaveTimer == null) {
+            return;
+        }
+        autosaveTimer.stop();
+        autosaveTimer = null;
     }
 
     private void performAsyncSave(String reason) {
-        // TODO: Implement async save
+        // Submit save to single-threaded executor to serialize saves and prevent race conditions
+        saveExecutor.submit(() -> {
+            try {
+                System.out.println("Performing async save: " + reason);
+                persistence.save(model);
+                System.out.println("Game saved (" + reason + ")");
+            } catch (GameException e) {
+                System.err.println("Error during autosave: " + e.getMessage());
+            }
+        });
     }
 
     public void shutdown() {
-        // TODO: Implement shutdown (stop autosave, final save)
+        // Make shutdown idempotent - only perform shutdown operations once
+        if (isShutdown) {
+            return;
+        }
+        isShutdown = true;
+
+        stopAutosave();
+
+        // Shutdown the executor and wait for pending saves to complete if it exists
+        if (saveExecutor != null) {
+            saveExecutor.shutdown();
+            try {
+                if (!saveExecutor.awaitTermination(GameConfig.SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    System.err.println("Save executor did not terminate in time, forcing shutdown");
+                    saveExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                System.err.println("Interrupted while waiting for save executor shutdown");
+                saveExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        if (persistence != null) {
+            try {
+                System.out.println("Performing synchronous save: Shutdown Save");
+                persistence.save(model);
+                System.out.println("Game saved (Shutdown Save)");
+            } catch (GameException e) {
+                System.err.println("Error during shutdown save: " + e.getMessage());
+            }
+        } else {
+            System.err.println("Cannot save game on shutdown: persistence is not initialized.");
+        }
     }
+
 
     // Legacy methods for backward compatibility
     public void handleClean() {
@@ -117,30 +196,5 @@ public class PetController {
 
     public void handleSleep() {
         handleSleepAction();
-    }
-
-    /**
-     * Starts the main game loop that updates the GameClock and model.
-     */
-    public void startGameLoop() {
-        AnimationTimer gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (lastUpdateTime == 0) {
-                    lastUpdateTime = now;
-                    return;
-                }
-
-                double elapsedSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
-                lastUpdateTime = now;
-
-                if (clock != null) {
-                    clock.tick(elapsedSeconds);
-                }
-            }
-        };
-
-        gameLoop.start();
-        System.out.println("✓ Game loop started!");
     }
 }

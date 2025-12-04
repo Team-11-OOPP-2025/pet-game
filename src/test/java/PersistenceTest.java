@@ -1,8 +1,6 @@
 import com.eleven.pet.behavior.AsleepState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.environment.clock.GameClock;
-import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Inventory;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
@@ -51,9 +49,7 @@ class PersistenceTest {
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, savePath);
 
-        WeatherSystem weatherSystem = new WeatherSystem();
-        GameClock gameClock = new GameClock();
-        PetModel original = PetFactory.createNewPet("Fluffy", weatherSystem, gameClock);
+        PetModel original = PetFactory.createNewPet("Fluffy", null, null);
         original.changeState(StateRegistry.getInstance().getState(AsleepState.STATE_NAME));
 
         PetStats stats = original.getStats();
@@ -67,7 +63,7 @@ class PersistenceTest {
 
         assertTrue(Files.exists(savePath));
 
-        PetModel loaded = service.load(weatherSystem, gameClock);
+        PetModel loaded = service.load(null, null).orElseThrow(() -> new AssertionError("Loaded model should not be empty"));
 
         assertEquals(original.getName(), loaded.getName());
         assertEquals(50, loaded.getStats().getStat(PetStats.STAT_HAPPINESS).get());
@@ -79,14 +75,11 @@ class PersistenceTest {
     }
 
     @Test
-    void loadWhenFileMissingThrowsGameException() {
+    void loadWhenFileMissingReturnsNull() {
         Path missingPath = tempDir.resolve("missing.dat");
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, missingPath);
 
-        WeatherSystem weatherSystem = new WeatherSystem();
-        GameClock gameClock = new GameClock();
-
-        assertThrows(GameException.class, () -> service.load(weatherSystem, gameClock));
+        assertTrue(service.load(null, null).isEmpty(), "Expected empty Optional when loading from missing file");
     }
 }
