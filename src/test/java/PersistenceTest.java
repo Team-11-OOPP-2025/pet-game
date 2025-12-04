@@ -80,6 +80,6 @@ class PersistenceTest {
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, missingPath);
 
-        assertNull(service.load(null, null));
+        service.load(null, null).ifPresent(_ -> fail("Expected empty Optional when loading from missing file"));
     }
 }
