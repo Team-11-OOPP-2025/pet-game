@@ -13,6 +13,10 @@ import com.eleven.pet.view.MiniGameView;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 public class PetController {
     private final PetModel model;
     private final GameClock clock;
@@ -20,6 +24,11 @@ public class PetController {
     private final PersistenceService persistence;
     private Timeline autosaveTimer;
     private long lastUpdateTime = 0;
+    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "SaveExecutor");
+        t.setDaemon(true);
+        return t;
+    });
 
     public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
         this.model = model;
@@ -110,8 +119,8 @@ public class PetController {
     }
 
     private void performAsyncSave(String reason) {
-        // Run save in a separate thread to avoid blocking UI
-        Thread saveThread = new Thread(() -> {
+        // Submit save to single-threaded executor to serialize saves and prevent race conditions
+        saveExecutor.submit(() -> {
             try {
                 System.out.println("Performing async save: " + reason);
                 persistence.save(model);
@@ -119,18 +128,32 @@ public class PetController {
             } catch (GameException e) {
                 System.err.println("Error during autosave: " + e.getMessage());
             }
-        }, "AutoSaveThread");
-        saveThread.setDaemon(true);
-        saveThread.start();
+        });
     }
 
     public void shutdown() {
         stopAutosave();
+        
+        // Shutdown the executor and wait for pending saves to complete
+        saveExecutor.shutdown();
         try {
-            System.out.println("Performing async save: " + "Shutdown Save");
+            // Wait for pending saves to complete (up to 5 seconds)
+            if (!saveExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                System.err.println("Save executor did not terminate in time, forcing shutdown");
+                saveExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Interrupted while waiting for save executor shutdown");
+            saveExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        
+        // Perform final synchronous save on shutdown
+        try {
+            System.out.println("Performing shutdown save");
             if (persistence != null) {
                 persistence.save(model);
-                System.out.println("Game saved (" + "Shutdown Save" + ")");
+                System.out.println("Game saved (Shutdown Save)");
             } else {
                 System.err.println("Cannot save game on shutdown: persistence is not initialized.");
             }
