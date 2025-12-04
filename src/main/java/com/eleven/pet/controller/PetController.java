@@ -134,7 +134,7 @@ public class PetController {
                 System.err.println("Cannot save game on shutdown: persistence is not initialized.");
             }
         } catch (GameException e) {
-            System.err.println("Error during autosave: " + e.getMessage());
+            System.err.println("Error during shutdown save: " + e.getMessage());
         }
     }
 
