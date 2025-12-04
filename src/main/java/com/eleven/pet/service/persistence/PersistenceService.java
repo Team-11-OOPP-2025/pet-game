@@ -61,6 +61,14 @@ public class PersistenceService {
         }
     }
 
+    /**
+     * Load pet data from the save file.
+     *
+     * @param weatherSystem the weather system to attach to the loaded pet
+     * @param gameClock the game clock to attach to the loaded pet
+     * @return Optional containing the loaded pet model, or empty if no save file exists
+     * @throws GameException if the save file exists but cannot be read or is corrupted
+     */
     public Optional<PetModel> load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
         if (!Files.exists(savePath)) {
             return Optional.empty();
