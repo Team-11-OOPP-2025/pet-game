@@ -22,5 +22,4 @@ public class InventoryTest {
 
         assert (inventory.getQuantity(banana) == 1);
     }
-
 }
