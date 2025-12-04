@@ -101,8 +101,9 @@ public class PetController {
     }
 
     public void stopAutosave() {
-        if (autosaveTimer == null)
+        if (autosaveTimer == null) {
             return;
+        }
         autosaveTimer.stop();
         autosaveTimer = null;
     }
