@@ -68,6 +68,7 @@ public class MainApp extends Application {
 
     /**
      * Sets up the PersistenceService with encryption keys.
+     * Falls back to generating a deterministic dev key if no key is configured.
      */
     private void initializePersistence() {
         try {
