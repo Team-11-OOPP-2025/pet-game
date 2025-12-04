@@ -28,7 +28,7 @@ public final class GameConfig {
     public static final int MAX_STAT_VALUE = 100;
     
     // Autosave
-    public static final double AUTOSAVE_INTERVAL_SECONDS = 60.0;
+    public static final double AUTOSAVE_INTERVAL_SECONDS = 30.0;
     
     // Save file
     public static final String SAVE_FILE_VERSION = "0.0.1";

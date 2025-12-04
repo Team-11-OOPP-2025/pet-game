@@ -11,7 +11,6 @@ import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
 import com.eleven.pet.model.items.Item;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.beans.property.IntegerProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,8 +18,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PersistenceService {
     private final EncryptionService encryptionService;
@@ -48,6 +49,7 @@ public class PersistenceService {
 
             ByteArrayOutputStream jsonBuffer = new ByteArrayOutputStream();
             jsonMapper.writeValue(jsonBuffer, dto);
+
             try (InputStream sourceStream = new ByteArrayInputStream(jsonBuffer.toByteArray());
                  OutputStream fileOutput = Files.newOutputStream(savePath)) {
                 encryptionService.encrypt(sourceStream, fileOutput);
@@ -61,7 +63,7 @@ public class PersistenceService {
 
     public PetModel load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
         if (!Files.exists(savePath)) {
-            throw new GameException("Save file does not exist.");
+            return null;
         }
 
         try {
@@ -99,11 +101,15 @@ public class PersistenceService {
     }
 
     private Map<String, Integer> extractStats(PetStats stats) {
-        Map<String, Integer> data = new HashMap<>();
-        for (Map.Entry<String, IntegerProperty> entry : stats.getAllStats().entrySet()) {
-            data.put(entry.getKey(), entry.getValue().get());
-        }
-        return data;
+        return Optional.ofNullable(stats)
+                .map(PetStats::getAllStats)
+                .orElse(Collections.emptyMap()) // Returns empty map if stats or allStats is null
+                .entrySet().stream()
+                .filter(e -> e.getKey() != null && e.getValue() != null)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().get()
+                ));
     }
 
     private void applyStats(Map<String, Integer> data, PetStats stats) {
