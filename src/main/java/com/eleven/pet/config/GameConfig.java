@@ -29,6 +29,7 @@ public final class GameConfig {
     
     // Autosave
     public static final double AUTOSAVE_INTERVAL_SECONDS = 30.0;
+    public static final int SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
     
     // Save file
     public static final String SAVE_FILE_VERSION = "0.0.1";
