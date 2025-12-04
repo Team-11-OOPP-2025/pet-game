@@ -7,10 +7,11 @@ import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.PersistenceService;
 import com.eleven.pet.view.MiniGameView;
-import javafx.animation.AnimationTimer;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 
 public class PetController {
     private final PetModel model;
@@ -39,14 +40,14 @@ public class PetController {
         // Called when player clicks the sleep button during sleep hours
         // Switch to asleep state which will apply sleep rewards in onEnter
         model.performSleep();
-        
+
         // Jump time to 8:00 AM (8/24 = 0.3333... of the day)
         if (clock != null) {
             double targetTime = (8.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
             // Set the game time directly by calculating the difference
             double currentTime = clock.getGameTime();
             double timeDelta;
-            
+
             if (currentTime > targetTime) {
                 // Past midnight, need to go to next day's 8 AM
                 timeDelta = (GameConfig.DAY_LENGTH_SECONDS - currentTime) + targetTime;
@@ -54,11 +55,11 @@ public class PetController {
                 // Before 8 AM, jump to 8 AM
                 timeDelta = targetTime - currentTime;
             }
-            
+
             // Advance time by the delta
             clock.tick(timeDelta);
         }
-        
+
         // Wake up - switch back to awake state
         StateRegistry registry = StateRegistry.getInstance();
         model.changeState(registry.getState("awake"));
@@ -86,19 +87,44 @@ public class PetController {
     }
 
     public void initAutosave() {
-        // TODO: Implement autosave initialization
+        if (autosaveTimer != null)
+            return;
+
+        autosaveTimer = new Timeline(
+                new javafx.animation.KeyFrame(
+                        javafx.util.Duration.seconds(GameConfig.AUTOSAVE_INTERVAL_SECONDS),
+                        event -> performAsyncSave("Autosave")
+                )
+        );
+        autosaveTimer.setCycleCount(Timeline.INDEFINITE);
+        autosaveTimer.play();
     }
 
     public void stopAutosave() {
-        // TODO: Implement autosave stop
+        if (autosaveTimer == null)
+            return;
+        autosaveTimer.stop();
+        autosaveTimer = null;
     }
 
     private void performAsyncSave(String reason) {
-        // TODO: Implement async save
+        // Run save in a separate thread to avoid blocking UI
+        Thread saveThread = new Thread(() -> {
+            try {
+                System.out.println("Performing async save: " + reason);
+                persistence.save(model);
+                Platform.runLater(() -> System.out.println("Game saved (" + reason + ")"));
+            } catch (GameException e) {
+                System.err.println("Error during autosave: " + e.getMessage());
+            }
+        }, "AutoSaveThread");
+        saveThread.setDaemon(true);
+        saveThread.start();
     }
 
     public void shutdown() {
-        // TODO: Implement shutdown (stop autosave, final save)
+        stopAutosave();
+        performAsyncSave("Shutdown Save");
     }
 
     // Legacy methods for backward compatibility
@@ -117,30 +143,5 @@ public class PetController {
 
     public void handleSleep() {
         handleSleepAction();
-    }
-
-    /**
-     * Starts the main game loop that updates the GameClock and model.
-     */
-    public void startGameLoop() {
-        AnimationTimer gameLoop = new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (lastUpdateTime == 0) {
-                    lastUpdateTime = now;
-                    return;
-                }
-
-                double elapsedSeconds = (now - lastUpdateTime) / 1_000_000_000.0;
-                lastUpdateTime = now;
-
-                if (clock != null) {
-                    clock.tick(elapsedSeconds);
-                }
-            }
-        };
-
-        gameLoop.start();
-        System.out.println("✓ Game loop started!");
     }
 }

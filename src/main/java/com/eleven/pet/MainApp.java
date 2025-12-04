@@ -7,7 +7,6 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.view.PetView;
-
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -21,6 +20,7 @@ public class MainApp extends Application {
 
     private final GameClock clock = new GameClock();
     private final WeatherSystem weatherSystem = new WeatherSystem();
+    private PetController controller;
     private AnimationTimer gameLoop;
     private Timeline weatherTimer;
 
@@ -32,7 +32,7 @@ public class MainApp extends Application {
         PetModel model = PetFactory.createNewPet("Björni", weatherSystem, clock);
 
         // Create Controller
-        PetController controller = new PetController(model, clock, weatherSystem, null);
+        controller = new PetController(model, clock, weatherSystem, null);
 
         // Create View
         PetView view = new PetView(model, controller, clock, weatherSystem);
@@ -78,6 +78,19 @@ public class MainApp extends Application {
         primaryStage.show();
 
 
+    }
+
+    @Override
+    public void stop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+        if (weatherTimer != null) {
+            weatherTimer.stop();
+        }
+        if (controller != null) {
+            controller.shutdown();
+        }
     }
 
     public static void initializeApplication(String[] args) {
