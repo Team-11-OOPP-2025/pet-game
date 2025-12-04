@@ -124,7 +124,7 @@ public class PetController {
             try {
                 System.out.println("Performing async save: " + reason);
                 persistence.save(model);
-                Platform.runLater(() -> System.out.println("Game saved (" + reason + ")"));
+                System.out.println("Game saved (" + reason + ")");
             } catch (GameException e) {
                 System.err.println("Error during autosave: " + e.getMessage());
             }
