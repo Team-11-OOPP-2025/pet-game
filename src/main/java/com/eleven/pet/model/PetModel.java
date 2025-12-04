@@ -30,6 +30,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
     private boolean sleptThisNight;
     private long sleepStartTime;
+    private boolean passedEightAM = true;
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -64,8 +65,15 @@ public class PetModel implements TimeListener, WeatherListener {
     // State management
     public void changeState(PetState newState) {
         if (newState != null) {
+            // Call onExit on current state if exists
+            PetState oldState = currentState.get();
+            if (oldState != null) {
+                oldState.onExit(this);
+            }
+
             currentState.set(newState);
             System.out.println(name + " changed state to: " + newState.getStateName());
+            newState.onEnter(this);
         }
     }
 
@@ -85,11 +93,20 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // Actions
     public void performSleep() {
-        // TODO: Implement sleep logic
+        StateRegistry registry = StateRegistry.getInstance();
+        changeState(registry.getState("asleep"));
     }
 
     public void wakeUp() {
         // TODO: Implement wake up logic
+    }
+
+    public void resetSleepFlag() {
+        sleptThisNight = false;
+    }
+    
+    public boolean hasSleptThisNight() {
+        return sleptThisNight;
     }
 
     public void performClean() {
@@ -199,6 +216,14 @@ public class PetModel implements TimeListener, WeatherListener {
 
     public long getSleepStartTime() {
         return sleepStartTime;
+    }
+
+    public boolean hasPassedEightAM() {
+        return passedEightAM;
+    }
+
+    public void setPassedEightAM(boolean value) {
+        passedEightAM = value;
     }
 
     public void setSleepStartTime(long timestamp) {

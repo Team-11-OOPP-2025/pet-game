@@ -1,5 +1,6 @@
 package com.eleven.pet.controller;
 
+import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
@@ -34,6 +35,36 @@ public class PetController {
     public void handleSleepAction() {
         model.sleep();
     }
+
+    public void handleSleepButton() {
+        // Called when player clicks the sleep button during sleep hours
+        // Switch to asleep state which will apply sleep rewards in onEnter
+        model.performSleep();
+        
+        // Jump time to 8:00 AM (8/24 = 0.3333... of the day)
+        if (clock != null) {
+            double targetTime = (8.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
+            // Set the game time directly by calculating the difference
+            double currentTime = clock.getGameTime();
+            double timeDelta;
+            
+            if (currentTime > targetTime) {
+                // Past midnight, need to go to next day's 8 AM
+                timeDelta = (GameConfig.DAY_LENGTH_SECONDS - currentTime) + targetTime;
+            } else {
+                // Before 8 AM, jump to 8 AM
+                timeDelta = targetTime - currentTime;
+            }
+            
+            // Advance time by the delta
+            clock.tick(timeDelta);
+        }
+        
+        // Wake up - switch back to awake state
+        StateRegistry registry = StateRegistry.getInstance();
+        model.changeState(registry.getState("awake"));
+    }
+
 
     public void handlePlayAction() {
         // Play a random minigame
@@ -108,11 +139,7 @@ public class PetController {
 
                 // Update the game clock
                 if (clock != null) {
-                    boolean newDayStarted = clock.tick(elapsedSeconds);
-
-                    if (newDayStarted) {
-                        model.replenishDailyFood();
-                    }
+                    clock.tick(elapsedSeconds);
                 }
             }
         };

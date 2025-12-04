@@ -19,6 +19,9 @@ public class GameClock {
     private boolean paused = false;
 
     public GameClock() {
+
+        double noonTime = (12.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
+
         currentCycle = Bindings.createObjectBinding(
                 this::calculateCycle,
                 gameTime

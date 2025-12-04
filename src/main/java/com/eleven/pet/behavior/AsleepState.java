@@ -1,6 +1,8 @@
 package com.eleven.pet.behavior;
 
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.model.PetStats;
 import com.eleven.pet.model.items.Item;
 import com.google.auto.service.AutoService;
 
@@ -31,8 +33,31 @@ public class AsleepState implements PetState {
     
     @Override
     public void onTick(PetModel pet) {
-        // TODO: Implement tick behavior for asleep state (e.g., energy recovery, wake up logic)
+        // Check sleep cycle when in awake state
+        if (pet.getGameClock() != null) {
+            double currentHour = (pet.getGameClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+            
+            // Check if pet slept at 8 AM
+            if (currentHour >= 8.0 && currentHour < 20.0 && !pet.hasPassedEightAM()) {
+                if (!pet.hasSleptThisNight()) {
+                    applyMissedSleepPenalty(pet);
+                }
+                pet.setPassedEightAM(true);
+            }
+            
+            // Reset sleep flag at 20:00 (sleep window starts)
+            if ((currentHour >= 20.0 || currentHour < 8.0) && pet.hasPassedEightAM()) {
+                pet.resetSleepFlag();
+                pet.setPassedEightAM(false);
+            }
+        }
     }
+
+    private void applyMissedSleepPenalty(PetModel pet) {
+        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -30);
+        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -20);
+    }
+    
     
     @Override
     public String getStateName() {
@@ -41,7 +66,10 @@ public class AsleepState implements PetState {
 
     @Override
     public void onEnter(PetModel pet) {
-        //Todo: Implement onEnter behavior for asleep state
+        pet.getStats().modifyStat("energy", 40);
+        pet.getStats().modifyStat("happiness", 20);
+        pet.setSleptThisNight(true);
+        System.out.println(pet.getName() + " had a good night's sleep! Energy and happiness restored.");
         return;
     }
 
