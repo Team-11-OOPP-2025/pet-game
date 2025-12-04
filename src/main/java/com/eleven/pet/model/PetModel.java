@@ -101,13 +101,6 @@ public class PetModel implements TimeListener, WeatherListener {
         // TODO: Implement wake up logic
     }
 
-    public void resetSleepFlag() {
-        sleptThisNight = false;
-    }
-    
-    public boolean hasSleptThisNight() {
-        return sleptThisNight;
-    }
 
     public void performClean() {
         // TODO: Implement clean logic
