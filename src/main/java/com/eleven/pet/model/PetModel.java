@@ -1,9 +1,5 @@
 package com.eleven.pet.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.data.ItemRegistry;
@@ -13,10 +9,12 @@ import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.items.Item;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
@@ -28,7 +26,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private final Inventory inventory;
 
     private boolean sleptThisNight;
-    private long sleepStartTime;
+    private double sleepStartTime;
     private boolean passedEightAM = true; // Track if we've passed 8 AM check (starts true since game starts at 12:00)
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {

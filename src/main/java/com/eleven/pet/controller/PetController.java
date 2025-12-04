@@ -1,5 +1,7 @@
 package com.eleven.pet.controller;
 
+import com.eleven.pet.behavior.StateRegistry;
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
