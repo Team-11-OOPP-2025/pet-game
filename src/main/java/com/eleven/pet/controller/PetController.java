@@ -10,6 +10,8 @@ import com.eleven.pet.model.PetModel;
 import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.PersistenceService;
 import com.eleven.pet.view.MiniGameView;
+import javafx.animation.AnimationTimer;
+
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 
