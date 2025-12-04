@@ -1,12 +1,11 @@
 package com.eleven.pet.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.eleven.pet.config.GameConfig;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PetStats {
     public static final String STAT_HUNGER = "hunger";
@@ -15,8 +14,6 @@ public class PetStats {
     public static final String STAT_CLEANLINESS = "cleanliness";
 
     private final Map<String, IntegerProperty> stats = new HashMap<>();
-    private final int MIN_VALUE = GameConfig.MIN_STAT_VALUE;
-    private final int MAX_VALUE = GameConfig.MAX_STAT_VALUE;
 
     public void registerStat(String name, int initialValue) {
         int validValue = validate(initialValue);
@@ -44,6 +41,6 @@ public class PetStats {
     }
     
     private int validate(int value) {
-        return Math.max(MIN_VALUE, Math.min(MAX_VALUE, value));
+        return Math.max(GameConfig.MIN_STAT_VALUE, Math.min(GameConfig.MAX_STAT_VALUE, value));
     }
 }

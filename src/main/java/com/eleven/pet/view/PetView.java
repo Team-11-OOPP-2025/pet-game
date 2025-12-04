@@ -1,5 +1,7 @@
 package com.eleven.pet.view;
 
+import java.util.Random;
+
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.DayCycle;
@@ -10,6 +12,7 @@ import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
 import com.eleven.pet.particle.ParticleSystem;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -29,8 +32,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
-import java.util.Random;
 
 /**
  * PetView - UML-compliant implementation integrating existing UI design
@@ -270,6 +271,7 @@ public class PetView {
         return container;
     }
 
+    // Sleep button for night time
     private StackPane createSleepButton() {
         StackPane container = new StackPane();
         container.setPrefSize(120, 50);
@@ -298,7 +300,6 @@ public class PetView {
 
         return container;
     }
-
 
     // RENAMED from createMiniGamesButton, now calls handlePlay
     private StackPane createPlayButton() {
@@ -789,10 +790,11 @@ public class PetView {
         if (clock != null) {
             updateBaseBackground(clock.getCycle());
             updateSleepButtonVisibility();
+            
             clock.cycleProperty().addListener((_, _, newCycle) -> {
                 updateBaseBackground(newCycle);
             });
-
+            
             clock.gameTimeProperty().addListener((_, _, _) -> {
                 updateSleepButtonVisibility();
             });
@@ -844,7 +846,7 @@ public class PetView {
     private void updateWeatherOverlay(WeatherState weather) {
         // TODO: Implement weather overlay update
     }
-
+    
     private void updateSleepButtonVisibility() {
         if (clock == null || sleepButtonContainer == null) return;
         
@@ -858,7 +860,6 @@ public class PetView {
         boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
         sleepButtonContainer.setVisible(isSleepTime);
     }
-
 }
 
 

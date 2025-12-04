@@ -1,5 +1,6 @@
 package com.eleven.pet.model;
 
+import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.model.items.Item;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Inventory {
-    private final Map<String, IntegerProperty> items = new HashMap<>();
+    private final Map<Integer, IntegerProperty> items = new HashMap<>();
 
     /**
      * Add multiple items.
@@ -19,7 +20,7 @@ public class Inventory {
      */
     public void add(Item item, int quantity) {
         if (item == null || quantity <= 0) return;
-        IntegerProperty count = items.computeIfAbsent(item.name(), _ -> new SimpleIntegerProperty(0));
+        IntegerProperty count = items.computeIfAbsent(item.id(), _ -> new SimpleIntegerProperty(0));
         count.set(count.get() + quantity);
     }
 
@@ -30,12 +31,12 @@ public class Inventory {
      */
     public boolean remove(Item item, int quantity) {
         if (item == null || quantity <= 0) return false;
-        IntegerProperty count = items.get(item.name());
+        IntegerProperty count = items.get(item.id());
         if (count == null || count.get() < quantity) return false;
 
         int newCount = count.get() - quantity;
         if (newCount == 0) {
-            items.remove(item.name());
+            items.remove(item.id());
         } else {
             count.set(newCount);
         }
@@ -44,7 +45,7 @@ public class Inventory {
 
     // Get how many of that item we have
     public int getQuantity(Item item) {
-        IntegerProperty count = items.get(item.name());
+        IntegerProperty count = items.get(item.id());
         return count == null ? 0 : count.get();
     }
 
@@ -52,13 +53,21 @@ public class Inventory {
         return getQuantity(item) > 0;
     }
 
-    public Map<String, IntegerProperty> getAll() {
-        // Don't allow external modification
-        return Collections.unmodifiableMap(items);
+    // Item ID and quantity map for persistence
+    public Map<Integer, Integer> getAllOwnedItems() {
+        Map<Integer, Integer> result = new HashMap<>();
+        for (Integer id : items.keySet()) {
+            Item item = ItemRegistry.get(id);
+            int qty;
+            if (item == null) continue;
+            if ((qty = getQuantity(item)) <= 0) continue;
+            result.put(item.id(), qty);
+        }
+        return Collections.unmodifiableMap(result);
     }
 
     // Property for JavaFX binding
     public IntegerProperty amountProperty(Item item) {
-        return items.computeIfAbsent(item.name(), n -> new SimpleIntegerProperty(0));
+        return items.computeIfAbsent(item.id(), n -> new SimpleIntegerProperty(0));
     }
 }
