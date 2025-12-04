@@ -1,5 +1,8 @@
 package com.eleven.pet.view;
 
+import java.util.Random;
+
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.DayCycle;
 import com.eleven.pet.environment.clock.GameClock;
@@ -29,8 +32,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import java.util.Random;
-
 /**
  * PetView - UML-compliant implementation integrating existing UI design
  */
@@ -58,6 +59,7 @@ public class PetView {
     private ImageView saveIcon;
     private Label weatherLabel;
     private Label timeLabel;
+    private StackPane sleepButtonContainer;
     
     // Legacy fields for existing visual design
     private ImageView backgroundView;
@@ -133,7 +135,7 @@ public class PetView {
             backgroundView.setImage(dayBackground);
         }
 
-        backgroundView.setPreserveRatio(true);
+        backgroundView.setPreserveRatio(false);
         backgroundView.fitWidthProperty().bind(root.widthProperty());
         backgroundView.fitHeightProperty().bind(root.heightProperty());
 
@@ -169,6 +171,12 @@ public class PetView {
         StackPane.setAlignment(feedButtonContainer, Pos.BOTTOM_LEFT);
         StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
+
+        sleepButtonContainer = createSleepButton();
+        StackPane.setAlignment(sleepButtonContainer, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(sleepButtonContainer, new Insets(20, 20, 150, 20));
+        sleepButtonContainer.setVisible(false); // Initially hidden
+        root.getChildren().add(sleepButtonContainer);
 
         playButtonContainer = createPlayButton();  // Updated name
         StackPane.setAlignment(playButtonContainer, Pos.BOTTOM_RIGHT);
@@ -235,6 +243,36 @@ public class PetView {
             if (controller != null) {
                 controller.handleFeed();
                 // No need to manually update bar - binding handles it!
+            }
+        });
+
+        return container;
+    }
+
+    // Sleep button for night time
+    private StackPane createSleepButton() {
+        StackPane container = new StackPane();
+        container.setPrefSize(120, 50);
+        container.setMaxSize(120, 50);
+        container.setMinSize(120, 50);
+
+        Rectangle bgRect = new Rectangle(120, 50);
+        bgRect.setFill(Color.web("#3498db")); // Blue color for sleep
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+
+        Button button = new Button("SLEEP");
+        button.setPrefSize(120, 50);
+        button.setMaxSize(120, 50);
+        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        button.setTextFill(Color.WHITE);
+        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        container.getChildren().addAll(bgRect, button);
+
+        button.setOnAction(_ -> {
+            if (controller != null) {
+                controller.handleSleepButton();
             }
         });
 
@@ -479,39 +517,53 @@ public class PetView {
 
         return container;
     }
-
+    
     // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
         if (model == null || model.getStats() == null) return;
 
         PetStats stats = model.getStats();
 
-        // Bind each bar to its stat (0-100 mapped to width)
-        stats.getStat(PetStats.STAT_HUNGER).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            hungerFillRect.setWidth(150 * percentage);
-        });
+        // Bind each bar to its stat (0-100 mapped to width) with null checks
+        var hungerStat = stats.getStat(PetStats.STAT_HUNGER);
+        if (hungerStat != null) {
+            hungerStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                hungerFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            hungerFillRect.setWidth(150 * hungerStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_HAPPINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            happinessFillRect.setWidth(225 * percentage);
-        });
+        var happinessStat = stats.getStat(PetStats.STAT_HAPPINESS);
+        if (happinessStat != null) {
+            happinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                happinessFillRect.setWidth(225 * percentage);
+            });
+            // Initial update
+            happinessFillRect.setWidth(225 * happinessStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_ENERGY).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            energyFillRect.setWidth(150 * percentage);
-        });
+        var energyStat = stats.getStat(PetStats.STAT_ENERGY);
+        if (energyStat != null) {
+            energyStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                energyFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            energyFillRect.setWidth(150 * energyStat.get() / 100.0);
+        }
 
-        stats.getStat(PetStats.STAT_CLEANLINESS).addListener((obs, oldVal, newVal) -> {
-            double percentage = newVal.intValue() / 100.0;
-            cleanFillRect.setWidth(150 * percentage);
-        });
-
-        // Initial update
-        hungerFillRect.setWidth(150 * stats.getStat(PetStats.STAT_HUNGER).get() / 100.0);
-        happinessFillRect.setWidth(225 * stats.getStat(PetStats.STAT_HAPPINESS).get() / 100.0);
-        energyFillRect.setWidth(150 * stats.getStat(PetStats.STAT_ENERGY).get() / 100.0);
-        cleanFillRect.setWidth(150 * stats.getStat(PetStats.STAT_CLEANLINESS).get() / 100.0);
+        var cleanlinessStat = stats.getStat(PetStats.STAT_CLEANLINESS);
+        if (cleanlinessStat != null) {
+            cleanlinessStat.addListener((obs, oldVal, newVal) -> {
+                double percentage = newVal.intValue() / 100.0;
+                cleanFillRect.setWidth(150 * percentage);
+            });
+            // Initial update
+            cleanFillRect.setWidth(150 * cleanlinessStat.get() / 100.0);
+        }
     }
 
     // NEW: Start random pet image switching
@@ -631,8 +683,14 @@ public class PetView {
     private void observeEnvironment() {
         if (clock != null) {
             updateBaseBackground(clock.getCycle());
+            updateSleepButtonVisibility();
+            
             clock.cycleProperty().addListener((_, _, newCycle) -> {
                 updateBaseBackground(newCycle);
+            });
+            
+            clock.gameTimeProperty().addListener((_, _, _) -> {
+                updateSleepButtonVisibility();
             });
         }
     }
@@ -681,6 +739,20 @@ public class PetView {
     
     private void updateWeatherOverlay(WeatherState weather) {
         // TODO: Implement weather overlay update
+    }
+    
+    private void updateSleepButtonVisibility() {
+        if (clock == null || sleepButtonContainer == null) return;
+        
+        double gameTime = clock.getGameTime();
+        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
+        
+        // Calculate hour (0-23)
+        double hour = normalizedTime * 24.0;
+        
+        // Show sleep button between 20:00-24:00 and 00:00-08:00
+        boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
+        sleepButtonContainer.setVisible(isSleepTime);
     }
 }
 

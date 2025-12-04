@@ -1,5 +1,9 @@
 package com.eleven.pet.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
@@ -10,13 +14,10 @@ import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.model.items.Item;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final Random random = new Random();
@@ -29,6 +30,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
     private boolean sleptThisNight;
     private long sleepStartTime;
+    private boolean passedEightAM = true; // Track if we've passed 8 AM check (starts true since game starts at 12:00)
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -63,8 +65,18 @@ public class PetModel implements TimeListener, WeatherListener {
     // State management
     public void changeState(PetState newState) {
         if (newState != null) {
+            // Call onExit on current state if exists
+            PetState oldState = currentState.get();
+            if (oldState != null) {
+                oldState.onExit(this);
+            }
+            
+            // Change to new state
             currentState.set(newState);
             System.out.println(name + " changed state to: " + newState.getStateName());
+            
+            // Call onEnter on new state
+            newState.onEnter(this);
         }
     }
 
@@ -84,7 +96,8 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // Actions
     public void performSleep() {
-        // TODO: Implement sleep logic
+        StateRegistry registry = StateRegistry.getInstance();
+        changeState(registry.getState("asleep"));
     }
 
     public void wakeUp() {
@@ -110,6 +123,15 @@ public class PetModel implements TimeListener, WeatherListener {
             currentState.get().handleSleep(this);
         }
     }
+
+    public void resetSleepFlag() {
+        sleptThisNight = false;
+    }
+    
+    public boolean hasSleptThisNight() {
+        return sleptThisNight;
+    }
+    
 
     // Minigame system
     public boolean canPlayMinigame() {
@@ -141,7 +163,7 @@ public class PetModel implements TimeListener, WeatherListener {
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
         return playMinigame(randomGame);
     }
-
+    
     // Daily management
     public void replenishDailyFood() {
         Item apple = new FoodItem("Food", GameConfig.FEED_HUNGER_RESTORE);
@@ -202,5 +224,13 @@ public class PetModel implements TimeListener, WeatherListener {
 
     public void setSleepStartTime(long timestamp) {
         this.sleepStartTime = timestamp;
+    }
+
+    public boolean hasPassedEightAM() {
+        return passedEightAM;
+    }
+
+    public void setPassedEightAM(boolean value) {
+        passedEightAM = value;
     }
 }

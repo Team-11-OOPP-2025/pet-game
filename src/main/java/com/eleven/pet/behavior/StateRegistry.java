@@ -34,5 +34,12 @@ public class StateRegistry {
             stateMap.put(state.getStateName(), state);
             System.out.println("Loaded state: " + state.getStateName());
         }
+        
+        // Fallback: if no states were loaded via SPI, manually register them
+        if (stateMap.isEmpty()) {
+            System.out.println("No states loaded via SPI, registering manually...");
+            registerState(new AwakeState());
+            registerState(new AsleepState());
+        }
     }
 }
