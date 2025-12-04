@@ -146,19 +146,20 @@ public class PetController {
             System.err.println("Interrupted while waiting for save executor shutdown");
             saveExecutor.shutdownNow();
             Thread.currentThread().interrupt();
-        }
-        
-        // Perform final synchronous save on shutdown
-        try {
-            if (persistence != null) {
-                System.out.println("Performing synchronous save: Shutdown Save");
-                persistence.save(model);
-                System.out.println("Game saved (Shutdown Save)");
-            } else {
-                System.err.println("Cannot save game on shutdown: persistence is not initialized.");
+        } finally {
+            // Perform final synchronous save on shutdown after executor has terminated
+            // to ensure no concurrent saves occur
+            try {
+                if (persistence != null) {
+                    System.out.println("Performing synchronous save: Shutdown Save");
+                    persistence.save(model);
+                    System.out.println("Game saved (Shutdown Save)");
+                } else {
+                    System.err.println("Cannot save game on shutdown: persistence is not initialized.");
+                }
+            } catch (GameException e) {
+                System.err.println("Error during shutdown save: " + e.getMessage());
             }
-        } catch (GameException e) {
-            System.err.println("Error during shutdown save: " + e.getMessage());
         }
     }
 
