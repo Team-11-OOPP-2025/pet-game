@@ -9,7 +9,6 @@ import com.eleven.pet.model.Inventory;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.model.items.Item;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +18,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -113,22 +113,23 @@ public class PersistenceService {
     }
 
     private void applyStats(Map<String, Integer> data, PetStats stats) {
-        if (data == null) return;
+        if (data == null || stats == null) return;
         // if stats already registered, just set; otherwise you may register then set
         data.forEach(stats::registerStat);
     }
 
     private Map<Integer, Integer> extractInventory(Inventory inventory) {
-        return inventory.getAllOwnedItems();
+        if (inventory == null) return new HashMap<>();
+        // Return a copy to avoid external modification
+        return new HashMap<>(inventory.getAllOwnedItems());
     }
 
     private void applyInventory(Map<Integer, Integer> data, Inventory inventory) {
-        if (data == null) return;
+        if (data == null || inventory == null) return;
         data.forEach((id, qty) -> {
-            Item item = com.eleven.pet.data.ItemRegistry.get(id);
-            if (item != null) {
-                inventory.add(item, qty);
-            }
+            // Lookup item by ID and add to inventory
+            Optional.ofNullable(com.eleven.pet.data.ItemRegistry.get(id))
+                    .ifPresent(item -> inventory.add(item, qty));
         });
     }
 }
