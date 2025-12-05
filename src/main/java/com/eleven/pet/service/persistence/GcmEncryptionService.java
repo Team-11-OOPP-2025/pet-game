@@ -26,11 +26,12 @@ public class GcmEncryptionService implements EncryptionService {
             byte[] iv = new byte[GCM_IV_LENGTH];
             RANDOM.nextBytes(iv);
 
+            // Initialize cipher
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             cipher.init(Cipher.ENCRYPT_MODE, key, spec);
 
-            // Write IV at the beginning of the output to allow decryption (end works, but then we can't stream)
+            // Write IV at the beginning to allow streaming
             out.write(iv);
 
             // Encrypt data
