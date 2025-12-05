@@ -281,9 +281,6 @@ public class PetView {
 
         button.setOnAction(_ -> {
             if (controller != null) {
-                // TODO: Link feed counter to actual food in inventory
-
-
                 controller.handleFeedAction();
             }
         });

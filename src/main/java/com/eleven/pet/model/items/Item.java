@@ -7,5 +7,5 @@ public interface Item {
 
     String name();
 
-    void use(PetModel pet);
+    boolean use(PetModel pet);
 }

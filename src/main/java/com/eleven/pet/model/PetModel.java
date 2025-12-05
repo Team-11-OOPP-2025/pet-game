@@ -16,6 +16,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
@@ -183,10 +184,11 @@ public class PetModel implements TimeListener, WeatherListener {
         // Create list of available minigames
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
-        // Add more minigames here in the future
+        availableGames.add(new GuessingGame());
 
         // Pick a random minigame
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
+
         return playMinigame(randomGame);
     }
 

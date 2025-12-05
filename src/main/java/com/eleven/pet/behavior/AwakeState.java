@@ -9,34 +9,33 @@ import com.google.auto.service.AutoService;
 @AutoService(PetState.class)
 public class AwakeState implements PetState {
     public static final String STATE_NAME = "awake";
-    
+
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        // TODO: Implement consume behavior for awake state
-        return false;
+        return item.use(pet);
     }
-    
+
     @Override
     public void handlePlay(PetModel pet) {
         // TODO: Implement play behavior for awake state
     }
-    
+
     @Override
     public void handleSleep(PetModel pet) {
         pet.performSleep();
     }
-    
+
     @Override
     public void handleClean(PetModel pet) {
         // TODO: Implement clean behavior for awake state
     }
-    
+
     @Override
     public void onTick(PetModel pet) {
         // Check sleep cycle when in awake state
         if (pet.getGameClock() != null) {
             double currentHour = (pet.getGameClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
-            
+
             // Check if pet slept at 8 AM
             if (currentHour >= 8.0 && currentHour < 20.0 && !pet.hasPassedEightAM()) {
                 if (!pet.hasSleptThisNight()) {
@@ -44,7 +43,7 @@ public class AwakeState implements PetState {
                 }
                 pet.setPassedEightAM(true);
             }
-            
+
             // Reset sleep flag at 20:00 (sleep window starts)
             if ((currentHour >= 20.0 || currentHour < 8.0) && pet.hasPassedEightAM()) {
                 pet.resetSleepFlag();
@@ -52,12 +51,12 @@ public class AwakeState implements PetState {
             }
         }
     }
-    
+
     private void applyMissedSleepPenalty(PetModel pet) {
         pet.getStats().modifyStat(PetStats.STAT_ENERGY, -30);
         pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -20);
     }
-    
+
     @Override
     public String getStateName() {
         return STATE_NAME;

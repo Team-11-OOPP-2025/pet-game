@@ -56,21 +56,19 @@ public class AssetLoader {
         // Assets which are required and should be preloaded for performance
         // TODO: Update the list as more assets are added or updated
         String[] assets = {
-                "Bear.png",
+                "Bear",
                 "LookingLeftBear",
                 "LookingRightBear",
                 "CryingBear1",
                 "CryingBear2",
-                "SleepyBear",
-
+                "SleepingBear1",
+                "SleepingBear2",
                 "Dawn",
                 "Morning",
                 "Day",
                 "Evening",
                 "EarlyNight",
                 "LateNight",
-
-
         };
 
         for (String ass : assets) {

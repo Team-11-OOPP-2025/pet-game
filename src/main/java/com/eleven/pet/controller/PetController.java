@@ -1,12 +1,12 @@
 package com.eleven.pet.controller;
 
-import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
+import com.eleven.pet.model.items.FoodItem;
 import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.PersistenceService;
 import com.eleven.pet.view.MiniGameView;
@@ -38,7 +38,11 @@ public class PetController {
     }
 
     public void handleFeedAction() {
-        model.performConsume(ItemRegistry.get(0));
+        if (model.performConsume(ItemRegistry.get(0))) {
+            System.out.println("Pet has been fed.");
+        } else {
+            System.out.println("No food available to feed the pet.");
+        }
     }
 
     public void handleSleepAction() {
@@ -167,8 +171,7 @@ public class PetController {
     }
 
     public void handlePlay() {
-        // Create Swing minigame in a separate window
-        MiniGameView.showMiniGame(model);
+        model.playRandomMinigame();
     }
 
     public void handleSleep() {
