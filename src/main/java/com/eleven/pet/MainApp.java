@@ -11,6 +11,7 @@ import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.GcmEncryptionService;
 import com.eleven.pet.service.persistence.KeyLoader;
 import com.eleven.pet.service.persistence.PersistenceService;
+import com.eleven.pet.view.AssetLoader;
 import com.eleven.pet.view.PetView;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -49,6 +50,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        AssetLoader.getInstance().loadAll();
         GameItems.init();
 
         initializePersistence();
