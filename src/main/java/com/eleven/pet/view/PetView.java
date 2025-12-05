@@ -310,7 +310,7 @@ public class PetView {
 
         button.setOnAction(_ -> {
             if (controller != null) {
-                controller.handleClean();
+                controller.handleCleanAction();
             }
         });
 
@@ -340,7 +340,7 @@ public class PetView {
 
         button.setOnAction(_ -> {
             if (controller != null) {
-                controller.handleSleepButton();
+                controller.handleSleepAction();
             }
         });
 
@@ -371,7 +371,7 @@ public class PetView {
         // NOW FUNCTIONAL!
         button.setOnAction(_ -> {
             if (controller != null) {
-                controller.handlePlay();
+                controller.handlePlayAction();
             }
         });
 

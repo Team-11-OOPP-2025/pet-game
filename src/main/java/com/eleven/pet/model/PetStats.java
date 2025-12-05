@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PetStats {
-    public static final String STAT_HUNGER = "hunger";
-    public static final String STAT_HAPPINESS = "happiness";
-    public static final String STAT_ENERGY = "energy";
-    public static final String STAT_CLEANLINESS = "cleanliness";
+    public static final String STAT_HUNGER = "HUNGER";
+    public static final String STAT_HAPPINESS = "HAPPINESS";
+    public static final String STAT_ENERGY = "ENERGY";
+    public static final String STAT_CLEANLINESS = "CLEANLINESS";
 
     private final Map<String, IntegerProperty> stats = new HashMap<>();
 
@@ -37,11 +37,11 @@ public class PetStats {
         }
         return false;
     }
-    
+
     public void calculateDerivedHappiness() {
         // TODO: Implement derived happiness calculation
     }
-    
+
     private int validate(int value) {
         return Math.max(GameConfig.MIN_STAT_VALUE, Math.min(GameConfig.MAX_STAT_VALUE, value));
     }

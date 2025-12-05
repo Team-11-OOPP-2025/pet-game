@@ -33,11 +33,11 @@ public class AwakeState implements PetState {
     @Override
     public void onTick(PetModel pet) {
         // Check sleep cycle when in awake state
-        if (pet.getGameClock() != null) {
-            double currentHour = (pet.getGameClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+        if (pet.getClock() != null) {
+            double currentHour = (pet.getClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
 
             // Check if pet slept at 8 AM
-            if (currentHour >= 8.0 && currentHour < 20.0 && !pet.hasPassedEightAM()) {
+            if (currentHour >= 8.0 && currentHour < 20.0 && !pet.isPassedEightAM()) {
                 if (!pet.hasSleptThisNight()) {
                     applyMissedSleepPenalty(pet);
                 }
@@ -45,7 +45,7 @@ public class AwakeState implements PetState {
             }
 
             // Reset sleep flag at 20:00 (sleep window starts)
-            if ((currentHour >= 20.0 || currentHour < 8.0) && pet.hasPassedEightAM()) {
+            if ((currentHour >= 20.0 || currentHour < 8.0) && pet.isPassedEightAM()) {
                 pet.resetSleepFlag();
                 pet.setPassedEightAM(false);
             }

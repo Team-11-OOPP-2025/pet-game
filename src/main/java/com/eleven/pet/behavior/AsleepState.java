@@ -34,13 +34,13 @@ public class AsleepState implements PetState {
     @Override
     public void onTick(PetModel pet) {
         // Auto-wake up at 8:00 AM when sleeping
-        if (pet.getGameClock() != null && pet.isSleepingWithTimeAcceleration()) {
-            double gameTime = pet.getGameClock().getGameTime();
+        if (pet.getClock() != null && pet.isSleepingWithTimeAcceleration()) {
+            double gameTime = pet.getClock().getGameTime();
             double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
             double hour = normalizedTime * 24.0;
 
             // Wake up at 8:00 AM
-            if (hour >= 8.0 && hour < 9.0 && !pet.hasPassedEightAM()) {
+            if (hour >= 8.0 && hour < 9.0 && !pet.isPassedEightAM()) {
                 pet.wakeUp();
                 pet.setPassedEightAM(true);
                 System.out.println(pet.getName() + " automatically woke up at 8:00 AM.");
@@ -48,7 +48,7 @@ public class AsleepState implements PetState {
 
             // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
             if (hour >= 9.0 || hour < 8.0) {
-                if (pet.hasPassedEightAM()) {
+                if (pet.isPassedEightAM()) {
                     pet.setPassedEightAM(false);
                 }
             }
@@ -68,8 +68,8 @@ public class AsleepState implements PetState {
     @Override
     public void onEnter(PetModel pet) {
         // Apply sleep rewards when entering sleep state
-        pet.getStats().modifyStat("energy", 40);
-        pet.getStats().modifyStat("happiness", 20);
+        pet.getStats().modifyStat(PetStats.STAT_ENERGY, 40);
+        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 20);
         pet.setSleptThisNight(true);
         System.out.println(pet.getName() + " had a good night's sleep! Energy and happiness restored.");
     }

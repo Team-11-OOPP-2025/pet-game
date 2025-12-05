@@ -14,10 +14,12 @@ import com.eleven.pet.model.items.Item;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
     private final String name;
@@ -47,7 +49,7 @@ public class PetModel implements TimeListener, WeatherListener {
         stats.registerStat(PetStats.STAT_ENERGY, 50);
         stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
 
-        // Initialize state
+        // Initialize default state
         StateRegistry registry = StateRegistry.getInstance();
         PetState awakeState = registry.getState(AwakeState.STATE_NAME);
         this.currentState = new SimpleObjectProperty<>(awakeState);
@@ -135,22 +137,6 @@ public class PetModel implements TimeListener, WeatherListener {
         System.out.println(name + " is now cleaner! Cleanliness increased.");
     }
 
-    public void play() {
-        if (currentState.get() != null) {
-            currentState.get().handlePlay(this);
-        }
-    }
-
-    public void clean() {
-        performClean();
-    }
-
-    public void sleep() {
-        if (currentState.get() != null) {
-            currentState.get().handleSleep(this);
-        }
-    }
-
     public void resetSleepFlag() {
         sleptThisNight = false;
     }
@@ -158,7 +144,6 @@ public class PetModel implements TimeListener, WeatherListener {
     public boolean hasSleptThisNight() {
         return sleptThisNight;
     }
-
 
     // Minigame system
     public boolean canPlayMinigame() {
@@ -181,7 +166,9 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     public MinigameResult playRandomMinigame() {
+        // TODO: Delegate this behavior to the PetState
         // Create list of available minigames
+        // TODO: Use autoservice to populate the minigame list
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
         availableGames.add(new GuessingGame());
@@ -236,58 +223,5 @@ public class PetModel implements TimeListener, WeatherListener {
     @Override
     public void onWeatherChange(WeatherState newWeather) {
         // TODO: Implement weather change reaction (modify happiness based on weather)
-    }
-
-    // Getters and setters
-    public String getName() {
-        return name;
-    }
-
-    public PetStats getStats() {
-        return stats;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public WeatherSystem getWeatherSystem() {
-        return weatherSystem;
-    }
-
-    public GameClock getGameClock() {
-        return clock;
-    }
-
-    public boolean getSleptThisNight() {
-        return sleptThisNight;
-    }
-
-    public void setSleptThisNight(boolean slept) {
-        this.sleptThisNight = slept;
-    }
-
-    public double getSleepStartTime() {
-        return sleepStartTime;
-    }
-
-    public void setSleepStartTime(double timestamp) {
-        this.sleepStartTime = timestamp;
-    }
-
-    public boolean hasPassedEightAM() {
-        return passedEightAM;
-    }
-
-    public void setPassedEightAM(boolean value) {
-        passedEightAM = value;
-    }
-
-    public boolean isSleepingWithTimeAcceleration() {
-        return isSleepingWithTimeAcceleration;
-    }
-
-    public void setSleepingWithTimeAcceleration(boolean value) {
-        this.isSleepingWithTimeAcceleration = value;
     }
 }

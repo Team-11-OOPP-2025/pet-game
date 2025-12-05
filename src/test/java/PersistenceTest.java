@@ -16,7 +16,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PersistenceTest {
 
@@ -69,7 +70,7 @@ class PersistenceTest {
         assertEquals(50, loaded.getStats().getStat(PetStats.STAT_HAPPINESS).get());
         assertEquals(GameConfig.MIN_STAT_VALUE, loaded.getStats().getStat(PetStats.STAT_HUNGER).get());
         assertEquals(1234L, loaded.getSleepStartTime());
-        assertTrue(loaded.getSleptThisNight());
+        assertTrue(loaded.isSleptThisNight());
         assertEquals(inventory.getAllOwnedItems(), loaded.getInventory().getAllOwnedItems());
         assertEquals(original.getCurrentState(), loaded.getCurrentState());
     }
