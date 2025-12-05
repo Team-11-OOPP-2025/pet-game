@@ -10,12 +10,6 @@ public class AssetLoader {
     private static AssetLoader instance;
     private final Map<String, Image> imageCache = new HashMap<>();
 
-
-    /// This class is a singleton and therefore never initialized outside itself.
-    private AssetLoader() {
-        // Singleton isn't initialized
-    }
-
     public static AssetLoader getInstance() {
         if (instance == null) {
             instance = new AssetLoader();
@@ -56,21 +50,19 @@ public class AssetLoader {
         // Assets which are required and should be preloaded for performance
         // TODO: Update the list as more assets are added or updated
         String[] assets = {
-                "Bear.png",
+                "Bear",
                 "LookingLeftBear",
                 "LookingRightBear",
                 "CryingBear1",
                 "CryingBear2",
-                "SleepyBear",
-
+                "SleepingBear1",
+                "SleepingBear2",
                 "Dawn",
                 "Morning",
                 "Day",
                 "Evening",
                 "EarlyNight",
                 "LateNight",
-
-
         };
 
         for (String ass : assets) {

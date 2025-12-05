@@ -14,7 +14,7 @@ public class PetStatesTest {
     @Test
     void testStateNames() {
         AwakeState awakeState = new AwakeState();
-        assertEquals("awake", awakeState.getStateName());
+        assertEquals(AwakeState.STATE_NAME, awakeState.getStateName());
     }
 
     @Test
