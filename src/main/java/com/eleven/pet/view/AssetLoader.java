@@ -10,12 +10,6 @@ public class AssetLoader {
     private static AssetLoader instance;
     private final Map<String, Image> imageCache = new HashMap<>();
 
-
-    /// This class is a singleton and therefore never initialized outside itself.
-    private AssetLoader() {
-        // Singleton isn't initialized
-    }
-
     public static AssetLoader getInstance() {
         if (instance == null) {
             instance = new AssetLoader();
