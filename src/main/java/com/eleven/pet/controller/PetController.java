@@ -1,15 +1,13 @@
 package com.eleven.pet.controller;
 
 import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.items.FoodItem;
+import com.eleven.pet.model.items.ItemRegistry;
 import com.eleven.pet.service.persistence.GameException;
 import com.eleven.pet.service.persistence.PersistenceService;
-import com.eleven.pet.view.MiniGameView;
 import javafx.animation.Timeline;
 
 import java.util.concurrent.ExecutorService;

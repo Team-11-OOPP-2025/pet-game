@@ -1,7 +1,7 @@
 import com.eleven.pet.config.GameItems;
-import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.model.Inventory;
 import com.eleven.pet.model.items.Item;
+import com.eleven.pet.model.items.ItemRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
