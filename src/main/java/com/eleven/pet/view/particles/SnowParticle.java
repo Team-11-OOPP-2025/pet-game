@@ -1,10 +1,8 @@
-package com.eleven.pet.particle;
+package com.eleven.pet.view.particles;
 
 import javafx.scene.canvas.GraphicsContext;
 
-@SuppressWarnings({"all"})
 public class SnowParticle /* extends Particle */ {
-    @SuppressWarnings("unused")
     private double rotation;
     
     public SnowParticle(double x, double y) {
