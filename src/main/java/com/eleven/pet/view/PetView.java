@@ -844,7 +844,7 @@ public class PetView {
                     
                     // Disable sleep button when asleep, enable when awake
                     if (sleepButtonContainer != null) {
-                        boolean isAsleep = "asleep".equals(newState.getStateName());
+                        boolean isAsleep = "ASLEEP".equals(newState.getStateName());
                         sleepButtonContainer.setDisable(isAsleep);
                         sleepButtonContainer.setOpacity(isAsleep ? 0.5 : 1.0);
                     }
@@ -858,8 +858,8 @@ public class PetView {
         if (petImageSwitcher != null) {
             petImageSwitcher.stop();
         }
-        
-        if ("asleep".equals(stateName)) {
+
+        if ("ASLEEP".equals(stateName)) {
             // Switch to sleeping animation
             isSleeping = true;
             isCrying = false;
@@ -867,7 +867,7 @@ public class PetView {
             isHappy = false;
             petImageView.setImage(sleepingBear1);
             currentAnimationState = AnimationState.NEUTRAL; // Reset state
-        } else if ("awake".equals(stateName)) {
+        } else if ("AWAKE".equals(stateName)) {
             // Return to normal animation based on happiness
             isSleeping = false;
             if (model != null && model.getStats() != null) {

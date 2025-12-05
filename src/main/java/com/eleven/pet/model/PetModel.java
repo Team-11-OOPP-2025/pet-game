@@ -1,8 +1,9 @@
 package com.eleven.pet.model;
 
+import com.eleven.pet.behavior.AsleepState;
+import com.eleven.pet.behavior.AwakeState;
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
-import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.clock.TimeListener;
@@ -16,7 +17,6 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
@@ -49,7 +49,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         // Initialize state
         StateRegistry registry = StateRegistry.getInstance();
-        PetState awakeState = registry.getState("awake");
+        PetState awakeState = registry.getState(AwakeState.STATE_NAME);
         this.currentState = new SimpleObjectProperty<>(awakeState);
 
 
@@ -71,11 +71,11 @@ public class PetModel implements TimeListener, WeatherListener {
             if (oldState != null) {
                 oldState.onExit(this);
             }
-            
+
             // Change to new state
             currentState.set(newState);
             System.out.println(name + " changed state to: " + newState.getStateName());
-            
+
             // Call onEnter on new state
             newState.onEnter(this);
         }
@@ -105,10 +105,10 @@ public class PetModel implements TimeListener, WeatherListener {
             passedEightAM = false;
             System.out.println(name + " is going to sleep. Time is accelerating...");
         }
-        
+
         // Change to asleep state
         StateRegistry registry = StateRegistry.getInstance();
-        PetState asleepState = registry.getState("asleep");
+        PetState asleepState = registry.getState(AsleepState.STATE_NAME);
         if (asleepState != null) {
             changeState(asleepState);
         }
@@ -121,7 +121,7 @@ public class PetModel implements TimeListener, WeatherListener {
             isSleepingWithTimeAcceleration = false;
             System.out.println(name + " woke up. Time has returned to normal.");
         }
-        
+
         // Change to awake state
         StateRegistry registry = StateRegistry.getInstance();
         PetState awakeState = registry.getState("awake");
@@ -154,11 +154,11 @@ public class PetModel implements TimeListener, WeatherListener {
     public void resetSleepFlag() {
         sleptThisNight = false;
     }
-    
+
     public boolean hasSleptThisNight() {
         return sleptThisNight;
     }
-    
+
 
     // Minigame system
     public boolean canPlayMinigame() {
@@ -210,20 +210,20 @@ public class PetModel implements TimeListener, WeatherListener {
         if (currentState.get() != null) {
             currentState.get().onTick(this);
         }
-        
+
         // Auto-wake up at 8:00 AM if sleeping
         if (isSleepingWithTimeAcceleration && clock != null) {
             double gameTime = clock.getGameTime();
             double normalizedTime = gameTime / 24;
             double hour = normalizedTime * 24.0;
-            
+
             // Wake up at 8:00 AM
             if (hour >= 8.0 && hour < 9.0 && !passedEightAM) {
                 wakeUp();
                 passedEightAM = true;
                 System.out.println(name + " automatically woke up at 8:00 AM.");
             }
-            
+
             // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
             if (hour >= 9.0 || hour < 8.0) {
                 if (passedEightAM) {

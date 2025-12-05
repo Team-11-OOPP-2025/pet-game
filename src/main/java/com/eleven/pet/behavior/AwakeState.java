@@ -8,7 +8,7 @@ import com.google.auto.service.AutoService;
 
 @AutoService(PetState.class)
 public class AwakeState implements PetState {
-    public static final String STATE_NAME = "awake";
+    public static final String STATE_NAME = "AWAKE";
 
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
