@@ -1,12 +1,18 @@
-import com.eleven.pet.environment.weather.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.eleven.pet.environment.weather.CloudyState;
+import com.eleven.pet.environment.weather.RainyState;
+import com.eleven.pet.environment.weather.SunnyState;
+import com.eleven.pet.environment.weather.WeatherListener;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
 
 public class WeatherSystemTest {
 
@@ -48,5 +54,21 @@ public class WeatherSystemTest {
 
         assertTrue(listenerCalled[0], "Listener should be called when weather changes");
         assertNotNull(receivedState[0], "Listener should receive a WeatherState");
+    }
+
+    @Test
+    void testRainyModifier() {
+        RainyState rainyState = new RainyState();
+        assertEquals(0.8, rainyState.getHappinessModifier(), 0.01, 
+            "Rainy weather should have 0.8 happiness modifier (makes pet sad)");
+        assertEquals("Rainy", rainyState.getName(), "State name should be 'Rainy'");
+    }
+
+    @Test
+    void testSunnyModifier() {
+        SunnyState sunnyState = new SunnyState();
+        assertEquals(1.2, sunnyState.getHappinessModifier(), 0.01, 
+            "Sunny weather should have 1.2 happiness modifier (makes pet happy)");
+        assertEquals("Sunny", sunnyState.getName(), "State name should be 'Sunny'");
     }
 }
