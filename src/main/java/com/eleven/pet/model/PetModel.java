@@ -105,7 +105,8 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     public void performClean() {
-        // TODO: Implement clean logic
+        stats.modifyStat(PetStats.STAT_CLEANLINESS, 30);
+        System.out.println(name + " is now cleaner! Cleanliness increased.");
     }
 
     public void play() {

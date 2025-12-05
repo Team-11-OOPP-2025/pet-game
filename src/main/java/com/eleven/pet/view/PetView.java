@@ -71,6 +71,7 @@ public class PetView {
     private Image earlyNightBackground;
     private Image deepNightBackground;
     private StackPane feedButtonContainer;
+    private StackPane cleanButtonContainer;
     private StackPane playButtonContainer;
     private Text foodCounterText;
     private Rectangle hungerFillRect;
@@ -173,6 +174,11 @@ public class PetView {
         StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
         root.getChildren().add(feedButtonContainer);
 
+        cleanButtonContainer = createCleanButton();
+        StackPane.setAlignment(cleanButtonContainer, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(cleanButtonContainer, new Insets(20, 20, 90, 150));
+        root.getChildren().add(cleanButtonContainer);
+
         sleepButtonContainer = createSleepButton();
         StackPane.setAlignment(sleepButtonContainer, Pos.BOTTOM_LEFT);
         StackPane.setMargin(sleepButtonContainer, new Insets(20, 20, 150, 20));
@@ -244,6 +250,35 @@ public class PetView {
             if (controller != null) {
                 controller.handleFeed();
                 // No need to manually update bar - binding handles it!
+            }
+        });
+
+        return container;
+    }
+
+    private StackPane createCleanButton() {
+        StackPane container = new StackPane();
+        container.setPrefSize(120, 50);
+        container.setMaxSize(120, 50);
+        container.setMinSize(120, 50);
+
+        Rectangle bgRect = new Rectangle(120, 50);
+        bgRect.setFill(Color.WHITE);
+        bgRect.setStroke(Color.BLACK);
+        bgRect.setStrokeWidth(3);
+
+        Button button = new Button("CLEAN");
+        button.setPrefSize(120, 50);
+        button.setMaxSize(120, 50);
+        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        button.setTextFill(Color.BLACK);
+        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        container.getChildren().addAll(bgRect, button);
+
+        button.setOnAction(_ -> {
+            if (controller != null) {
+                controller.handleClean();
             }
         });
 
