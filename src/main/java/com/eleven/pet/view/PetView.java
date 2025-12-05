@@ -37,6 +37,18 @@ import java.util.Random;
  * PetView - UML-compliant implementation integrating existing UI design
  */
 public class PetView {
+    // Enum for animation states
+    private enum AnimationState {
+        VERY_HAPPY, NEUTRAL, SAD, VERY_SAD;
+        
+        static AnimationState fromHappiness(int happiness) {
+            if (happiness >= 80) return VERY_HAPPY;
+            if (happiness >= 50) return NEUTRAL;
+            if (happiness >= 20) return SAD;
+            return VERY_SAD;
+        }
+    }
+    
     // UML Fields
     private final PetModel model;
     private final PetController controller;
@@ -827,6 +839,50 @@ public class PetView {
 
     private void bindToModel() {
         bindStatBarsToModel();
+        
+        // Listen to state changes to update animations
+        if (model != null) {
+            model.getStateProperty().addListener((obs, oldState, newState) -> {
+                if (newState != null) {
+                    updateAnimationForState(newState.getStateName());
+                    
+                    // Disable sleep button when asleep, enable when awake
+                    if (sleepButtonContainer != null) {
+                        boolean isAsleep = "asleep".equals(newState.getStateName());
+                        sleepButtonContainer.setDisable(isAsleep);
+                        sleepButtonContainer.setOpacity(isAsleep ? 0.5 : 1.0);
+                    }
+                }
+            });
+        }
+    }
+
+    // NEW: Update animation based on state name
+    private void updateAnimationForState(String stateName) {
+        if (petImageSwitcher != null) {
+            petImageSwitcher.stop();
+        }
+        
+        if ("asleep".equals(stateName)) {
+            // Switch to sleeping animation
+            isSleeping = true;
+            isCrying = false;
+            isSad = false;
+            isHappy = false;
+            petImageView.setImage(sleepingBear1);
+            currentAnimationState = AnimationState.NEUTRAL; // Reset state
+        } else if ("awake".equals(stateName)) {
+            // Return to normal animation based on happiness
+            isSleeping = false;
+            if (model != null && model.getStats() != null) {
+                var happinessStat = model.getStats().getStat(PetStats.STAT_HAPPINESS);
+                if (happinessStat != null) {
+                    updateAnimationState(happinessStat.get());
+                }
+            }
+        }
+        
+        startPetImageSwitching();
     }
 
     private void observeEnvironment() {

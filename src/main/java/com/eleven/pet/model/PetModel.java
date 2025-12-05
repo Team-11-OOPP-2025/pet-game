@@ -2,6 +2,7 @@ package com.eleven.pet.model;
 
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.clock.TimeListener;
@@ -27,7 +28,8 @@ public class PetModel implements TimeListener, WeatherListener {
 
     private boolean sleptThisNight;
     private double sleepStartTime;
-    private boolean passedEightAM = true; // Track if we've passed 8 AM check (starts true since game starts at 12:00)
+    private boolean passedEightAM = false; // Track if we've passed 8 AM check
+    private boolean isSleepingWithTimeAcceleration = false;
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
@@ -48,6 +50,7 @@ public class PetModel implements TimeListener, WeatherListener {
         StateRegistry registry = StateRegistry.getInstance();
         PetState awakeState = registry.getState("awake");
         this.currentState = new SimpleObjectProperty<>(awakeState);
+
 
         // Subscribe to environment systems
         if (clock != null) {
@@ -93,14 +96,38 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // Actions
     public void performSleep() {
+        if (clock != null) {
+            // Double the time scale for sleep
+            clock.setTimeScale(2.0);
+            isSleepingWithTimeAcceleration = true;
+            sleepStartTime = clock.getGameTime();
+            passedEightAM = false;
+            System.out.println(name + " is going to sleep. Time is accelerating...");
+        }
+        
+        // Change to asleep state
         StateRegistry registry = StateRegistry.getInstance();
-        changeState(registry.getState("asleep"));
+        PetState asleepState = registry.getState("asleep");
+        if (asleepState != null) {
+            changeState(asleepState);
+        }
     }
 
     public void wakeUp() {
-        // TODO: Implement wake up logic
+        if (clock != null) {
+            // Restore normal time scale
+            clock.setTimeScale(1.0);
+            isSleepingWithTimeAcceleration = false;
+            System.out.println(name + " woke up. Time has returned to normal.");
+        }
+        
+        // Change to awake state
+        StateRegistry registry = StateRegistry.getInstance();
+        PetState awakeState = registry.getState("awake");
+        if (awakeState != null) {
+            changeState(awakeState);
+        }
     }
-
 
     public void performClean() {
         stats.modifyStat(PetStats.STAT_CLEANLINESS, 30);
@@ -181,6 +208,27 @@ public class PetModel implements TimeListener, WeatherListener {
         if (currentState.get() != null) {
             currentState.get().onTick(this);
         }
+        
+        // Auto-wake up at 8:00 AM if sleeping
+        if (isSleepingWithTimeAcceleration && clock != null) {
+            double gameTime = clock.getGameTime();
+            double normalizedTime = gameTime / 24;
+            double hour = normalizedTime * 24.0;
+            
+            // Wake up at 8:00 AM
+            if (hour >= 8.0 && hour < 9.0 && !passedEightAM) {
+                wakeUp();
+                passedEightAM = true;
+                System.out.println(name + " automatically woke up at 8:00 AM.");
+            }
+            
+            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
+            if (hour >= 9.0 || hour < 8.0) {
+                if (passedEightAM) {
+                    passedEightAM = false;
+                }
+            }
+        }
     }
 
     @Override
@@ -231,5 +279,13 @@ public class PetModel implements TimeListener, WeatherListener {
 
     public void setPassedEightAM(boolean value) {
         passedEightAM = value;
+    }
+
+    public boolean isSleepingWithTimeAcceleration() {
+        return isSleepingWithTimeAcceleration;
+    }
+
+    public void setSleepingWithTimeAcceleration(boolean value) {
+        this.isSleepingWithTimeAcceleration = value;
     }
 }
