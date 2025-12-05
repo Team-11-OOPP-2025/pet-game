@@ -77,6 +77,11 @@
                             <artifactId>lombok</artifactId>
                             <version>1.18.42</version>
                         </path>
+                        <path>
+                            <groupId>com.google.auto.service</groupId>
+                            <artifactId>auto-service</artifactId>
+                            <version>1.1.1</version>
+                        </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
