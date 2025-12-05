@@ -30,7 +30,7 @@ public class MainApp extends Application {
 
     private static final int WINDOW_WIDTH = 1920;
     private static final int WINDOW_HEIGHT = 1080;
-    private static final String APP_TITLE = "Pet Game - Björni";
+    private static final String APP_TITLE = "Björni";
     private static final String SAVE_FILE_NAME = "savegame.dat";
 
     private final GameClock clock = new GameClock();
