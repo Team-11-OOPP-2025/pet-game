@@ -1,9 +1,8 @@
 package com.eleven.pet.view;
 
-import java.util.Random;
-
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.controller.PetController;
+import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.DayCycle;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherState;
@@ -12,7 +11,6 @@ import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
 import com.eleven.pet.particle.ParticleSystem;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -33,6 +31,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.util.Random;
+
 /**
  * PetView - UML-compliant implementation integrating existing UI design
  */
@@ -44,7 +44,7 @@ public class PetView {
     private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
     private ParticleSystem particleSystem;
-    
+
     // UI Components (UML standard controls)
     private ImageView petImageView;
     private StackPane backgroundPane;
@@ -61,7 +61,7 @@ public class PetView {
     private Label weatherLabel;
     private Label timeLabel;
     private StackPane sleepButtonContainer;
-    
+
     // Legacy fields for existing visual design
     private ImageView backgroundView;
     private Image earlyMorningBackground;
@@ -120,7 +120,7 @@ public class PetView {
         eveningBackground = loader.getImage("Evening");
         earlyNightBackground = loader.getImage("EarlyNight");
         deepNightBackground = loader.getImage("DeepNight");
-        
+
         // Fallback if DeepNight doesn't exist
         if (deepNightBackground == null && dayBackground != null) {
             deepNightBackground = dayBackground;
@@ -269,8 +269,10 @@ public class PetView {
 
         button.setOnAction(_ -> {
             if (controller != null) {
-                controller.handleFeed();
-                // No need to manually update bar - binding handles it!
+                // TODO: Link feed counter to actual food in inventory
+
+
+                controller.handleFeedAction();
             }
         });
 
@@ -384,31 +386,39 @@ public class PetView {
 
         container.getChildren().addAll(label, foodCounterText);
 
+
+        if (model != null && model.getInventory() != null) {
+            foodCounterText.setText(String.valueOf(model.getInventory().getQuantity(ItemRegistry.get(0))));
+            model.getInventory().amountProperty(ItemRegistry.get(0)).addListener((_, _, _) -> {
+                foodCounterText.setText(String.valueOf(model.getInventory().getQuantity(ItemRegistry.get(0))));
+            });
+        }
+
         return container;
     }
-    
+
     private Label createDigitalClock() {
         timeLabel = new Label("00:00");
         timeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
         timeLabel.setTextFill(Color.WHITE);
         timeLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
-        
+
         if (clock != null) {
             updateClockDisplay();
             clock.gameTimeProperty().addListener((_, _, _) -> updateClockDisplay());
         }
-        
+
         return timeLabel;
     }
-    
+
     private void updateClockDisplay() {
         if (clock == null || timeLabel == null) return;
-        
+
         double gameTime = clock.getGameTime();
         // DAY_LENGTH_SECONDS is 24 seconds = full day (24 hours)
         // So each second = 1 hour in game time
         int hours = (int) gameTime % 24;
-        
+
         String timeString = String.format("%02d:00", hours);
         timeLabel.setText(timeString);
     }
@@ -574,7 +584,7 @@ public class PetView {
 
         return container;
     }
-    
+
     // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
         if (model == null || model.getStats() == null) return;
@@ -597,7 +607,7 @@ public class PetView {
             happinessStat.addListener((obs, oldVal, newVal) -> {
                 double percentage = newVal.intValue() / 100.0;
                 happinessFillRect.setWidth(225 * percentage);
-                
+
                 // Update animation state based on happiness
                 updateAnimationState(newVal.intValue());
             });
@@ -630,15 +640,15 @@ public class PetView {
     // NEW: Update animation state based on happiness level
     private void updateAnimationState(int happiness) {
         AnimationState newState = AnimationState.fromHappiness(happiness);
-        
+
         if (newState != currentAnimationState) {
             currentAnimationState = newState;
-            
+
             // Stop current animation
             if (petImageSwitcher != null) {
                 petImageSwitcher.stop();
             }
-            
+
             // Set initial image for new state
             switch (currentAnimationState) {
                 case VERY_HAPPY:
@@ -672,7 +682,7 @@ public class PetView {
                     isShowingSadBear1 = true;
                     break;
             }
-            
+
             // Restart animation with new state
             startPetImageSwitching();
         }
@@ -680,7 +690,8 @@ public class PetView {
 
     // NEW: Start random pet image switching
     private void startPetImageSwitching() {
-        if (petImageView == null || neutralBear == null || neutralBearLookingLeft == null || neutralBearLookingRight == null) return;
+        if (petImageView == null || neutralBear == null || neutralBearLookingLeft == null || neutralBearLookingRight == null)
+            return;
 
         petImageSwitcher = new Timeline(new KeyFrame(Duration.seconds(getRandomInterval()), _ -> {
             switchPetImage();
@@ -694,23 +705,21 @@ public class PetView {
     // NEW: Switch between pet images randomly
     private void switchPetImage() {
         if (petImageView == null) return;
-        
+
         Image currentImage = petImageView.getImage();
-        
+
         if (isSleeping) {
             // Switch between sleeping images
             if (currentImage == sleepingBear1) {
                 petImageView.setImage(sleepingBear2);
-            } 
-            else {
+            } else {
                 petImageView.setImage(sleepingBear1);
             }
         } else if (isCrying) {
             // Switch between crying images
             if (currentImage == cryingBear1) {
                 petImageView.setImage(cryingBear2);
-            } 
-            else {
+            } else {
                 petImageView.setImage(cryingBear1);
             }
         } else if (isSad || currentAnimationState == AnimationState.SAD) {
@@ -718,8 +727,7 @@ public class PetView {
             if (currentImage == sadBear1) {
                 petImageView.setImage(sadBear2);
                 isShowingSadBear1 = false;
-            } 
-            else {
+            } else {
                 petImageView.setImage(sadBear1);
                 isShowingSadBear1 = true;
             }
@@ -762,7 +770,7 @@ public class PetView {
                 return 0.5; // 0.5-1 second for sadBear2
             }
         }
-        
+
         // Adjust speed based on happiness level
         switch (currentAnimationState) {
             case VERY_HAPPY:
@@ -773,77 +781,77 @@ public class PetView {
         }
     }
 
-    
+
     // ========== UML Methods (Skeleton Implementation) ==========
-    
+
     public void showSaveIcon(boolean visible) {
         // TODO: Implement save icon visibility toggle
     }
-    
+
     public void promptSleep() {
         // TODO: Implement sleep prompt dialog
     }
-    
+
     public void showMinigameResult(MinigameResult result) {
         // TODO: Implement minigame result display
     }
-    
+
     private HBox createTopPanel() {
         // TODO: Implement top panel with weather and time labels
         return new HBox();
     }
-    
+
     private VBox createStatsPanel() {
         // TODO: Implement stats panel with progress bars
         return new VBox();
     }
-    
+
     private VBox createStatRow(String label, ProgressBar bar) {
         // TODO: Implement stat row layout
         return new VBox();
     }
-    
+
     private ProgressBar createStatBar(String name) {
         // TODO: Implement progress bar creation
         return new ProgressBar();
     }
-    
+
     private HBox createButtonPanel() {
         // TODO: Implement button panel with all action buttons
         return new HBox();
     }
-    
+
     private void setupEventHandlers() {
         // TODO: Implement event handler setup
     }
-    
+
     private void bindToModel() {
         bindStatBarsToModel();
     }
-    
+
     private void observeEnvironment() {
         if (clock != null) {
             updateBaseBackground(clock.getCycle());
             updateSleepButtonVisibility();
-            
+
             clock.cycleProperty().addListener((_, _, newCycle) -> {
                 updateBaseBackground(newCycle);
             });
-            
+
             clock.gameTimeProperty().addListener((_, _, _) -> {
                 updateSleepButtonVisibility();
             });
         }
     }
-    
+
     private void updateVisuals() {
         // TODO: Implement visual update logic
     }
-    
+
     private void updatePetSprite() {
         // TODO: Implement pet sprite update based on state
     }
-    
+
     private void updateBaseBackground(DayCycle cycle) {
         if (backgroundView == null) return;
 
@@ -877,20 +885,20 @@ public class PetView {
             backgroundView.setImage(newBackground);
         }
     }
-    
+
     private void updateWeatherOverlay(WeatherState weather) {
         // TODO: Implement weather overlay update
     }
-    
+
     private void updateSleepButtonVisibility() {
         if (clock == null || sleepButtonContainer == null) return;
-        
+
         double gameTime = clock.getGameTime();
         double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
-        
+
         // Calculate hour (0-23)
         double hour = normalizedTime * 24.0;
-        
+
         // Show sleep button between 20:00-24:00 and 00:00-08:00
         boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
         sleepButtonContainer.setVisible(isSleepTime);
