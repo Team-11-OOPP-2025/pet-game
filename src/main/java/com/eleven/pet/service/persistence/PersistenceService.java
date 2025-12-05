@@ -9,6 +9,7 @@ import com.eleven.pet.model.Inventory;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
+import com.eleven.pet.model.items.ItemRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayInputStream;
@@ -136,7 +137,7 @@ public class PersistenceService {
         if (data == null || inventory == null) return;
         data.forEach((id, qty) -> {
             // Lookup item by ID and add to inventory
-            Optional.ofNullable(com.eleven.pet.data.ItemRegistry.get(id))
+            Optional.ofNullable(ItemRegistry.get(id))
                     .ifPresent(item -> inventory.add(item, qty));
         });
     }

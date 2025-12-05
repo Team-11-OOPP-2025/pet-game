@@ -1,10 +1,8 @@
-package com.eleven.pet.particle;
+package com.eleven.pet.view.particles;
 
 import javafx.scene.canvas.GraphicsContext;
 
-@SuppressWarnings({"all"})
-public class LeavesParticle /* extends Particle */ {
-    @SuppressWarnings("unused")
+public class LeavesParticle extends Particle {
     private double rotation;
     
     public LeavesParticle(double x, double y) {

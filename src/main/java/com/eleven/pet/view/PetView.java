@@ -2,7 +2,6 @@ package com.eleven.pet.view;
 
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.controller.PetController;
-import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.DayCycle;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherState;
@@ -10,7 +9,8 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.PetStats;
-import com.eleven.pet.particle.ParticleSystem;
+import com.eleven.pet.model.items.ItemRegistry;
+import com.eleven.pet.view.particles.ParticleSystem;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;

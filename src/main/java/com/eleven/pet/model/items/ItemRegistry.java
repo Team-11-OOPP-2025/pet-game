@@ -1,6 +1,4 @@
-package com.eleven.pet.data;
-
-import com.eleven.pet.model.items.Item;
+package com.eleven.pet.model.items;
 
 import java.util.HashMap;
 import java.util.Map;
