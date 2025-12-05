@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+savegame.dat
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -10,6 +11,7 @@ target/
 .idea/compiler.xml
 .idea/libraries/
 .idea/discord.xml
+/.idea/misc.xml
 *.iws
 *.iml
 *.ipr

@@ -14,11 +14,15 @@ public class GameClock {
     private final List<TimeListener> listeners = new ArrayList<>();
     private final DoubleProperty gameTime = new SimpleDoubleProperty(0.0);
     private final ObjectBinding<DayCycle> currentCycle;
-    private final double TIME_SCALE = 1.0;
+    private double TIME_SCALE = 1.0;
     //private final double NIGHT_THRESHOLD = GameConfig.NIGHT_START_TIME;
     private boolean paused = false;
 
     public GameClock() {
+        // Start at 12:00 (noon) - 12/24 = 0.5 of the day
+        double noonTime = (12.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
+        gameTime.set(noonTime);
+        
         currentCycle = Bindings.createObjectBinding(
                 this::calculateCycle,
                 gameTime
@@ -49,6 +53,14 @@ public class GameClock {
 
     public boolean isPaused() {
         return paused;
+    }
+
+    public void setTimeScale(double scale) {
+        this.TIME_SCALE = Math.max(0.1, Math.min(scale, 10.0)); // Clamp between 0.1x and 10x
+    }
+
+    public double getTimeScale() {
+        return TIME_SCALE;
     }
 
     private DayCycle calculateCycle() {
