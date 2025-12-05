@@ -26,7 +26,10 @@ public class FoodItem implements Item {
     }
 
     @Override
-    public void use(PetModel pet) {
-        pet.getStats().modifyStat(PetStats.STAT_HUNGER, healAmount);
+    public boolean use(PetModel pet) {
+        if (pet.getInventory().remove(this, 1)) {
+            return pet.getStats().modifyStat(PetStats.STAT_HUNGER, healAmount);
+        }
+        return false;
     }
 }

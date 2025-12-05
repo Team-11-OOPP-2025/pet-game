@@ -1,5 +1,6 @@
 package com.eleven.pet;
 
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.config.GameItems;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
@@ -31,7 +32,6 @@ public class MainApp extends Application {
     private static final int WINDOW_HEIGHT = 1080;
     private static final String APP_TITLE = "Pet Game - Björni";
     private static final String SAVE_FILE_NAME = "savegame.dat";
-    private static final double WEATHER_CHANGE_INTERVAL = 30.0;
 
     private final GameClock clock = new GameClock();
     private final WeatherSystem weatherSystem = new WeatherSystem();
@@ -136,7 +136,7 @@ public class MainApp extends Application {
      */
     private void startWeatherSystem() {
         weatherTimer = new Timeline(new KeyFrame(
-                Duration.seconds(WEATHER_CHANGE_INTERVAL),
+                Duration.seconds(GameConfig.WEATHER_CHANGE_INTERVAL),
                 event -> {
                     weatherSystem.changeWeather();
                 }

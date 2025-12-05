@@ -1,6 +1,5 @@
 package com.eleven.pet.controller;
 
-import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.data.ItemRegistry;
 import com.eleven.pet.environment.clock.GameClock;
@@ -38,7 +37,11 @@ public class PetController {
     }
 
     public void handleFeedAction() {
-        model.performConsume(ItemRegistry.get(0));
+        if (model.performConsume(ItemRegistry.get(0))) {
+            System.out.println("Pet has been fed.");
+        } else {
+            System.out.println("No food available to feed the pet.");
+        }
     }
 
     public void handleSleepAction() {

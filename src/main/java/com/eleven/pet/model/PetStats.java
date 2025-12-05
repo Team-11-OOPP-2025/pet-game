@@ -28,12 +28,14 @@ public class PetStats {
         return new HashMap<>(stats);
     }
 
-    public void modifyStat(String name, int delta) {
+    public boolean modifyStat(String name, int delta) {
         IntegerProperty stat = getStat(name);
         if (stat != null) {
             int newVal = validate(stat.get() + delta);
             stat.set(newVal);
+            return true;
         }
+        return false;
     }
     
     public void calculateDerivedHappiness() {
