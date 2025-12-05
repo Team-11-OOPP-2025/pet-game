@@ -179,7 +179,7 @@ public class PetView {
 
         petImageView = createPetImage();
         StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(petImageView, new Insets(0, 0, 70, 0));
+        StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
         root.getChildren().add(petImageView);
 
         // YOUR EXACT STAT BARS!
@@ -248,8 +248,8 @@ public class PetView {
     private ImageView createPetImage() {
         ImageView imageView = new ImageView();
         imageView.setImage(neutralBear);
-        imageView.setFitWidth(250);
-        imageView.setFitHeight(250);
+        imageView.setFitWidth(400);
+        imageView.setFitHeight(400);
         imageView.setPreserveRatio(true);
 
         // Make pet clickable to toggle sleepy state
@@ -691,7 +691,6 @@ public class PetView {
                     isSad = false;
                     isHappy = false;
                     petImageView.setImage(cryingBear1);
-                    isShowingSadBear1 = true;
                     break;
             }
 
