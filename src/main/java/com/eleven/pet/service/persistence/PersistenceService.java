@@ -135,6 +135,14 @@ public class PersistenceService {
 
     private void applyInventory(Map<Integer, Integer> data, Inventory inventory) {
         if (data == null || inventory == null) return;
+
+        // 1) Clear current inventory (including any default/replenished items)
+        inventory.getAllOwnedItems().forEach((id, qty) ->
+                Optional.ofNullable(ItemRegistry.get(id))
+                        .ifPresent(item -> inventory.remove(item, qty))
+        );
+
+        // 2) Apply saved inventory exactly
         data.forEach((id, qty) -> {
             // Lookup item by ID and add to inventory
             Optional.ofNullable(ItemRegistry.get(id))

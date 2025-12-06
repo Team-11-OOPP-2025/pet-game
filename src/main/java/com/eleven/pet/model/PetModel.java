@@ -92,18 +92,6 @@ public class PetModel implements TimeListener, WeatherListener {
         return currentState;
     }
 
-    public String getName(){
-        return name;
-    }
-
-    public PetStats getStats(){
-        return stats;
-    }
-
-    public GameClock getClock() {
-        return clock;
-    }
-
     // Consumable interaction
     public boolean performConsume(Item item) {
         // TODO: Implement consumable interaction
@@ -232,14 +220,31 @@ public class PetModel implements TimeListener, WeatherListener {
             currentState.get().onTick(this);
         }
 
-        // Keep happiness in sync with the core stats
-        stats.calculateDerivedHappiness();
+        // Auto-wake up at 8:00 AM if sleeping
+        if (isSleepingWithTimeAcceleration && clock != null) {
+            double gameTime = clock.getGameTime();
+            double normalizedTime = gameTime / 24;
+            double hour = normalizedTime * 24.0;
+
+            // Wake up at 8:00 AM
+            if (hour >= 8.0 && hour < 9.0 && !passedEightAM) {
+                wakeUp();
+                passedEightAM = true;
+                System.out.println(name + " automatically woke up at 8:00 AM.");
+            }
+
+            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
+            if (hour >= 9.0 || hour < 8.0) {
+                if (passedEightAM) {
+                    passedEightAM = false;
+                }
+            }
+        }
     }
 
     @Override
     public void onWeatherChange(WeatherState newWeather) {
         // TODO: Implement weather change reaction (modify happiness based on weather)
     }
-
 
 }

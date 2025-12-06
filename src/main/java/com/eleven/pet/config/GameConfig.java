@@ -9,9 +9,8 @@ public final class GameConfig {
     // Recovery rates
     public static final double SLEEP_RECOVERY_RATE = 1.0;
 
-    // Time system
-    // Time system
-    public static final double DAY_LENGTH_SECONDS = 24 * 60 * 60; // 24 hours in seconds
+    // Time system: one in-game day lasts 24 seconds
+    public static final double DAY_LENGTH_SECONDS = 24.0;
     public static final double NIGHT_START_TIME = 0.5;
 
 
