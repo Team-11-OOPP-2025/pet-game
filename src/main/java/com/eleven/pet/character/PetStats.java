@@ -39,8 +39,24 @@ public class PetStats {
     }
 
     public void calculateDerivedHappiness() {
-        // TODO: Implement derived happiness calculation
+        IntegerProperty hunger = getStat(STAT_HUNGER);
+        IntegerProperty energy = getStat(STAT_ENERGY);
+        IntegerProperty cleanliness = getStat(STAT_CLEANLINESS);
+        IntegerProperty happiness = getStat(STAT_HAPPINESS);
+
+        // If any required stat is missing, do nothing
+        if (hunger == null || energy == null || cleanliness == null || happiness == null) {
+            return;
+        }
+
+        // All bars: higher = better
+        int sum = hunger.get() + energy.get() + cleanliness.get();
+        int average = Math.round(sum / 3.0f);
+
+        happiness.set(validate(average));
     }
+
+
 
     private int validate(int value) {
         return Math.max(GameConfig.MIN_STAT_VALUE, Math.min(GameConfig.MAX_STAT_VALUE, value));

@@ -17,7 +17,11 @@ public class AwakeState implements PetState {
 
     @Override
     public void handlePlay(PetModel pet) {
-        // TODO: Implement play behavior for awake state
+        if (pet.canPlayMinigame()) {
+            pet.playRandomMinigame();
+        } else {
+            System.out.println(pet.getName() + " is too tired or hungry to play right now.");
+        }
     }
 
     @Override
@@ -27,7 +31,10 @@ public class AwakeState implements PetState {
 
     @Override
     public void handleClean(PetModel pet) {
-        // TODO: Implement clean behavior for awake state
+        // Simple cleaning effect: improve cleanliness and a bit of happiness
+        pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, 20);
+        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 5);
+        System.out.println(pet.getName() + " has been cleaned.");
     }
 
     @Override
@@ -64,11 +71,11 @@ public class AwakeState implements PetState {
 
     @Override
     public void onEnter(PetModel pet) {
-        // Todo: Implement onEnter behavior for awake state
+        System.out.println(pet.getName() + " is now awake.");
     }
 
     @Override
     public void onExit(PetModel pet) {
-        // Todo: Implement onExit behavior for awake state
+        System.out.println(pet.getName() + " is leaving the awake state.");
     }
 }
