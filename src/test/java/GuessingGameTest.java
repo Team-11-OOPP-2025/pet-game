@@ -1,6 +1,6 @@
-import com.eleven.pet.model.GuessingGame;
-import com.eleven.pet.model.MinigameResult;
-import com.eleven.pet.model.PetModel;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.minigames.MinigameResult;
+import com.eleven.pet.minigames.impl.GuessingGame;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;

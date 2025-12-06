@@ -1,6 +1,6 @@
-import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.environment.clock.DayCycle;
-import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.core.GameConfig;
+import com.eleven.pet.environment.time.DayCycle;
+import com.eleven.pet.environment.time.GameClock;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

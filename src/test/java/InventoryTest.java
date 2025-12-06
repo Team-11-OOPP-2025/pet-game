@@ -1,7 +1,6 @@
-import com.eleven.pet.config.GameItems;
-import com.eleven.pet.model.Inventory;
-import com.eleven.pet.model.items.Item;
-import com.eleven.pet.model.items.ItemRegistry;
+import com.eleven.pet.inventory.Inventory;
+import com.eleven.pet.inventory.Item;
+import com.eleven.pet.inventory.ItemRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +13,6 @@ public class InventoryTest {
     @BeforeEach
     void setUp() {
         inventory = new Inventory();
-        GameItems.init();
     }
 
     @Test

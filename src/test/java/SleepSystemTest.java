@@ -1,11 +1,11 @@
-import com.eleven.pet.behavior.AsleepState;
-import com.eleven.pet.behavior.AwakeState;
-import com.eleven.pet.behavior.StateRegistry;
-import com.eleven.pet.config.GameConfig;
-import com.eleven.pet.environment.clock.GameClock;
-import com.eleven.pet.model.PetFactory;
-import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.PetStats;
+import com.eleven.pet.character.PetFactory;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
+import com.eleven.pet.character.behavior.AsleepState;
+import com.eleven.pet.character.behavior.AwakeState;
+import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.core.GameConfig;
+import com.eleven.pet.environment.time.GameClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

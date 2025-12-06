@@ -1,5 +1,5 @@
-import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.PetStats;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

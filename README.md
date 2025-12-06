@@ -50,12 +50,12 @@ When the user closes the application, Björni enters **Hibernation Mode** (seria
 
 The project follows a **model-heavy MVC architecture** with clear separation of responsibilities:
 
-- **Model ("The Brain")** – package `com.eleven.pet.model`
+- **Model ("The Brain")** – package `com.eleven.pet.minigames`
   - `PetModel`: Core domain object representing Björni, holding his name, `PetStats`, current `PetState`, and references to `WeatherSystem` and `GameClock`.
   - `PetStats`: Manages numeric stats (hunger, happiness, energy, cleanliness) as JavaFX `IntegerProperty` values with validation.
   - `PetFactory`: Responsible for correctly constructing new `PetModel` instances and wiring them to environment systems.
 
-- **View ("The Face")** – package `com.eleven.pet.view`
+- **View ("The Face")** – package `com.eleven.pet.vfx`
   - `PetView`: Builds the JavaFX scene (backgrounds, pet sprite, stat bars, buttons) and binds UI elements to the model’s observable properties.
   - `AssetLoader`: Singleton that caches JavaFX `Image` assets (pet sprites, backgrounds, overlays) to avoid repeated disk I/O.
   - `view.particles.*`: Implements a reusable particle system for visual effects such as rain.
@@ -181,7 +181,7 @@ This will:
 
 - Download dependencies (JavaFX, AutoService, Gson).
 - Compile the project with Java 23.
-- Launch the JavaFX application, starting `com.eleven.pet.MainApp`.
+- Launch the JavaFX application, starting `com.eleven.pet.core.MainApp`.
 
 On first launch, the game will generate or load a cryptographic key and create a secure save file for Björni’s hibernation data.
 

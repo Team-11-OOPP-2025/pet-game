@@ -1,7 +1,7 @@
-import com.eleven.pet.environment.clock.GameClock;
+import com.eleven.pet.character.PetFactory;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.model.PetFactory;
-import com.eleven.pet.model.PetModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
