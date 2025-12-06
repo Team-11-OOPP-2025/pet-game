@@ -12,23 +12,26 @@ public class AsleepState implements PetState {
 
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        // TODO: Implement consume behavior for asleep state
+        // Pet is asleep; ignore eating actions
+        System.out.println(pet.getName() + " is asleep and cannot eat right now.");
         return false;
     }
 
     @Override
     public void handlePlay(PetModel pet) {
-        // TODO: Implement play behavior for asleep state
+        System.out.println(pet.getName() + " is asleep and cannot play right now.");
     }
 
     @Override
     public void handleSleep(PetModel pet) {
-        // TODO: Implement sleep behavior for asleep state
+        // When the pet is already asleep and the user presses the sleep button,
+        // treat it as a request to wake up.
+        pet.wakeUp();
     }
 
     @Override
     public void handleClean(PetModel pet) {
-        // TODO: Implement clean behavior for asleep state
+        System.out.println(pet.getName() + " is asleep and cannot be cleaned right now.");
     }
 
     @Override
@@ -76,7 +79,8 @@ public class AsleepState implements PetState {
 
     @Override
     public void onExit(PetModel pet) {
-        //Todo: Implement onExit behavior for asleep state
+        // Currently nothing special to do; kept for symmetry and future use
+        System.out.println(pet.getName() + " woke up from sleep.");
     }
 
 }

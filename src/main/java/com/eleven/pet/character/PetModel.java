@@ -4,6 +4,7 @@ import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
@@ -192,9 +193,30 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     public boolean shouldPromptSleep() {
-        // TODO: Implement sleep prompt logic
-        return false;
+        // No clock -> no prompt
+        if (clock == null) {
+            return false;
+        }
+
+        // Already asleep or has slept this night -> no prompt
+        if (currentState.get() instanceof AsleepState || sleptThisNight) {
+            return false;
+        }
+
+        // Current in-game hour
+        double gameTime = clock.getGameTime();
+        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS; // 0.0–1.0
+        double hour = (normalizedTime * 24.0) % 24.0;
+
+        // Pet's energy level
+        int energy = stats.getStat(PetStats.STAT_ENERGY).get();
+
+        boolean isLate = hour >= 20.0 || hour < 2.0; // “night” window: 20:00–02:00
+        boolean isTired = energy <= 40;
+
+        return isLate && isTired;
     }
+
 
     // Environment listeners
     @Override
