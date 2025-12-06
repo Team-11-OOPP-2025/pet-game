@@ -244,7 +244,7 @@ This project was created by a team of four developers:
 ## Acknowledgements
 
 - Documentation written by GPT-5.1 based on project structure and rough draft write-up.
-- Proofread and edited by Raghib Hussain.
+- Proofread and edited by the team.
 
 ## License
 
