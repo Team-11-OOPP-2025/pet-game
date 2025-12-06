@@ -1,14 +1,22 @@
 import com.eleven.pet.view.AssetLoader;
 import javafx.scene.image.Image;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class AssetLoaderTest {
+    private AssetLoader assetLoader;
+
+    @BeforeEach
+    void setUp() {
+        assetLoader = AssetLoader.getInstance();
+        assetLoader.loadAll();
+    }
+
     @Test
-    public void testAssetLoading() {
-        AssetLoader assetLoader = AssetLoader.getInstance();
+    void testAssetLoading() {
         String imageName = "Bear";
         Image image = assetLoader.getImage(imageName);
         assertEquals(311.0, image.getWidth(), 0.1);
@@ -16,16 +24,14 @@ public class AssetLoaderTest {
     }
 
     @Test
-    public void testSingleton() {
-        AssetLoader assetLoader = AssetLoader.getInstance();
-        AssetLoader anotherInstance = AssetLoader.getInstance();
-        assertSame(assetLoader, anotherInstance);
+    void testSingleton() {
+        assertSame(AssetLoader.getInstance(), assetLoader);
     }
 
     @Test
-    public void testMissingImageFallback() {
+    void testMissingImageFallback() {
         AssetLoader assetLoader = AssetLoader.getInstance();
-        String missingImagePath = "images/non_existent_image.png";
+        String missingImagePath = "non_existent_image";
         Image image = assetLoader.getImage(missingImagePath);
         assertSame(null, image);
     }

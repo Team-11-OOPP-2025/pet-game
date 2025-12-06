@@ -62,11 +62,10 @@ public class AssetLoader {
                 "Day",
                 "Evening",
                 "EarlyNight",
-                "LateNight",
         };
 
-        for (String ass : assets) {
-            getImage(ass);
+        for (String asset : assets) {
+            getImage(asset);
         }
     }
 }

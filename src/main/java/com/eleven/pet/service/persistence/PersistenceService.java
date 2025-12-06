@@ -46,7 +46,7 @@ public class PersistenceService {
             dto.setInventoryData(extractInventory(model.getInventory()));
 
             dto.setSleepStartTime(model.getSleepStartTime());
-            dto.setSleptThisNight(model.getSleptThisNight());
+            dto.setSleptThisNight(model.isSleptThisNight());
 
             ByteArrayOutputStream jsonBuffer = new ByteArrayOutputStream();
             jsonMapper.writeValue(jsonBuffer, dto);
@@ -66,7 +66,7 @@ public class PersistenceService {
      * Load pet data from the save file.
      *
      * @param weatherSystem the weather system to attach to the loaded pet
-     * @param gameClock the game clock to attach to the loaded pet
+     * @param gameClock     the game clock to attach to the loaded pet
      * @return Optional containing the loaded pet model, or empty if no save file exists
      * @throws GameException if the save file exists but cannot be read or is corrupted
      */

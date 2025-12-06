@@ -31,9 +31,7 @@ public class SleepSystemTest {
     @Test
     void testSleepButtonRestoresStats() {
         // Set initial low stats
-
         pet.getStats().modifyStat(PetStats.STAT_ENERGY, -40); // 50 - 40 = 10
-
         pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -30); // 50 - 30 = 20
 
         int energyBefore = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
@@ -114,5 +112,14 @@ public class SleepSystemTest {
         // Verify NO penalty was applied (stats should be the same)
         assertEquals(0, energyAfter - energyBefore, "Energy should not decrease when pet slept");
         assertEquals(0, happinessAfter - happinessBefore, "Happiness should not decrease when pet slept");
+    }
+
+    @Test
+    void testControllerSleep() {
+        // Simulate pressing sleep button via controller
+        pet.performSleep();
+
+        // Verify pet is in asleep state
+        assertEquals(AsleepState.STATE_NAME, pet.getCurrentState().getStateName(), "Pet should be in Asleep state after sleep action");
     }
 }

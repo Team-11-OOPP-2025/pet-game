@@ -3,7 +3,6 @@ package com.eleven.pet.controller;
 import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.model.Minigame;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.model.items.ItemRegistry;
 import com.eleven.pet.service.persistence.GameException;
@@ -36,6 +35,9 @@ public class PetController {
     }
 
     public void handleFeedAction() {
+        // Delegates the consumption to the current state
+        // TODO: Use actual food item from inventory instead of placeholder
+        // Achieve that through accepting a Item parameter in this method and passing it down
         if (model.performConsume(ItemRegistry.get(0))) {
             System.out.println("Pet has been fed.");
         } else {
@@ -44,36 +46,31 @@ public class PetController {
     }
 
     public void handleSleepAction() {
-        model.sleep();
-    }
-
-    public void handleSleepButton() {
         // Called when player clicks the sleep button during sleep hours
         // Switch to asleep state which will apply sleep rewards in onEnter
         model.performSleep();
     }
 
     public void handlePlayAction() {
-        // Play a random minigame
+        // Delegate the task to model which delegates to current state
         model.playRandomMinigame();
     }
 
-    public void handlePlayMinigame(Minigame minigame) {
-        model.playMinigame(minigame);
-    }
-
     public void handleCleanAction() {
-        model.clean();
+        // TODO: Cleaning requires certain conditions are met
+        model.performClean();
     }
 
     public void togglePause() {
-        // TODO: Implement pause/resume functionality
+        clock.setPaused(!clock.isPaused());
     }
 
     public void debugChangeWeather() {
-        // TODO: Implement debug weather change
+        weather.changeWeather();
     }
 
+
+    // Save Management
     public void initAutosave() {
         if (autosaveTimer != null || persistence == null) {
             return;
@@ -156,23 +153,5 @@ public class PetController {
         } else {
             System.err.println("Cannot save game on shutdown: persistence is not initialized.");
         }
-    }
-
-
-    // Legacy methods for backward compatibility
-    public void handleClean() {
-        handleCleanAction();
-    }
-
-    public void handleFeed() {
-        handleFeedAction();
-    }
-
-    public void handlePlay() {
-        model.playRandomMinigame();
-    }
-
-    public void handleSleep() {
-        handleSleepAction();
     }
 }
