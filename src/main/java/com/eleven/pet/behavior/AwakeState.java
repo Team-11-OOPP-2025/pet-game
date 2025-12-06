@@ -17,8 +17,13 @@ public class AwakeState implements PetState {
 
     @Override
     public void handlePlay(PetModel pet) {
-        // TODO: Implement play behavior for awake state
+        if (pet.canPlayMinigame()) {
+            pet.playRandomMinigame();
+        } else {
+            System.out.println(pet.getName() + " is too tired or hungry to play right now.");
+        }
     }
+
 
     @Override
     public void handleSleep(PetModel pet) {

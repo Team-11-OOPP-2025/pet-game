@@ -146,10 +146,26 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     // Minigame system
+    // Minigame system
     public boolean canPlayMinigame() {
-        // TODO: Implement minigame eligibility check
-        return true; // For now, always allow minigames
+        // Can't play while asleep
+        if (currentState.get() instanceof AsleepState) {
+            return false;
+        }
+
+        // If stats are missing, be safe and disallow
+        if (stats.getStat(PetStats.STAT_ENERGY) == null ||
+                stats.getStat(PetStats.STAT_HUNGER) == null) {
+            return false;
+        }
+
+        int energy = stats.getStat(PetStats.STAT_ENERGY).get();
+        int hunger = stats.getStat(PetStats.STAT_HUNGER).get();
+
+        // Simple rule: must be at least somewhat energetic and not starving
+        return energy >= 20 && hunger >= 20;
     }
+
 
     public MinigameResult playMinigame(Minigame minigame) {
         if (minigame == null) return null;
