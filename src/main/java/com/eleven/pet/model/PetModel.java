@@ -4,6 +4,7 @@ import com.eleven.pet.behavior.AsleepState;
 import com.eleven.pet.behavior.AwakeState;
 import com.eleven.pet.behavior.PetState;
 import com.eleven.pet.behavior.StateRegistry;
+import com.eleven.pet.config.GameConfig;
 import com.eleven.pet.environment.clock.GameClock;
 import com.eleven.pet.environment.clock.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
@@ -89,6 +90,10 @@ public class PetModel implements TimeListener, WeatherListener {
 
     public ReadOnlyObjectProperty<PetState> getStateProperty() {
         return currentState;
+    }
+
+    public String getName(){
+        return name;
     }
 
     // Consumable interaction
@@ -187,9 +192,30 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     public boolean shouldPromptSleep() {
-        // TODO: Implement sleep prompt logic
-        return false;
+        // No clock -> no prompt
+        if (clock == null) {
+            return false;
+        }
+
+        // Already asleep or has slept this night -> no prompt
+        if (currentState.get() instanceof AsleepState || sleptThisNight) {
+            return false;
+        }
+
+        // Current in-game hour
+        double gameTime = clock.getGameTime();
+        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS; // 0.0–1.0
+        double hour = (normalizedTime * 24.0) % 24.0;
+
+        // Pet's energy level
+        int energy = stats.getStat(PetStats.STAT_ENERGY).get();
+
+        boolean isLate = hour >= 20.0 || hour < 2.0; // “night” window: 20:00–02:00
+        boolean isTired = energy <= 40;
+
+        return isLate && isTired;
     }
+
 
     // Environment listeners
     @Override
@@ -198,26 +224,8 @@ public class PetModel implements TimeListener, WeatherListener {
             currentState.get().onTick(this);
         }
 
-        // Auto-wake up at 8:00 AM if sleeping
-        if (isSleepingWithTimeAcceleration && clock != null) {
-            double gameTime = clock.getGameTime();
-            double normalizedTime = gameTime / 24;
-            double hour = normalizedTime * 24.0;
-
-            // Wake up at 8:00 AM
-            if (hour >= 8.0 && hour < 9.0 && !passedEightAM) {
-                wakeUp();
-                passedEightAM = true;
-                System.out.println(name + " automatically woke up at 8:00 AM.");
-            }
-
-            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
-            if (hour >= 9.0 || hour < 8.0) {
-                if (passedEightAM) {
-                    passedEightAM = false;
-                }
-            }
-        }
+        // Keep happiness in sync with the core stats
+        stats.calculateDerivedHappiness();
     }
 
     @Override
