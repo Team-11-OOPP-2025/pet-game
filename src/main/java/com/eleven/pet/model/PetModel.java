@@ -96,6 +96,14 @@ public class PetModel implements TimeListener, WeatherListener {
         return name;
     }
 
+    public PetStats getStats(){
+        return stats;
+    }
+
+    public GameClock getClock() {
+        return clock;
+    }
+
     // Consumable interaction
     public boolean performConsume(Item item) {
         // TODO: Implement consumable interaction
@@ -232,4 +240,6 @@ public class PetModel implements TimeListener, WeatherListener {
     public void onWeatherChange(WeatherState newWeather) {
         // TODO: Implement weather change reaction (modify happiness based on weather)
     }
+
+
 }
