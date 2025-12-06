@@ -87,37 +87,6 @@ public class PetModel implements TimeListener, WeatherListener {
         return currentState.get();
     }
 
-    public PetStats getStats() {
-        return stats;
-    }
-
-    public GameClock getClock() {
-        return clock;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isPassedEightAM() {
-        return passedEightAM;
-    }
-    public void setPassedEightAM(boolean passedEightAM) {
-        this.passedEightAM = passedEightAM;
-    }
-
-    public boolean isSleepingWithTimeAcceleration() {
-        return isSleepingWithTimeAcceleration;
-    }
-
-    public boolean isSleptThisNight() {
-        return sleptThisNight;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
     public ReadOnlyObjectProperty<PetState> getStateProperty() {
         return currentState;
     }
@@ -228,9 +197,6 @@ public class PetModel implements TimeListener, WeatherListener {
         if (currentState.get() != null) {
             currentState.get().onTick(this);
         }
-
-        // Recalculate derived happiness after state-specific updates
-        stats.calculateDerivedHappiness();
 
         // Auto-wake up at 8:00 AM if sleeping
         if (isSleepingWithTimeAcceleration && clock != null) {
