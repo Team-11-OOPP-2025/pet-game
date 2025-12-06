@@ -198,6 +198,9 @@ public class PetModel implements TimeListener, WeatherListener {
             currentState.get().onTick(this);
         }
 
+        // Recalculate derived happiness after state-specific updates
+        stats.calculateDerivedHappiness();
+
         // Auto-wake up at 8:00 AM if sleeping
         if (isSleepingWithTimeAcceleration && clock != null) {
             double gameTime = clock.getGameTime();

@@ -44,24 +44,18 @@ public class PetStats {
         IntegerProperty cleanliness = getStat(STAT_CLEANLINESS);
         IntegerProperty happiness = getStat(STAT_HAPPINESS);
 
+        // If any required stat is missing, do nothing
         if (hunger == null || energy == null || cleanliness == null || happiness == null) {
             return;
         }
 
-        // Lower hunger is better, so invert it
-        int hungerScore = 100 - hunger.get();
-        int energyScore = energy.get();
-        int cleanlinessScore = cleanliness.get();
+        // All bars: higher = better
+        int sum = hunger.get() + energy.get() + cleanliness.get();
+        int average = Math.round(sum / 3.0f);
 
-        // Weighted average (adjust weights to match assignment spec)
-        int derived = (int) Math.round(
-                0.4 * hungerScore +
-                        0.3 * energyScore +
-                        0.3 * cleanlinessScore
-        );
-
-        happiness.set(validate(derived));
+        happiness.set(validate(average));
     }
+
 
 
     private int validate(int value) {
