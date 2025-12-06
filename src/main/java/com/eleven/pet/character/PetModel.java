@@ -131,7 +131,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         // Change to awake state
         StateRegistry registry = StateRegistry.getInstance();
-        PetState awakeState = registry.getState("awake");
+        PetState awakeState = registry.getState(AwakeState.STATE_NAME);
         if (awakeState != null) {
             changeState(awakeState);
         }
