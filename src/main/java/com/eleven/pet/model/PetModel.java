@@ -176,6 +176,10 @@ public class PetModel implements TimeListener, WeatherListener {
         return sleptThisNight;
     }
 
+    public void setSleptThisNight(boolean b) {
+        this.sleptThisNight = b;
+    }
+
     // Minigame system
     public boolean canPlayMinigame() {
         // TODO: Implement minigame eligibility check
@@ -258,4 +262,6 @@ public class PetModel implements TimeListener, WeatherListener {
     public void onWeatherChange(WeatherState newWeather) {
         // TODO: Implement weather change reaction (modify happiness based on weather)
     }
+
+
 }
