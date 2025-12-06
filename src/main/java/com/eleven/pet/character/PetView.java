@@ -150,9 +150,9 @@ public class PetView {
     
     private void loadSpriteSheets() {
         AssetLoader loader = AssetLoader.getInstance();
-        sleepingBear = loader.getImage("pet/sleeping/SpriteSheetSleeping.png");
-        neutralBear = loader.getImage("pet/idle/SpriteSheetNeutral.png");
-        sadBear = loader.getImage("pet/sad/SpriteSheetSad.png");
+        sleepingBear = loader.getImage("pet/sleeping/SpriteSheetSleeping");
+        neutralBear = loader.getImage("pet/idle/SpriteSheetNeutral");
+        sadBear = loader.getImage("pet/sad/SpriteSheetSad");
         
     }
 
@@ -677,7 +677,7 @@ public class PetView {
     }
 
     private Image getSpriteSheetForCurrentState() {
-        return;
+        return null;
     }
 
     private void switchAnimation(SpriteSheetAnimation newAnimation) {

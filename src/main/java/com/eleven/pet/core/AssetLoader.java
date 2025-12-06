@@ -80,8 +80,7 @@ public class AssetLoader {
                 "pet/idle/LookingRightBear",
 
                 // Pet - Sleeping
-                "pet/sleeping/SleepingBear1",
-                "pet/sleeping/SleepingBear2",
+                "pet/sleeping/SpriteSheetSleeping",
 
                 // Pet - Happy
                 "pet/happy/HappyBear1",
@@ -94,6 +93,7 @@ public class AssetLoader {
                 "pet/sad/CryingBear2",
                 "pet/sad/SadBear1",
                 "pet/sad/SadBear2",
+                "pet/sad/SpriteSheetSad",
         };
 
         for (String asset : assets) {
