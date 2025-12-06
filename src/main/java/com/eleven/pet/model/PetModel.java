@@ -87,6 +87,37 @@ public class PetModel implements TimeListener, WeatherListener {
         return currentState.get();
     }
 
+    public PetStats getStats() {
+        return stats;
+    }
+
+    public GameClock getClock() {
+        return clock;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isPassedEightAM() {
+        return passedEightAM;
+    }
+    public void setPassedEightAM(boolean passedEightAM) {
+        this.passedEightAM = passedEightAM;
+    }
+
+    public boolean isSleepingWithTimeAcceleration() {
+        return isSleepingWithTimeAcceleration;
+    }
+
+    public boolean isSleptThisNight() {
+        return sleptThisNight;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
     public ReadOnlyObjectProperty<PetState> getStateProperty() {
         return currentState;
     }
