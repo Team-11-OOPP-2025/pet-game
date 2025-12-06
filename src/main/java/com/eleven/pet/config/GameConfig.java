@@ -10,8 +10,10 @@ public final class GameConfig {
     public static final double SLEEP_RECOVERY_RATE = 1.0;
 
     // Time system
-    public static final double DAY_LENGTH_SECONDS = 24.0; // Your 24-second cycle!
+    // Time system
+    public static final double DAY_LENGTH_SECONDS = 24 * 60 * 60; // 24 hours in seconds
     public static final double NIGHT_START_TIME = 0.5;
+
 
     // Action effects
     public static final int FEED_HUNGER_RESTORE = 30;

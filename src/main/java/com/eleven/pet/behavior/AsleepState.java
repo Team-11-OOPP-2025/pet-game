@@ -70,12 +70,13 @@ public class AsleepState implements PetState {
 
     @Override
     public void onEnter(PetModel pet) {
-        // Apply sleep rewards when entering sleep state
+        // Restore some energy from sleeping, but do not touch happiness.
         pet.getStats().modifyStat(PetStats.STAT_ENERGY, 40);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 20);
         pet.setSleptThisNight(true);
-        System.out.println(pet.getName() + " had a good night's sleep! Energy and happiness restored.");
+        System.out.println(pet.getName() + " had a good night's sleep! Energy restored.");
     }
+
+
 
     @Override
     public void onExit(PetModel pet) {

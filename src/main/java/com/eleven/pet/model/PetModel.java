@@ -96,6 +96,30 @@ public class PetModel implements TimeListener, WeatherListener {
         return name;
     }
 
+    public PetStats getStats() {
+        return stats;
+    }
+
+
+    // --- Sleep / clock helpers used by AwakeState & AsleepState ---
+
+    public GameClock getClock() {
+        return clock;
+    }
+
+    public boolean isSleepingWithTimeAcceleration() {
+        return isSleepingWithTimeAcceleration;
+    }
+
+    public boolean isPassedEightAM() {
+        return passedEightAM;
+    }
+
+    public void setPassedEightAM(boolean passedEightAM) {
+        this.passedEightAM = passedEightAM;
+    }
+
+
     // Consumable interaction
     public boolean performConsume(Item item) {
         // TODO: Implement consumable interaction
@@ -131,11 +155,13 @@ public class PetModel implements TimeListener, WeatherListener {
 
         // Change to awake state
         StateRegistry registry = StateRegistry.getInstance();
-        PetState awakeState = registry.getState("awake");
+        PetState awakeState = registry.getState(AwakeState.STATE_NAME);
         if (awakeState != null) {
             changeState(awakeState);
         }
     }
+
+
 
     public void performClean() {
         stats.modifyStat(PetStats.STAT_CLEANLINESS, 30);
