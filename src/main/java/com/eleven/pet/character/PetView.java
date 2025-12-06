@@ -9,7 +9,6 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.vfx.ParticleSystem;
-import com.eleven.pet.vfx.SpriteSheetAnimation;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,7 +27,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-
 import java.util.Random;
 
 /**
@@ -74,12 +72,7 @@ public class PetView {
 
     // Legacy fields for existing visual design
     private ImageView backgroundView;
-    private Image earlyMorningBackground;
-    private Image lateMorningBackground;
-    private Image dayBackground;
-    private Image eveningBackground;
-    private Image earlyNightBackground;
-    private Image deepNightBackground;
+    // Remove individual background image fields - no longer needed
     private StackPane feedButtonContainer;
     private StackPane cleanButtonContainer;
     private StackPane playButtonContainer;
@@ -89,25 +82,14 @@ public class PetView {
     private Rectangle cleanFillRect;
     private Rectangle happinessFillRect;
     private Image neutralBear;
-    private Image neutralBearLookingRight;
-    private Image neutralBearLookingLeft;
-    private Image cryingBear1;
-    private Image cryingBear2;
     private Image sadBear;
-    private Image sadBear1;
-    private Image sadBear2;
-    private Image sleepingBear1;
-    private Image sleepingBear2;
-    private Image happyBear1;
-    private Image happyBear2;
-    private Image happyBearLookingRight;
-    private Image happyBearLookingLeft;
-    private Random random = new Random();
-    private boolean isCrying = false;
-    private boolean isSad = false;
-    private boolean isHappy = false;
-    private boolean isSleeping = false;
-    private boolean isShowingSadBear1 = true; // Track which sad bear is showing
+    
+
+
+
+
+  
+
     private AnimationState currentAnimationState = AnimationState.NEUTRAL;
 
     // NEW: SpriteSheetAnimation fields
@@ -121,39 +103,32 @@ public class PetView {
     private long lastUpdateTime;
     private Image currentSpriteSheet;
     private Image sleepingBear;
-    
+    private Image cryingBear;
+
+    private BackgroundProvider backgroundProvider;
+   
+
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
         this.model = model;
         this.controller = controller;
         this.clock = clock;
         this.weatherSystem = weather;
         this.assetLoader = AssetLoader.getInstance();
-        loadBackgroundImages();
+        // Remove loadBackgroundImages() call
         loadSpriteSheets();
         initializeSpriteSheetAnimations();
-        }
-    
-    private void loadBackgroundImages() {
-        AssetLoader loader = AssetLoader.getInstance();
-        earlyMorningBackground = loader.getImage("backgrounds/Dawn");
-        lateMorningBackground = loader.getImage("backgrounds/Morning");
-        dayBackground = loader.getImage("backgrounds/Day");
-        eveningBackground = loader.getImage("backgrounds/Evening");
-        earlyNightBackground = loader.getImage("backgrounds/EarlyNight");
-        deepNightBackground = loader.getImage("backgrounds/DeepNight");
-    
-        // Fallback if DeepNight doesn't exist
-        if (deepNightBackground == null && dayBackground != null) {
-            deepNightBackground = dayBackground;
-        }
+        // Initialize background provider with AssetLoader
+        this.backgroundProvider = new BackgroundProvider(assetLoader);
     }
+    
+    // Remove loadBackgroundImages() method entirely
     
     private void loadSpriteSheets() {
         AssetLoader loader = AssetLoader.getInstance();
         sleepingBear = loader.getImage("pet/sleeping/SpriteSheetSleeping");
         neutralBear = loader.getImage("pet/idle/SpriteSheetNeutral");
         sadBear = loader.getImage("pet/sad/SpriteSheetSad");
-        
+        cryingBear = loader.getImage("pet/sad/SpriteSheetCrying");
     }
 
     // NEW: Initialize sprite sheet animations
@@ -163,23 +138,23 @@ public class PetView {
         // Adjust parameters based on actual sprite sheet layout
 
         // Neutral: 3 frames (neutral, lookLeft, lookRight), 0.5s per frame
-        neutralAnimation = new SpriteSheetAnimation(400, 400, 2, 3, 0.5f);
+        neutralAnimation = new SpriteSheetAnimation(309, 460, 2, 3, 1f);
         neutralAnimation.setLoop(true);
 
         // Happy: 4 frames, faster animation
-        happyAnimation = new SpriteSheetAnimation(400, 400, 4, 4, 0.3f);
+        happyAnimation = new SpriteSheetAnimation(309, 460, 4, 4, 0.3f);
         happyAnimation.setLoop(true);
 
         // Sad: 2 frames, slower with custom timing handled separately
-        sadAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 0.5f);
+        sadAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 0.5f);
         sadAnimation.setLoop(true);
 
         // Crying: 2 frames, fast
-        cryingAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 0.7f);
+        cryingAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 0.7f);
         cryingAnimation.setLoop(true);
 
         // Sleeping: 2 frames, slow breathing
-        sleepingAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 1.5f);
+        sleepingAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 1.5f);
         sleepingAnimation.setLoop(true);
 
         // Start with neutral animation
@@ -192,7 +167,6 @@ public class PetView {
         root.setStyle("-fx-background-color: #1a1a2e;");
 
         backgroundView = new ImageView();
-
         // Observe environment (clock/weather)
         observeEnvironment();
         if (clock == null && backgroundView != null) {
@@ -274,11 +248,11 @@ public class PetView {
     private ImageView createPetImage() {
         ImageView imageView = new ImageView();
         imageView.setImage(neutralBear);
-        imageView.setFitWidth(400);
-        imageView.setFitHeight(400);
+        imageView.setFitWidth(309);
+        imageView.setFitHeight(460);
         imageView.setPreserveRatio(true);
 
-        // Make pet clickable to toggle sleepy state
+        
         imageView.setStyle("-fx-cursor: hand;");
 
         return imageView;
@@ -451,35 +425,11 @@ public class PetView {
     }
 
     private void updateBackgroundByTime() {
-        if (backgroundView == null || clock == null) return;
+        if (clock == null || backgroundProvider == null || backgroundView == null) return;
 
-        DayCycle cycle = clock.getCycle();
-        Image newBackground;
-
-        switch (cycle) {
-            case DEEP_NIGHT:
-                newBackground = deepNightBackground != null ? deepNightBackground : dayBackground;
-                break;
-            case DAWN:
-                newBackground = earlyMorningBackground != null ? earlyMorningBackground : dayBackground;
-                break;
-            case MORNING:
-                newBackground = lateMorningBackground != null ? lateMorningBackground : dayBackground;
-                break;
-            case DAY:
-                newBackground = dayBackground;
-                break;
-            case EVENING:
-                newBackground = eveningBackground != null ? eveningBackground : dayBackground;
-                break;
-            case EARLY_NIGHT:
-                newBackground = earlyNightBackground != null ? earlyNightBackground : deepNightBackground;
-                break;
-            default:
-                newBackground = dayBackground;
-                break;
-        }
-
+        DayCycle currentCycle = clock.getCycle();
+        Image newBackground = backgroundProvider.getimage(currentCycle);
+        
         if (newBackground != null && !newBackground.isError()) {
             backgroundView.setImage(newBackground);
         }
@@ -565,6 +515,8 @@ public class PetView {
         Text symbol = new Text("⚡️ ");
         symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
+        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
         StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
 
         Text label = new Text("Energy");
@@ -592,8 +544,6 @@ public class PetView {
         cleanFillRect = new Rectangle(150, 25);
         cleanFillRect.setFill(Color.web("#3498db"));
         StackPane.setAlignment(cleanFillRect, Pos.CENTER_LEFT);
-
-        Text symbol = new Text("🧽 ");
         symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
         StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
@@ -770,31 +720,16 @@ public class PetView {
     }
 
     private void updateAnimationForState(String stateName) {
-        if ("ASLEEP".equals(stateName)) {
-            isSleeping = true;
-            isCrying = false;
-            isSad = false;
-            isHappy = false;
-            switchAnimation(sleepingAnimation);
-            currentAnimationState = AnimationState.NEUTRAL; // Reset state
-        } else if ("AWAKE".equals(stateName)) {
-            isSleeping = false;
-            if (model != null && model.getStats() != null) {
-                var happinessStat = model.getStats().getStat(PetStats.STAT_HAPPINESS);
-                if (happinessStat != null) {
-                    updateAnimationState(happinessStat.get());
-                }
-            }
-        }
+       //Todo: Implement animation update based on pet state
     }
 
     private void observeEnvironment() {
         if (clock != null) {
-            updateBaseBackground(clock.getCycle());
+            updateBackgroundByTime(); // Use the simplified method instead
             updateSleepButtonVisibility();
 
-            clock.cycleProperty().addListener((_, _, newCycle) -> {
-                updateBaseBackground(newCycle);
+            clock.cycleProperty().addListener((_, _, _) -> {
+                updateBackgroundByTime(); // Use the simplified method instead
             });
 
             clock.gameTimeProperty().addListener((_, _, _) -> {
@@ -809,40 +744,6 @@ public class PetView {
 
     private void updatePetSprite() {
         // TODO: Implement pet sprite update based on state
-    }
-
-    private void updateBaseBackground(DayCycle cycle) {
-        if (backgroundView == null) return;
-
-        Image newBackground;
-
-        switch (cycle) {
-            case DEEP_NIGHT:
-                newBackground = deepNightBackground != null ? deepNightBackground : dayBackground;
-                break;
-            case DAWN:
-                newBackground = earlyMorningBackground != null ? earlyMorningBackground : dayBackground;
-                break;
-            case MORNING:
-                newBackground = lateMorningBackground != null ? lateMorningBackground : dayBackground;
-                break;
-            case DAY:
-                newBackground = dayBackground;
-                break;
-            case EVENING:
-                newBackground = eveningBackground != null ? eveningBackground : dayBackground;
-                break;
-            case EARLY_NIGHT:
-                newBackground = earlyNightBackground != null ? earlyNightBackground : deepNightBackground;
-                break;
-            default:
-                newBackground = dayBackground;
-                break;
-        }
-
-        if (newBackground != null && !newBackground.isError()) {
-            backgroundView.setImage(newBackground);
-        }
     }
 
     private void updateWeatherOverlay(WeatherState weather) {

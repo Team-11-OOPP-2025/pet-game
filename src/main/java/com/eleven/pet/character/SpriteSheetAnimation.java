@@ -1,4 +1,4 @@
-package com.eleven.pet.vfx;
+package com.eleven.pet.character;
 
 public class SpriteSheetAnimation {
     private final int frameWidth;
