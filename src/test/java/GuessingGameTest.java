@@ -1,9 +1,10 @@
-import org.junit.jupiter.api.Test;
 import com.eleven.pet.model.GuessingGame;
 import com.eleven.pet.model.MinigameResult;
 import com.eleven.pet.model.PetModel;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GuessingGameTest {
 

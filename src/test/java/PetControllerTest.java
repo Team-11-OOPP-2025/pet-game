@@ -3,7 +3,6 @@ import com.eleven.pet.behavior.AwakeState;
 import com.eleven.pet.behavior.StateRegistry;
 import com.eleven.pet.controller.PetController;
 import com.eleven.pet.environment.clock.GameClock;
-import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.model.PetFactory;
 import com.eleven.pet.model.PetModel;
 import com.eleven.pet.service.persistence.EncryptionService;

@@ -1,14 +1,13 @@
 package com.eleven.pet.environment.clock;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.eleven.pet.config.GameConfig;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameClock {
     private final List<TimeListener> listeners = new ArrayList<>();

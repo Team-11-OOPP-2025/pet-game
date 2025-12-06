@@ -1,18 +1,11 @@
-import java.lang.reflect.Field;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.eleven.pet.environment.weather.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.eleven.pet.environment.weather.CloudyState;
-import com.eleven.pet.environment.weather.RainyState;
-import com.eleven.pet.environment.weather.SunnyState;
-import com.eleven.pet.environment.weather.WeatherListener;
-import com.eleven.pet.environment.weather.WeatherState;
-import com.eleven.pet.environment.weather.WeatherSystem;
+import java.lang.reflect.Field;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WeatherSystemTest {
 

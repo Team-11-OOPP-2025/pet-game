@@ -1,9 +1,10 @@
 package com.eleven.pet.view;
 
+import com.eleven.pet.controller.MiniGameController;
+import com.eleven.pet.model.PetModel;
+
 import javax.swing.*;
 import java.awt.*;
-import com.eleven.pet.model.PetModel;
-import com.eleven.pet.controller.MiniGameController;
 
 public class MiniGameView extends JPanel {
     
