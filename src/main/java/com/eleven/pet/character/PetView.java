@@ -9,10 +9,11 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.vfx.ParticleSystem;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import com.eleven.pet.vfx.SpriteSheetAnimation;
+import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -27,7 +28,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 
 import java.util.Random;
 
@@ -93,6 +93,7 @@ public class PetView {
     private Image neutralBearLookingLeft;
     private Image cryingBear1;
     private Image cryingBear2;
+    private Image sadBear;
     private Image sadBear1;
     private Image sadBear2;
     private Image sleepingBear1;
@@ -101,7 +102,6 @@ public class PetView {
     private Image happyBear2;
     private Image happyBearLookingRight;
     private Image happyBearLookingLeft;
-    private Timeline petImageSwitcher;
     private Random random = new Random();
     private boolean isCrying = false;
     private boolean isSad = false;
@@ -110,6 +110,18 @@ public class PetView {
     private boolean isShowingSadBear1 = true; // Track which sad bear is showing
     private AnimationState currentAnimationState = AnimationState.NEUTRAL;
 
+    // NEW: SpriteSheetAnimation fields
+    private SpriteSheetAnimation neutralAnimation;
+    private SpriteSheetAnimation happyAnimation;
+    private SpriteSheetAnimation sadAnimation;
+    private SpriteSheetAnimation cryingAnimation;
+    private SpriteSheetAnimation sleepingAnimation;
+    private SpriteSheetAnimation currentAnimation;
+    private AnimationTimer animationTimer;
+    private long lastUpdateTime;
+    private Image currentSpriteSheet;
+    private Image sleepingBear;
+    
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
         this.model = model;
         this.controller = controller;
@@ -117,11 +129,10 @@ public class PetView {
         this.weatherSystem = weather;
         this.assetLoader = AssetLoader.getInstance();
         loadBackgroundImages();
-        loadPetImages();
-    }
-
-
-    // YOUR EXACT CODE - KEPT AS-IS!
+        loadSpriteSheets();
+        initializeSpriteSheetAnimations();
+        }
+    
     private void loadBackgroundImages() {
         AssetLoader loader = AssetLoader.getInstance();
         earlyMorningBackground = loader.getImage("backgrounds/Dawn");
@@ -130,33 +141,52 @@ public class PetView {
         eveningBackground = loader.getImage("backgrounds/Evening");
         earlyNightBackground = loader.getImage("backgrounds/EarlyNight");
         deepNightBackground = loader.getImage("backgrounds/DeepNight");
-
+    
         // Fallback if DeepNight doesn't exist
         if (deepNightBackground == null && dayBackground != null) {
             deepNightBackground = dayBackground;
         }
     }
-
-    // YOUR EXACT CODE - KEPT AS-IS!
-    private void loadPetImages() {
+    
+    private void loadSpriteSheets() {
         AssetLoader loader = AssetLoader.getInstance();
-        neutralBearLookingLeft = loader.getImage("pet/idle/LookingLeftBear");
-        neutralBearLookingRight = loader.getImage("pet/idle/LookingRightBear");
-        neutralBear = loader.getImage("pet/idle/Bear");
-        cryingBear1 = loader.getImage("pet/sad/CryingBear1");
-        cryingBear2 = loader.getImage("pet/sad/CryingBear2");
-        sadBear1 = loader.getImage("pet/sad/SadBear1");
-        sadBear2 = loader.getImage("pet/sad/SadBear2");
-        sleepingBear1 = loader.getImage("pet/sleeping/SleepingBear1");
-        sleepingBear2 = loader.getImage("pet/sleeping/SleepingBear2");
-        happyBear1 = loader.getImage("pet/happy/HappyBear1");
-        happyBear2 = loader.getImage("pet/happy/HappyBear2");
-        happyBearLookingRight = loader.getImage("pet/happy/HappyBearLookingRight");
-        happyBearLookingLeft = loader.getImage("pet/happy/HappyBearLookingLeft");
-
+        sleepingBear = loader.getImage("pet/sleeping/SpriteSheetSleeping.png");
+        neutralBear = loader.getImage("pet/idle/SpriteSheetNeutral.png");
+        sadBear = loader.getImage("pet/sad/SpriteSheetSad.png");
+        
     }
 
-    // YOUR LAYOUT CODE - KEPT AS-IS!
+    // NEW: Initialize sprite sheet animations
+    private void initializeSpriteSheetAnimations() {
+        // Create animations for different states
+        // Assuming each animation has frames arranged horizontally in the sprite sheet
+        // Adjust parameters based on actual sprite sheet layout
+
+        // Neutral: 3 frames (neutral, lookLeft, lookRight), 0.5s per frame
+        neutralAnimation = new SpriteSheetAnimation(400, 400, 2, 3, 0.5f);
+        neutralAnimation.setLoop(true);
+
+        // Happy: 4 frames, faster animation
+        happyAnimation = new SpriteSheetAnimation(400, 400, 4, 4, 0.3f);
+        happyAnimation.setLoop(true);
+
+        // Sad: 2 frames, slower with custom timing handled separately
+        sadAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 0.5f);
+        sadAnimation.setLoop(true);
+
+        // Crying: 2 frames, fast
+        cryingAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 0.7f);
+        cryingAnimation.setLoop(true);
+
+        // Sleeping: 2 frames, slow breathing
+        sleepingAnimation = new SpriteSheetAnimation(400, 400, 2, 2, 1.5f);
+        sleepingAnimation.setLoop(true);
+
+        // Start with neutral animation
+        currentAnimation = neutralAnimation;
+        currentAnimation.play();
+    }
+
     public Pane initializeUI() {
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: #1a1a2e;");
@@ -180,7 +210,6 @@ public class PetView {
         StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
         root.getChildren().add(petImageView);
 
-        // YOUR EXACT STAT BARS!
         StackPane happinessBar = createHappinessBar();
         StackPane.setAlignment(happinessBar, Pos.TOP_LEFT);
         StackPane.setMargin(happinessBar, new Insets(90, 20, 20, 20));
@@ -236,13 +265,12 @@ public class PetView {
         // Bind UI to model
         bindToModel();
 
-        // Start random pet image switching
-        startPetImageSwitching();
+        // Start animation timer instead of Timeline
+        startAnimationTimer();
 
         return root;
     }
 
-    // YOUR EXACT CODE - KEPT AS-IS!
     private ImageView createPetImage() {
         ImageView imageView = new ImageView();
         imageView.setImage(neutralBear);
@@ -256,7 +284,6 @@ public class PetView {
         return imageView;
     }
 
-    // YOUR CODE - KEPT, SLIGHTLY UPDATED ACTION
     private StackPane createFeedButton() {
         StackPane container = new StackPane();
         container.setPrefSize(120, 50);
@@ -315,7 +342,6 @@ public class PetView {
         return container;
     }
 
-    // Sleep button for night time
     private StackPane createSleepButton() {
         StackPane container = new StackPane();
         container.setPrefSize(120, 50);
@@ -345,7 +371,6 @@ public class PetView {
         return container;
     }
 
-    // RENAMED from createMiniGamesButton, now calls handlePlay
     private StackPane createPlayButton() {
         StackPane container = new StackPane();
         container.setPrefSize(140, 50);
@@ -366,7 +391,6 @@ public class PetView {
 
         container.getChildren().addAll(bgRect, button);
 
-        // NOW FUNCTIONAL!
         button.setOnAction(_ -> {
             if (controller != null) {
                 controller.handlePlayAction();
@@ -376,7 +400,6 @@ public class PetView {
         return container;
     }
 
-    // YOUR EXACT CODE - KEPT AS-IS!
     private HBox createFoodCounter() {
         HBox container = new HBox(10);
         container.setAlignment(Pos.CENTER);
@@ -392,7 +415,6 @@ public class PetView {
         foodCounterText.setFill(Color.web("#e74c3c"));
 
         container.getChildren().addAll(label, foodCounterText);
-
 
         if (model != null && model.getInventory() != null) {
             foodCounterText.setText(String.valueOf(model.getInventory().getQuantity(ItemRegistry.get(0))));
@@ -422,15 +444,12 @@ public class PetView {
         if (clock == null || timeLabel == null) return;
 
         double gameTime = clock.getGameTime();
-        // DAY_LENGTH_SECONDS is 24 seconds = full day (24 hours)
-        // So each second = 1 hour in game time
         int hours = (int) gameTime % 24;
 
         String timeString = String.format("%02d:00", hours);
         timeLabel.setText(timeString);
     }
 
-    // NEW: Update background based on time of day using DayCycle
     private void updateBackgroundByTime() {
         if (backgroundView == null || clock == null) return;
 
@@ -465,9 +484,7 @@ public class PetView {
             backgroundView.setImage(newBackground);
         }
     }
-    // Moved to updateBaseBackground (UML method)
 
-    // YOUR EXACT STAT BAR CODE - ALL PRESERVED!
     private StackPane createHappinessBar() {
         StackPane container = new StackPane();
         container.setPrefSize(225, 38);
@@ -592,20 +609,17 @@ public class PetView {
         return container;
     }
 
-    // NEW: Automatic stat bar binding!
     private void bindStatBarsToModel() {
         if (model == null || model.getStats() == null) return;
 
         PetStats stats = model.getStats();
 
-        // Bind each bar to its stat (0-100 mapped to width) with null checks
         var hungerStat = stats.getStat(PetStats.STAT_HUNGER);
         if (hungerStat != null) {
             hungerStat.addListener((obs, oldVal, newVal) -> {
                 double percentage = newVal.intValue() / 100.0;
                 hungerFillRect.setWidth(150 * percentage);
             });
-            // Initial update
             hungerFillRect.setWidth(150 * hungerStat.get() / 100.0);
         }
 
@@ -615,10 +629,8 @@ public class PetView {
                 double percentage = newVal.intValue() / 100.0;
                 happinessFillRect.setWidth(225 * percentage);
 
-                // Update animation state based on happiness
                 updateAnimationState(newVal.intValue());
             });
-            // Initial update
             happinessFillRect.setWidth(225 * happinessStat.get() / 100.0);
             updateAnimationState(happinessStat.get());
         }
@@ -629,7 +641,6 @@ public class PetView {
                 double percentage = newVal.intValue() / 100.0;
                 energyFillRect.setWidth(150 * percentage);
             });
-            // Initial update
             energyFillRect.setWidth(150 * energyStat.get() / 100.0);
         }
 
@@ -639,156 +650,65 @@ public class PetView {
                 double percentage = newVal.intValue() / 100.0;
                 cleanFillRect.setWidth(150 * percentage);
             });
-            // Initial update
             cleanFillRect.setWidth(150 * cleanlinessStat.get() / 100.0);
         }
     }
 
-    // NEW: Update animation state based on happiness level
     private void updateAnimationState(int happiness) {
         AnimationState newState = AnimationState.fromHappiness(happiness);
+        return;
+        }
+    
 
-        if (newState != currentAnimationState) {
-            currentAnimationState = newState;
+    private void updatePetImageFromAnimation() {
+        if (currentAnimation == null || petImageView == null) return;
 
-            // Stop current animation
-            if (petImageSwitcher != null) {
-                petImageSwitcher.stop();
-            }
+        int frameX = currentAnimation.getFrameX();
+        int frameY = currentAnimation.getFrameY();
 
-            // Set initial image for new state
-            switch (currentAnimationState) {
-                case VERY_HAPPY:
-                    isSleeping = false;
-                    isCrying = false;
-                    isSad = false;
-                    isHappy = true;
-                    petImageView.setImage(happyBear1);
-                    break;
-                case NEUTRAL:
-                    isSleeping = false;
-                    isCrying = false;
-                    isSad = false;
-                    isHappy = false;
-                    petImageView.setImage(neutralBear);
-                    break;
-                case SAD:
-                    isSleeping = false;
-                    isCrying = false;
-                    isSad = true;
-                    isHappy = false;
-                    petImageView.setImage(sadBear1);
-                    isShowingSadBear1 = true;
-                    break;
-                case VERY_SAD:
-                    isSleeping = false;
-                    isCrying = true;
-                    isSad = false;
-                    isHappy = false;
-                    petImageView.setImage(cryingBear1);
-                    break;
-            }
+        petImageView.setViewport(new Rectangle2D(frameX, frameY,
+                currentAnimation.getFrameWidth(), currentAnimation.getFrameHeight()));
 
-            // Restart animation with new state
-            startPetImageSwitching();
+        Image targetSheet = getSpriteSheetForCurrentState();
+        if (targetSheet != currentSpriteSheet) {
+            currentSpriteSheet = targetSheet;
+            petImageView.setImage(currentSpriteSheet);
         }
     }
 
-    // NEW: Start random pet image switching
-    private void startPetImageSwitching() {
-        if (petImageView == null || neutralBear == null || neutralBearLookingLeft == null || neutralBearLookingRight == null)
-            return;
-
-        petImageSwitcher = new Timeline(new KeyFrame(Duration.seconds(getRandomInterval()), _ -> {
-            switchPetImage();
-            // Reschedule with new random interval
-            petImageSwitcher.stop();
-            startPetImageSwitching();
-        }));
-        petImageSwitcher.play();
+    private Image getSpriteSheetForCurrentState() {
+        return;
     }
 
-    // NEW: Switch between pet images randomly
-    private void switchPetImage() {
-        if (petImageView == null) return;
-
-        Image currentImage = petImageView.getImage();
-
-        if (isSleeping) {
-            // Switch between sleeping images
-            if (currentImage == sleepingBear1) {
-                petImageView.setImage(sleepingBear2);
-            } else {
-                petImageView.setImage(sleepingBear1);
-            }
-        } else if (isCrying) {
-            // Switch between crying images
-            if (currentImage == cryingBear1) {
-                petImageView.setImage(cryingBear2);
-            } else {
-                petImageView.setImage(cryingBear1);
-            }
-        } else if (isSad || currentAnimationState == AnimationState.SAD) {
-            // Switch between semi-sad images and track which one is showing
-            if (currentImage == sadBear1) {
-                petImageView.setImage(sadBear2);
-                isShowingSadBear1 = false;
-            } else {
-                petImageView.setImage(sadBear1);
-                isShowingSadBear1 = true;
-            }
-        } else if (isHappy || currentAnimationState == AnimationState.VERY_HAPPY) {
-            // Switch between happy images
-            if (currentImage == happyBear1) {
-                petImageView.setImage(happyBearLookingLeft);
-            } else if (currentImage == happyBearLookingLeft) {
-                petImageView.setImage(happyBearLookingRight);
-            } else if (currentImage == happyBearLookingRight) {
-                petImageView.setImage(happyBear2);
-            } else {
-                petImageView.setImage(happyBear1);
-            }
-        } else {
-            // Switch between normal images (NEUTRAL)
-            if (currentImage == neutralBear) {
-                petImageView.setImage(neutralBearLookingLeft);
-            } else if (currentImage == neutralBearLookingLeft) {
-                petImageView.setImage(neutralBearLookingRight);
-            } else {
-                petImageView.setImage(neutralBear);
-            }
+    private void switchAnimation(SpriteSheetAnimation newAnimation) {
+        if (currentAnimation != null) {
+            currentAnimation.pause();
         }
+
+        currentAnimation = newAnimation;
+        currentAnimation.reset();
+        currentAnimation.play();
     }
 
-    // NEW: Generate random interval between 3-10 seconds
-    private double getRandomInterval() {
-        if (isSleeping) {
-            return 1.0 + random.nextDouble() * 1.5; // Slow breathing: 1.0-2.5 seconds when sleeping
-        }
-        if (isCrying) {
-            return 0.5 + random.nextDouble() * 1.0; // Fast: 0.5-1.5 seconds when crying
-        }
-        if (isSad || currentAnimationState == AnimationState.SAD) {
-            // sadBear1 shows longer (3-4 seconds), sadBear2 shows shorter (0.5-1 second)
-            if (isShowingSadBear1) {
-                return 3.0 + random.nextDouble() * 1.0; // 3-4 seconds for sadBear1
-            } else {
-                return 0.5; // 0.5-1 second for sadBear2
+    // NEW: Start animation timer for sprite sheet updates
+    private void startAnimationTimer() {
+        lastUpdateTime = System.nanoTime();
+        
+        animationTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                float deltaTime = (now - lastUpdateTime) / 1_000_000_000.0f; // Convert to seconds
+                lastUpdateTime = now;
+                
+                if (currentAnimation != null) {
+                    currentAnimation.update(deltaTime);
+                    updatePetImageFromAnimation();
+                }
             }
-        }
-
-        // Adjust speed based on happiness level
-        switch (currentAnimationState) {
-            case VERY_HAPPY:
-                return 1.5 + random.nextDouble() * 2.0; // Faster: 1.5-3.5 seconds
-            case NEUTRAL:
-            default:
-                return 3 + random.nextDouble() * 7; // Normal: 3-10 seconds
-        }
+        };
+        
+        animationTimer.start();
     }
-
-
-    // ========== UML Methods (Skeleton Implementation) ==========
 
     public void showSaveIcon(boolean visible) {
         // TODO: Implement save icon visibility toggle
@@ -834,13 +754,11 @@ public class PetView {
     private void bindToModel() {
         bindStatBarsToModel();
 
-        // Listen to state changes to update animations
         if (model != null) {
             model.getStateProperty().addListener((obs, oldState, newState) -> {
                 if (newState != null) {
                     updateAnimationForState(newState.getStateName());
 
-                    // Disable sleep button when asleep, enable when awake
                     if (sleepButtonContainer != null) {
                         boolean isAsleep = "ASLEEP".equals(newState.getStateName());
                         sleepButtonContainer.setDisable(isAsleep);
@@ -851,22 +769,15 @@ public class PetView {
         }
     }
 
-    // NEW: Update animation based on state name
     private void updateAnimationForState(String stateName) {
-        if (petImageSwitcher != null) {
-            petImageSwitcher.stop();
-        }
-
         if ("ASLEEP".equals(stateName)) {
-            // Switch to sleeping animation
             isSleeping = true;
             isCrying = false;
             isSad = false;
             isHappy = false;
-            petImageView.setImage(sleepingBear1);
+            switchAnimation(sleepingAnimation);
             currentAnimationState = AnimationState.NEUTRAL; // Reset state
         } else if ("AWAKE".equals(stateName)) {
-            // Return to normal animation based on happiness
             isSleeping = false;
             if (model != null && model.getStats() != null) {
                 var happinessStat = model.getStats().getStat(PetStats.STAT_HAPPINESS);
@@ -875,8 +786,6 @@ public class PetView {
                 }
             }
         }
-
-        startPetImageSwitching();
     }
 
     private void observeEnvironment() {
@@ -946,10 +855,8 @@ public class PetView {
         double gameTime = clock.getGameTime();
         double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
 
-        // Calculate hour (0-23)
         double hour = normalizedTime * 24.0;
 
-        // Show sleep button between 20:00-24:00 and 00:00-08:00
         boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
         sleepButtonContainer.setVisible(isSleepTime);
     }
