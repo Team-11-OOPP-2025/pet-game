@@ -1,8 +1,8 @@
-import com.eleven.pet.behavior.AwakeState;
-import com.eleven.pet.behavior.PetState;
-import com.eleven.pet.behavior.StateRegistry;
-import com.eleven.pet.model.PetModel;
-import com.eleven.pet.model.items.Item;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.behavior.AwakeState;
+import com.eleven.pet.character.behavior.PetState;
+import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.inventory.Item;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -1,13 +1,13 @@
-import com.eleven.pet.behavior.AsleepState;
-import com.eleven.pet.behavior.AwakeState;
-import com.eleven.pet.behavior.StateRegistry;
-import com.eleven.pet.controller.PetController;
-import com.eleven.pet.environment.clock.GameClock;
-import com.eleven.pet.model.PetFactory;
-import com.eleven.pet.model.PetModel;
-import com.eleven.pet.service.persistence.EncryptionService;
-import com.eleven.pet.service.persistence.GameException;
-import com.eleven.pet.service.persistence.PersistenceService;
+import com.eleven.pet.character.PetController;
+import com.eleven.pet.character.PetFactory;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.behavior.AsleepState;
+import com.eleven.pet.character.behavior.AwakeState;
+import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.core.GameException;
+import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.storage.EncryptionService;
+import com.eleven.pet.storage.PersistenceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -73,10 +73,6 @@ public class PetControllerTest {
         
         public void setThrowOnSave(boolean throwOnSave) {
             this.throwOnSave = throwOnSave;
-        }
-        
-        public void resetCount() {
-            saveCallCount.set(0);
         }
     }
 

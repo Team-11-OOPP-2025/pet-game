@@ -1,7 +1,7 @@
 package com.eleven.pet.environment.weather;
 
-import com.eleven.pet.view.particles.effects.NoParticleEffect;
-import com.eleven.pet.view.particles.effects.ParticleEffect;
+import com.eleven.pet.vfx.effects.NoParticleEffect;
+import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.google.auto.service.AutoService;
 
 @AutoService(WeatherState.class)

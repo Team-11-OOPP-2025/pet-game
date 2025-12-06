@@ -1,5 +1,6 @@
-import com.eleven.pet.service.persistence.GcmEncryptionService;
-import com.eleven.pet.service.persistence.KeyLoader;
+import com.eleven.pet.core.GameException;
+import com.eleven.pet.storage.GcmEncryptionService;
+import com.eleven.pet.storage.KeyLoader;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
@@ -53,7 +54,7 @@ public class GCMEncryptionTest {
         ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
 
         assertThrows(
-                com.eleven.pet.service.persistence.GameException.class,
+                GameException.class,
                 () -> gcmService.decrypt(encryptedIn, decryptedOut)
         );
     }
@@ -70,7 +71,7 @@ public class GCMEncryptionTest {
         ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
 
         assertThrows(
-                com.eleven.pet.service.persistence.GameException.class,
+                GameException.class,
                 () -> gcmService.decrypt(encryptedIn, decryptedOut)
         );
     }
