@@ -176,7 +176,7 @@ public class PetModel implements TimeListener, WeatherListener {
             pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
         }
 
-        //pet.getStats().calculateDerivedHappiness();
+        pet.getStats().calculateDerivedHappiness();
     }
 
     // Environment listeners

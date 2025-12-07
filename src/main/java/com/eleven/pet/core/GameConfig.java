@@ -9,7 +9,7 @@ public final class GameConfig {
     // --- Recovery rates (per game second) ---
     // Example: If recovering 5 energy per second, a 5-hour sleep (approx 5 sec real time at 2x) restores ~50 energy
     public static final int SLEEP_ENERGY_PER_HOUR = 5;
-    public static final int SLEEP_HAPPINESS_PER_HOUR = 200;
+    public static final int SLEEP_HAPPINESS_PER_HOUR = 2;
 
     // --- Time system ---
     // One in-game day lasts 24 real seconds (without acceleration)
