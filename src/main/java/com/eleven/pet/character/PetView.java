@@ -1,812 +1,417 @@
 package com.eleven.pet.character;
+
 import com.eleven.pet.core.AssetLoader;
-import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
-import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.vfx.ParticleSystem;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import java.util.Map;
-import java.util.Random;
 
-/**
- * PetView - UML-compliant implementation integrating existing UI design
- */
 public class PetView {
-    // Enum for animation states
-    private enum AnimationState {
-        VERY_HAPPY, NEUTRAL, SAD, VERY_SAD;
-
-        static AnimationState fromHappiness(int happiness) {
-            if (happiness >= 80) return VERY_HAPPY;
-            if (happiness >= 50) return NEUTRAL;
-            if (happiness >= 20) return SAD;
-            return VERY_SAD;
-        }
-    }
-
-    // UML Fields
     private final PetModel model;
     private final PetController controller;
     private final GameClock clock;
-    private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
-    private ParticleSystem particleSystem;
 
-    // UI Components (UML standard controls)
-    private ImageView petImageView;
-    private StackPane backgroundPane;
-    private Pane weatherOverlay;
-    private ProgressBar hungerBar;
-    private ProgressBar happinessBar;
-    private ProgressBar energyBar;
-    private ProgressBar cleanlinessBar;
-    private Button feedButton;
-    private Button sleepButton;
-    private Button playButton;
-    private Button cleanButton;
-    private ImageView saveIcon;
-    private Label weatherLabel;
-    private Label timeLabel;
-    private StackPane sleepButtonContainer;
-
-    // Legacy fields for existing visual design
     private ImageView backgroundView;
-    // Remove individual background image fields - no longer needed
-    private StackPane feedButtonContainer;
-    private StackPane cleanButtonContainer;
-    private StackPane playButtonContainer;
+    private ImageView petImageView;
+    private Label timeLabel;
     private Text foodCounterText;
-    private Rectangle hungerFillRect;
-    private Rectangle energyFillRect;
-    private Rectangle cleanFillRect;
-    private Rectangle happinessFillRect;
-    private Image neutralBear;
-    private Image sadBear;
-    
-    private AnimationState currentAnimationState = AnimationState.NEUTRAL;
 
-    // NEW: SpriteSheetAnimation fields
-    private SpriteSheetAnimation NEUTRAL;
-    private SpriteSheetAnimation VERY_HAPPY;
-    private SpriteSheetAnimation SAD;
-    private SpriteSheetAnimation VERY_SAD;
-    private SpriteSheetAnimation sleepingAnimation;
-    private SpriteSheetAnimation currentAnimation;
-    private AnimationTimer animationTimer;
-    private long lastUpdateTime;
-    private Image currentSpriteSheet;
-    private Image sleepingBear;
-    private Image cryingBear;
+    private Rectangle hungerFill;
+    private Rectangle energyFill;
+    private Rectangle cleanFill;
+    private Rectangle happinessFill;
 
-    // NEW: Map for state-to-sprite mapping
-    private Map<AnimationState, Image> animationStateToSpriteMap;
+    private StackPane sleepBtnContainer;
 
-    private Image DAWN;
-    private Image MORNING;
-    private Image DAY;
-    private Image EVENING;
-    private Image EARLY_NIGHT;
-    private Image DEEP_NIGHT;
-   
+    private static final int SHEET_WIDTH = 309;
+    private static final int SHEET_HEIGHT = 460;
+    private static final int GRID_COLS = 2;
+
+    private SpriteSheetAnimation animNeutral;
+    private SpriteSheetAnimation animHappy;
+    private SpriteSheetAnimation animSad;
+    private SpriteSheetAnimation animCrying;
+    private SpriteSheetAnimation animSleeping;
+
+    private SpriteSheetAnimation activeAnimation;
+    private Image activeSpriteSheet;
+    private AnimationTimer renderLoop;
+    private long lastFrameTime;
+
+    private Image sheetNeutral;
+    private Image sheetSad;
+    private Image sheetSleeping;
+    private Image sheetCrying;
+    private Image sheetHappy;
+    private Image backgroundDay;
 
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
         this.model = model;
         this.controller = controller;
         this.clock = clock;
-        this.weatherSystem = weather;
         this.assetLoader = AssetLoader.getInstance();
-        loadSpriteSheets();
-        initializeSpriteSheetAnimations();
-        initializeAnimationStateMap();
-    }
-    
-    // Remove loadBackgroundImages() method entirely
-    private void loadBackGroundImages() {
-        AssetLoader loader = AssetLoader.getInstance();
-        DAWN = loader.getImage("backgrounds/DAWN");
-        MORNING = loader.getImage("backgrounds/MORNING");
-        DAY = loader.getImage("backgrounds/DAY");
-        EVENING = loader.getImage("backgrounds/EVENING");
-        EARLY_NIGHT = loader.getImage("backgrounds/EARLY_NIGHT");
-        DEEP_NIGHT = loader.getImage("backgrounds/DEEP_NIGHT");
-    }
-    
-    private void loadSpriteSheets() {
-        AssetLoader loader = AssetLoader.getInstance();
-        sleepingBear = loader.getImage("pet/sleeping/SpriteSheetSleeping");
-        neutralBear = loader.getImage("pet/idle/SpriteSheetNeutral");
-        sadBear = loader.getImage("pet/sad/SpriteSheetSad");
-        cryingBear = loader.getImage("pet/sad/SpriteSheetCrying");
-    }
 
-    // NEW: Initialize sprite sheet animations
-    private void initializeSpriteSheetAnimations() {
-
-        // Neutral: 3 frames (neutral, lookLeft, lookRight), 0.5s per frame
-        NEUTRAL = new SpriteSheetAnimation(309, 460, 2, 3, 1f);
-        NEUTRAL.setLoop(true);
-
-        // Happy: 4 frames, faster animation
-        VERY_HAPPY = new SpriteSheetAnimation(309, 460, 4, 4, 0.3f);
-        VERY_HAPPY.setLoop(true);
-
-        // Sad: 2 frames, slower with custom timing handled separately
-        SAD = new SpriteSheetAnimation(309, 460, 1, 2, 0.5f);
-        SAD.setLoop(true);
-
-        // Crying: 2 frames, fast
-        VERY_SAD = new SpriteSheetAnimation(309, 460, 1, 2, 0.7f);
-        VERY_SAD.setLoop(true);
-
-        // Sleeping: 2 frames, slow breathing
-        sleepingAnimation = new SpriteSheetAnimation(309, 460, 1, 2, 1.5f);
-        sleepingAnimation.setLoop(true);
-
-        // Start with neutral animation
-        currentAnimation = NEUTRAL;
-        currentAnimation.play();
-    }
-
-    private void initializeAnimationStateMap() {
-        animationStateToSpriteMap = Map.of(
-            AnimationState.VERY_HAPPY, neutralBear,
-            AnimationState.NEUTRAL, neutralBear,
-            AnimationState.SAD, sadBear,
-            AnimationState.VERY_SAD, cryingBear
-        );
+        loadAssets();
+        initializeAnimations();
     }
 
     public Pane initializeUI() {
         StackPane root = new StackPane();
-        
-        backgroundView = new ImageView();
-        
-        // Setup background view properties
-        backgroundView.setPreserveRatio(false);
-        backgroundView.fitWidthProperty().bind(root.widthProperty());
-        backgroundView.fitHeightProperty().bind(root.heightProperty());
-        root.getChildren().add(backgroundView);
 
-        // Set initial background using the current clock state
-        if (clock != null) {
-            updateBackground(clock.getCycle()); 
-        } else {
-            // Fallback default if clock is null (e.g. Day)
-            backgroundView.setImage(DAY); 
-        }
-        
+        setupBackgroundLayer(root);
+        setupPetLayer(root);
+        setupHUDLayer(root);
+        setupControlLayer(root);
+
+        bindData();
         observeEnvironment();
-        petImageView = createPetImage();
-        StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
-        root.getChildren().add(petImageView);
-
-        StackPane happinessBar = createHappinessBar();
-        StackPane.setAlignment(happinessBar, Pos.TOP_LEFT);
-        StackPane.setMargin(happinessBar, new Insets(90, 20, 20, 20));
-        root.getChildren().add(happinessBar);
-
-        StackPane hungerBar = createHungerBar();
-        StackPane.setAlignment(hungerBar, Pos.TOP_LEFT);
-        StackPane.setMargin(hungerBar, new Insets(148, 20, 20, 20));
-        root.getChildren().add(hungerBar);
-
-        StackPane energyBar = createEnergyBar();
-        StackPane.setAlignment(energyBar, Pos.TOP_LEFT);
-        StackPane.setMargin(energyBar, new Insets(193, 20, 20, 20));
-        root.getChildren().add(energyBar);
-
-        StackPane cleanBar = createCleanBar();
-        StackPane.setAlignment(cleanBar, Pos.TOP_LEFT);
-        StackPane.setMargin(cleanBar, new Insets(238, 20, 20, 20));
-        root.getChildren().add(cleanBar);
-
-        feedButtonContainer = createFeedButton();
-        StackPane.setAlignment(feedButtonContainer, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(feedButtonContainer, new Insets(20, 20, 90, 20));
-        root.getChildren().add(feedButtonContainer);
-
-        cleanButtonContainer = createCleanButton();
-        StackPane.setAlignment(cleanButtonContainer, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(cleanButtonContainer, new Insets(20, 20, 90, 150));
-        root.getChildren().add(cleanButtonContainer);
-
-        sleepButtonContainer = createSleepButton();
-        StackPane.setAlignment(sleepButtonContainer, Pos.BOTTOM_LEFT);
-        StackPane.setMargin(sleepButtonContainer, new Insets(20, 20, 150, 20));
-        sleepButtonContainer.setVisible(false); // Initially hidden
-        root.getChildren().add(sleepButtonContainer);
-
-        playButtonContainer = createPlayButton();  // Updated name
-        StackPane.setAlignment(playButtonContainer, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(playButtonContainer, new Insets(20, 20, 90, 20));
-        root.getChildren().add(playButtonContainer);
-
-        HBox foodCounter = createFoodCounter();
-        StackPane.setAlignment(foodCounter, Pos.TOP_RIGHT);
-        StackPane.setMargin(foodCounter, new Insets(90, 20, 0, 0));
-        root.getChildren().add(foodCounter);
-
-        // Add digital clock
-        Label clockLabel = createDigitalClock();
-        StackPane.setAlignment(clockLabel, Pos.TOP_CENTER);
-        StackPane.setMargin(clockLabel, new Insets(20, 0, 0, 0));
-        root.getChildren().add(clockLabel);
-
-        // Bind UI to model
-        bindToModel();
-
-        // Start animation timer instead of Timeline
-        startAnimationTimer();
+        startRenderLoop();
+        refreshPetState();
 
         return root;
     }
 
-    private ImageView createPetImage() {
-        ImageView imageView = new ImageView();
-        imageView.setImage(neutralBear);
-        imageView.setFitWidth(309);
-        imageView.setFitHeight(460);
-        imageView.setPreserveRatio(true);
+    private void setupBackgroundLayer(StackPane root) {
+        backgroundView = new ImageView();
+        backgroundView.setPreserveRatio(false);
+        backgroundView.fitWidthProperty().bind(root.widthProperty());
+        backgroundView.fitHeightProperty().bind(root.heightProperty());
 
-        
-        imageView.setStyle("-fx-cursor: hand;");
+        if (clock != null) updateBackground(clock.getCycle());
+        else backgroundView.setImage(backgroundDay);
 
-        return imageView;
+        root.getChildren().add(backgroundView);
     }
 
-    private StackPane createFeedButton() {
+    private void setupPetLayer(StackPane root) {
+        petImageView = new ImageView();
+        petImageView.setFitWidth(SHEET_WIDTH);
+        petImageView.setFitHeight(SHEET_HEIGHT);
+        petImageView.setPreserveRatio(true);
+        petImageView.setStyle("-fx-cursor: hand;");
+
+        StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
+
+        root.getChildren().add(petImageView);
+    }
+
+    private void setupHUDLayer(StackPane root) {
+        // Stats
+        StackPane happyBar = createStatBar("Happiness", "😃", Color.web("#f4d03f"), 225, 38);
+        happinessFill = (Rectangle) happyBar.getChildren().get(1);
+        addToLayout(root, happyBar, Pos.TOP_LEFT, 90, 0, 0, 20);
+
+        StackPane hungerBar = createStatBar("Hunger", "🍖 ", Color.web("#2ecc71"), 150, 25);
+        hungerFill = (Rectangle) hungerBar.getChildren().get(1);
+        addToLayout(root, hungerBar, Pos.TOP_LEFT, 148, 0, 0, 20);
+
+        StackPane energyBar = createStatBar("Energy", "⚡️ ", Color.web("#f39c12"), 150, 25);
+        energyFill = (Rectangle) energyBar.getChildren().get(1);
+        addToLayout(root, energyBar, Pos.TOP_LEFT, 193, 0, 0, 20);
+
+        StackPane cleanBar = createStatBar("Clean", "🧽 ", Color.web("#3498db"), 150, 25);
+        cleanFill = (Rectangle) cleanBar.getChildren().get(1);
+        addToLayout(root, cleanBar, Pos.TOP_LEFT, 238, 0, 0, 20);
+
+        // Widgets
+        HBox foodCounter = createFoodWidget();
+        addToLayout(root, foodCounter, Pos.TOP_RIGHT, 90, 20, 0, 0);
+
+        timeLabel = createClockWidget();
+        addToLayout(root, timeLabel, Pos.TOP_CENTER, 20, 0, 0, 0);
+    }
+
+    private void setupControlLayer(StackPane root) {
+        StackPane feedBtnContainer = createActionButton("FEED", Color.WHITE, 120, controller::handleFeedAction);
+        addToLayout(root, feedBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 20);
+
+        StackPane cleanBtnContainer = createActionButton("CLEAN", Color.WHITE, 120, controller::handleCleanAction);
+        addToLayout(root, cleanBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 150);
+
+        sleepBtnContainer = createActionButton("SLEEP", Color.web("#3498db"), 120, controller::handleSleepAction);
+        ((Button) sleepBtnContainer.getChildren().get(1)).setTextFill(Color.WHITE);
+        sleepBtnContainer.setVisible(false);
+        addToLayout(root, sleepBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 150, 20);
+
+        StackPane playBtnContainer = createActionButton("PLAY", Color.WHITE, 140, controller::handlePlayAction);
+        addToLayout(root, playBtnContainer, Pos.BOTTOM_RIGHT, 0, 20, 90, 0);
+    }
+
+    private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
         StackPane container = new StackPane();
-        container.setPrefSize(120, 50);
-        container.setMaxSize(120, 50);
-        container.setMinSize(120, 50);
+        container.setMinSize(width, height);
+        container.setMaxSize(width, height);
 
-        Rectangle bgRect = new Rectangle(120, 50);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
+        Rectangle border = new Rectangle(width, height, Color.WHITE);
+        border.setStroke(Color.BLACK);
+        border.setStrokeWidth(3);
 
-        Button button = new Button("FEED");
-        button.setPrefSize(120, 50);
-        button.setMaxSize(120, 50);
-        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        button.setTextFill(Color.BLACK);
-        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        Rectangle fill = new Rectangle(0, height, color);
+        StackPane.setAlignment(fill, Pos.CENTER_LEFT);
 
-        container.getChildren().addAll(bgRect, button);
+        Text iconText = new Text(icon);
+        iconText.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        StackPane.setAlignment(iconText, Pos.CENTER_LEFT);
+        StackPane.setMargin(iconText, new Insets(0, 0, 0, 10));
 
-        button.setOnAction(_ -> {
-            if (controller != null) {
-                controller.handleFeedAction();
-            }
-        });
+        Text labelText = new Text(label);
+        labelText.setFont(Font.font("Arial", FontWeight.BOLD, label.equals("Happiness") ? 16 : 14));
+        StackPane.setAlignment(labelText, Pos.CENTER_LEFT);
+        StackPane.setMargin(labelText, new Insets(0, 0, 0, label.equals("Happiness") ? 35 : 25));
 
+        container.getChildren().addAll(border, fill, iconText, labelText);
         return container;
     }
 
-    private StackPane createCleanButton() {
+    private StackPane createActionButton(String text, Color bg, double width, Runnable action) {
         StackPane container = new StackPane();
-        container.setPrefSize(120, 50);
-        container.setMaxSize(120, 50);
-        container.setMinSize(120, 50);
+        container.setMaxSize(width, 50);
 
-        Rectangle bgRect = new Rectangle(120, 50);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
+        Rectangle border = new Rectangle(width, 50, bg);
+        border.setStroke(Color.BLACK);
+        border.setStrokeWidth(3);
 
-        Button button = new Button("CLEAN");
-        button.setPrefSize(120, 50);
-        button.setMaxSize(120, 50);
-        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        button.setTextFill(Color.BLACK);
-        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-
-        container.getChildren().addAll(bgRect, button);
-
-        button.setOnAction(_ -> {
-            if (controller != null) {
-                controller.handleCleanAction();
-            }
+        Button btn = new Button(text);
+        btn.setPrefSize(width, 50);
+        btn.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        btn.setTextFill(bg.equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
+        btn.setStyle("-fx-background-color: transparent;");
+        btn.setOnAction(_ -> {
+            if (controller != null) action.run();
         });
 
+        container.getChildren().addAll(border, btn);
         return container;
     }
 
-    private StackPane createSleepButton() {
-        StackPane container = new StackPane();
-        container.setPrefSize(120, 50);
-        container.setMaxSize(120, 50);
-        container.setMinSize(120, 50);
-
-        Rectangle bgRect = new Rectangle(120, 50);
-        bgRect.setFill(Color.web("#3498db")); // Blue color for sleep
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
-
-        Button button = new Button("SLEEP");
-        button.setPrefSize(120, 50);
-        button.setMaxSize(120, 50);
-        button.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        button.setTextFill(Color.WHITE);
-        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-
-        container.getChildren().addAll(bgRect, button);
-
-        button.setOnAction(_ -> {
-            if (controller != null) {
-                controller.handleSleepAction();
-            }
-        });
-
-        return container;
-    }
-
-    private StackPane createPlayButton() {
-        StackPane container = new StackPane();
-        container.setPrefSize(140, 50);
-        container.setMaxSize(140, 50);
-        container.setMinSize(140, 50);
-
-        Rectangle bgRect = new Rectangle(140, 50);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
-
-        Button button = new Button("PLAY");
-        button.setPrefSize(140, 50);
-        button.setMaxSize(140, 50);
-        button.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        button.setTextFill(Color.BLACK);
-        button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-
-        container.getChildren().addAll(bgRect, button);
-
-        button.setOnAction(_ -> {
-            if (controller != null) {
-                controller.handlePlayAction();
-            }
-        });
-
-        return container;
-    }
-
-    private HBox createFoodCounter() {
-        HBox container = new HBox(10);
-        container.setAlignment(Pos.CENTER);
-        container.setStyle("-fx-background-color: rgba(255, 255, 255, 0.9); -fx-background-radius: 10; -fx-padding: 10;");
-        container.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
+    private HBox createFoodWidget() {
+        HBox box = new HBox(10);
+        box.setAlignment(Pos.CENTER);
+        box.setStyle("-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 10; -fx-padding: 10;");
+        box.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
 
         Text label = new Text("Food: ");
         label.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        label.setFill(Color.BLACK);
 
         foodCounterText = new Text("0");
         foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         foodCounterText.setFill(Color.web("#e74c3c"));
 
-        container.getChildren().addAll(label, foodCounterText);
-
-        if (model != null && model.getInventory() != null) {
-            foodCounterText.setText(String.valueOf(model.getInventory().getQuantity(ItemRegistry.get(0))));
-            model.getInventory().amountProperty(ItemRegistry.get(0)).addListener((_, _, _) -> {
-                foodCounterText.setText(String.valueOf(model.getInventory().getQuantity(ItemRegistry.get(0))));
-            });
-        }
-
-        return container;
+        box.getChildren().addAll(label, foodCounterText);
+        return box;
     }
 
-    private Label createDigitalClock() {
-        timeLabel = new Label("00:00");
-        timeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 36));
-        timeLabel.setTextFill(Color.WHITE);
-        timeLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
-
-        if (clock != null) {
-            updateClockDisplay();
-            clock.gameTimeProperty().addListener((_, _, _) -> updateClockDisplay());
-        }
-
-        return timeLabel;
+    private Label createClockWidget() {
+        Label lbl = new Label("00:00");
+        lbl.setFont(Font.font("Arial", FontWeight.BOLD, 36));
+        lbl.setTextFill(Color.WHITE);
+        lbl.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
+        return lbl;
     }
 
-    private void updateClockDisplay() {
-        if (clock == null || timeLabel == null) return;
-
-        double gameTime = clock.getGameTime();
-        int hours = (int) gameTime % 24;
-
-        String timeString = String.format("%02d:00", hours);
-        timeLabel.setText(timeString);
+    private void addToLayout(StackPane root, javafx.scene.Node node, Pos pos, double t, double r, double b, double l) {
+        StackPane.setAlignment(node, pos);
+        StackPane.setMargin(node, new Insets(t, r, b, l));
+        root.getChildren().add(node);
     }
 
-    private void updateBackground(DayCycle cycle) {
-        // Dynamically construct the asset path based on the enum name.
-        // E.g. If cycle is DayCycle.DAWN, this looks for "backgrounds/dawn"
-        String assetPath = "backgrounds/" + cycle.name();
-        
-        Image bgImage = assetLoader.getImage(assetPath);
-        
-        // Only update if the image was successfully found
-        if (bgImage != null) {
-            backgroundView.setImage(bgImage);
-        }
+    private void loadAssets() {
+        sheetHappy = assetLoader.getImage("pet/happy/SpriteSheetHappy");
+        sheetNeutral = assetLoader.getImage("pet/idle/SpriteSheetNeutral");
+        sheetSad = assetLoader.getImage("pet/sad/SpriteSheetSad");
+        sheetCrying = assetLoader.getImage("pet/sad/SpriteSheetCrying");
+        sheetSleeping = assetLoader.getImage("pet/sleeping/SpriteSheetSleeping");
+        backgroundDay = assetLoader.getImage("backgrounds/DAY");
     }
 
-    private StackPane createHappinessBar() {
-        StackPane container = new StackPane();
-        container.setPrefSize(225, 38);
-        container.setMaxSize(225, 38);
-        container.setMinSize(225, 38);
+    private void initializeAnimations() {
+        animNeutral = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 3, 1.0f);
+        animNeutral.setLoop(true);
 
-        Rectangle bgRect = new Rectangle(225, 38);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
+        animHappy = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 4, 0.3f);
+        animHappy.setLoop(true);
 
-        happinessFillRect = new Rectangle(225, 38);
-        happinessFillRect.setFill(Color.web("#f4d03f"));
-        StackPane.setAlignment(happinessFillRect, Pos.CENTER_LEFT);
+        animSad = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 0.5f);
+        animSad.setLoop(true);
 
-        Text symbol = new Text("😃");
-        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
-        StackPane.setMargin(symbol, new Insets(0, 0, 0, 10));
+        animCrying = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 0.7f);
+        animCrying.setLoop(true);
 
-        Text label = new Text("Happiness");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        label.setFill(Color.BLACK);
-        StackPane.setMargin(label, new Insets(0, 0, 0, 35));
-        StackPane.setAlignment(label, Pos.CENTER_LEFT);
-
-        container.getChildren().addAll(bgRect, happinessFillRect, symbol, label);
-
-        return container;
+        animSleeping = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 1.5f);
+        animSleeping.setLoop(true);
     }
 
-    private StackPane createHungerBar() {
-        StackPane container = new StackPane();
-        container.setPrefSize(150, 25);
-        container.setMaxSize(150, 25);
-        container.setMinSize(150, 25);
-
-        Rectangle bgRect = new Rectangle(150, 25);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
-
-        hungerFillRect = new Rectangle(0, 25);
-        hungerFillRect.setFill(Color.web("#2ecc71"));
-        StackPane.setAlignment(hungerFillRect, Pos.CENTER_LEFT);
-
-        Text symbol = new Text("🍖 ");
-        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
-        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
-
-        Text label = new Text("Hunger");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        label.setFill(Color.BLACK);
-        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
-        StackPane.setAlignment(label, Pos.CENTER_LEFT);
-
-        container.getChildren().addAll(bgRect, hungerFillRect, symbol, label);
-
-        return container;
-    }
-
-    private StackPane createEnergyBar() {
-        StackPane container = new StackPane();
-        container.setPrefSize(150, 25);
-        container.setMaxSize(150, 25);
-        container.setMinSize(150, 25);
-
-        Rectangle bgRect = new Rectangle(150, 25);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
-
-        energyFillRect = new Rectangle(150, 25);
-        energyFillRect.setFill(Color.web("#f39c12"));
-        StackPane.setAlignment(energyFillRect, Pos.CENTER_LEFT);
-
-        Text symbol = new Text("⚡️ ");
-        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
-        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
-
-        Text label = new Text("Energy");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        label.setFill(Color.BLACK);
-        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
-        StackPane.setAlignment(label, Pos.CENTER_LEFT);
-
-        container.getChildren().addAll(bgRect, energyFillRect, symbol, label);
-
-        return container;
-    }
-
-    private StackPane createCleanBar() {
-        StackPane container = new StackPane();
-        container.setPrefSize(150, 25);
-        container.setMaxSize(150, 25);
-        container.setMinSize(150, 25);
-
-        Rectangle bgRect = new Rectangle(150, 25);
-        bgRect.setFill(Color.WHITE);
-        bgRect.setStroke(Color.BLACK);
-        bgRect.setStrokeWidth(3);
-
-        cleanFillRect = new Rectangle(150, 25);
-        cleanFillRect.setFill(Color.web("#3498db"));
-        StackPane.setAlignment(cleanFillRect, Pos.CENTER_LEFT);
-
-        Text symbol = new Text("🧽 ");
-        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
-        StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
-
-        Text label = new Text("Clean");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        label.setFill(Color.BLACK);
-        StackPane.setMargin(label, new Insets(0, 0, 0, 25));
-        StackPane.setAlignment(label, Pos.CENTER_LEFT);
-
-        container.getChildren().addAll(bgRect, cleanFillRect, symbol, label);
-
-        return container;
-    }
-
-    private void bindStatBarsToModel() {
-        if (model == null || model.getStats() == null) return;
-
-        PetStats stats = model.getStats();
-
-        var hungerStat = stats.getStat(PetStats.STAT_HUNGER);
-        if (hungerStat != null) {
-            hungerStat.addListener((obs, oldVal, newVal) -> {
-                double percentage = newVal.intValue() / 100.0;
-                hungerFillRect.setWidth(150 * percentage);
-            });
-            hungerFillRect.setWidth(150 * hungerStat.get() / 100.0);
-        }
-
-        var happinessStat = stats.getStat(PetStats.STAT_HAPPINESS);
-        if (happinessStat != null) {
-            happinessStat.addListener((obs, oldVal, newVal) -> {
-                double percentage = newVal.intValue() / 100.0;
-                happinessFillRect.setWidth(225 * percentage);
-
-                updateAnimationState(newVal.intValue());
-            });
-            happinessFillRect.setWidth(225 * happinessStat.get() / 100.0);
-            updateAnimationState(happinessStat.get());
-        }
-
-        var energyStat = stats.getStat(PetStats.STAT_ENERGY);
-        if (energyStat != null) {
-            energyStat.addListener((obs, oldVal, newVal) -> {
-                double percentage = newVal.intValue() / 100.0;
-                energyFillRect.setWidth(150 * percentage);
-            });
-            energyFillRect.setWidth(150 * energyStat.get() / 100.0);
-        }
-
-        var cleanlinessStat = stats.getStat(PetStats.STAT_CLEANLINESS);
-        if (cleanlinessStat != null) {
-            cleanlinessStat.addListener((obs, oldVal, newVal) -> {
-                double percentage = newVal.intValue() / 100.0;
-                cleanFillRect.setWidth(150 * percentage);
-            });
-            cleanFillRect.setWidth(150 * cleanlinessStat.get() / 100.0);
-        }
-    }
-
-    private void updateAnimationState(int happiness) {
-        AnimationState newState = AnimationState.fromHappiness(happiness);
-        
-        // Only update if the mood changed AND we aren't in a blocking state (like sleeping)
-        if (currentAnimationState != newState) {
-            currentAnimationState = newState;
-            
-            // If the pet is currently just IDLE (not sleeping), update the visual immediately
-            if (model != null && "IDLE".equals(model.getCurrentState().getStateName())) {
-                updateAnimationForState("IDLE");
-            }
-        }
-    }
-    
-
-    private void updatePetImageFromAnimation() {
-        if (currentAnimation == null || petImageView == null) return;
-
-        int frameX = currentAnimation.getFrameX();
-        int frameY = currentAnimation.getFrameY();
-
-        petImageView.setViewport(new Rectangle2D(frameX, frameY,
-                currentAnimation.getFrameWidth(), currentAnimation.getFrameHeight()));
-
-        Image targetSheet = getCurrentAnimation();
-        if (targetSheet != currentSpriteSheet) {
-            currentSpriteSheet = targetSheet;
-            petImageView.setImage(currentSpriteSheet);
-        }
-    }
-
-    private Image getCurrentAnimation() {
-        String state = model != null ? model.getCurrentState().getStateName() : "IDLE";
-        return state.equals("ASLEEP") 
-            ? sleepingBear 
-            : animationStateToSpriteMap.getOrDefault(currentAnimationState, neutralBear);
-    }
-
-    private void switchAnimation(SpriteSheetAnimation newAnimation) {
-        if (currentAnimation != null) {
-            currentAnimation.pause();
-        }
-
-        currentAnimation = newAnimation;
-        currentAnimation.reset();
-        currentAnimation.play();
-    }
-
-    // NEW: Start animation timer for sprite sheet updates
-    private void startAnimationTimer() {
-        lastUpdateTime = System.nanoTime();
-        
-        animationTimer = new AnimationTimer() {
+    private void startRenderLoop() {
+        lastFrameTime = System.nanoTime();
+        renderLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                float deltaTime = (now - lastUpdateTime) / 1_000_000_000.0f; // Convert to seconds
-                lastUpdateTime = now;
-                
-                if (currentAnimation != null) {
-                    currentAnimation.update(deltaTime);
-                    updatePetImageFromAnimation();
+                float deltaTime = (now - lastFrameTime) / 1_000_000_000.0f;
+                lastFrameTime = now;
+
+                if (activeAnimation != null) {
+                    activeAnimation.update(deltaTime);
+                    renderFrame();
                 }
             }
         };
-        
-        animationTimer.start();
+        renderLoop.start();
     }
 
-    public void showSaveIcon(boolean visible) {
-        // TODO: Implement save icon visibility toggle
-    }
+    private void renderFrame() {
+        if (petImageView == null || activeAnimation == null) return;
 
-    public void promptSleep() {
-        // TODO: Implement sleep prompt dialog
-    }
+        petImageView.setViewport(new Rectangle2D(
+                activeAnimation.getFrameX(),
+                activeAnimation.getFrameY(),
+                activeAnimation.getFrameWidth(),
+                activeAnimation.getFrameHeight()
+        ));
 
-    public void showMinigameResult(MinigameResult result) {
-        // TODO: Implement minigame result display
-    }
-
-    private HBox createTopPanel() {
-        // TODO: Implement top panel with weather and time labels
-        return new HBox();
-    }
-
-    private VBox createStatsPanel() {
-        // TODO: Implement stats panel with progress bars
-        return new VBox();
-    }
-
-    private VBox createStatRow(String label, ProgressBar bar) {
-        // TODO: Implement stat row layout
-        return new VBox();
-    }
-
-    private ProgressBar createStatBar(String name) {
-        // TODO: Implement progress bar creation
-        return new ProgressBar();
-    }
-
-    private HBox createButtonPanel() {
-        // TODO: Implement button panel with all action buttons
-        return new HBox();
-    }
-
-    private void setupEventHandlers() {
-        // TODO: Implement event handler setup
-    }
-
-    private void bindToModel() {
-        bindStatBarsToModel();
-
-        if (model != null) {
-            model.getStateProperty().addListener((obs, oldState, newState) -> {
-                if (newState != null) {
-                    updateAnimationForState(newState.getStateName());
-
-                    if (sleepButtonContainer != null) {
-                        boolean isAsleep = "ASLEEP".equals(newState.getStateName());
-                        sleepButtonContainer.setDisable(isAsleep);
-                        sleepButtonContainer.setOpacity(isAsleep ? 0.5 : 1.0);
-                    }
-                }
-            });
+        Image correctSheet = resolveSheetForAnimation(activeAnimation);
+        if (correctSheet != null && correctSheet != activeSpriteSheet) {
+            activeSpriteSheet = correctSheet;
+            petImageView.setImage(activeSpriteSheet);
         }
     }
 
-    private void updateAnimationForState(String stateName) {
-        Map<String, SpriteSheetAnimation> stateAnimations = Map.of(
-            "ASLEEP", sleepingAnimation,
-            "IDLE", animationStateToSpriteMap.containsKey(currentAnimationState) 
-                ? Map.of(AnimationState.VERY_HAPPY, VERY_HAPPY, 
-                         AnimationState.NEUTRAL, NEUTRAL,
-                         AnimationState.SAD, SAD,
-                         AnimationState.VERY_SAD, VERY_SAD)
-                    .getOrDefault(currentAnimationState, NEUTRAL)
-                : NEUTRAL
-        );
-        
-        SpriteSheetAnimation targetAnimation = stateAnimations.getOrDefault(stateName, NEUTRAL);
-        switchAnimation(targetAnimation);
+    private Image resolveSheetForAnimation(SpriteSheetAnimation anim) {
+        if (anim == animSleeping) return sheetSleeping;
+        if (anim == animSad) return sheetSad;
+        if (anim == animCrying) return sheetCrying;
+        if (anim == animHappy) return sheetHappy;
+        return sheetNeutral;
+    }
+
+    private void changeAnimation(SpriteSheetAnimation newAnim) {
+        if (activeAnimation == newAnim) return;
+
+        if (activeAnimation != null) activeAnimation.pause();
+        activeAnimation = newAnim;
+        activeAnimation.reset();
+        activeAnimation.play();
+    }
+
+    private void bindData() {
+        if (model == null) return;
+
+        // Inventory
+        if (model.getInventory() != null) {
+            var foodItem = ItemRegistry.get(0);
+            model.getInventory().amountProperty(foodItem).addListener((obs, old, val) ->
+                    foodCounterText.setText(val.toString())
+            );
+        }
+
+        // Stats
+        PetStats stats = model.getStats();
+        if (stats != null) {
+            bindBar(stats.getStat(PetStats.STAT_HUNGER), hungerFill, 150);
+            bindBar(stats.getStat(PetStats.STAT_ENERGY), energyFill, 150);
+            bindBar(stats.getStat(PetStats.STAT_CLEANLINESS), cleanFill, 150);
+
+            var happyStat = stats.getStat(PetStats.STAT_HAPPINESS);
+            if (happyStat != null) {
+                happyStat.addListener((obs, old, val) -> {
+                    updateFill(happinessFill, val.intValue(), 225);
+                    refreshPetState();
+                });
+                updateFill(happinessFill, happyStat.get(), 225);
+            }
+        }
+
+        model.getStateProperty().addListener((obs, old, state) -> refreshPetState());
+    }
+
+    private void bindBar(javafx.beans.value.ObservableValue<Number> stat, Rectangle fill, double maxW) {
+        if (stat != null) {
+            stat.addListener((obs, old, val) -> updateFill(fill, val.intValue(), maxW));
+            updateFill(fill, stat.getValue().intValue(), maxW);
+        }
+    }
+
+    private void updateFill(Rectangle rect, int value, double maxWidth) {
+        rect.setWidth(maxWidth * (value / 100.0));
     }
 
     private void observeEnvironment() {
-        if (clock != null) {
-            updateSleepButtonVisibility();
+        if (clock == null) return;
 
-            // Bind the updateBackground function to the clock cycle property
-            clock.cycleProperty().addListener((_, _, newCycle) -> {
-                updateBackground(newCycle);
-            });
+        clock.cycleProperty().addListener((obs, old, cycle) -> updateBackground(cycle));
 
-            clock.gameTimeProperty().addListener((_, _, _) -> {
-                updateSleepButtonVisibility();
-            });
+        clock.gameTimeProperty().addListener((obs, old, time) -> {
+            double t = time.doubleValue();
+            updateClockLabel(t);
+            boolean canSleep = controller.isSleepAllowed();
+            sleepBtnContainer.setVisible(canSleep);
+        });
+    }
+
+    private void refreshPetState() {
+        if (model == null) return;
+
+        String stateName = model.getCurrentState().getStateName();
+
+        if ("ASLEEP".equalsIgnoreCase(stateName)) {
+            changeAnimation(animSleeping);
+            toggleSleepButton(true);
+        } else {
+            // Check Model for Happiness -> Ask Controller for Emotion -> Set Animation
+            int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+
+            switch (controller.calculateEmotion(happiness)) {
+                case VERY_HAPPY:
+                    changeAnimation(animHappy);
+                    break;
+                case SAD:
+                    changeAnimation(animSad);
+                    break;
+                case VERY_SAD:
+                    changeAnimation(animCrying);
+                    break;
+                case NEUTRAL:
+                default:
+                    changeAnimation(animNeutral);
+                    break;
+            }
+            toggleSleepButton(false);
         }
     }
 
-    private void updateVisuals() {
-        // TODO: Implement visual update logic
+    private void updateBackground(DayCycle cycle) {
+        Image bg = assetLoader.getImage("backgrounds/" + cycle.name());
+        if (bg != null) backgroundView.setImage(bg);
     }
 
-    private void updatePetSprite() {
-        // TODO: Implement pet sprite update based on state
+    private void updateClockLabel(double time) {
+        int hours = (int) time % 24;
+        timeLabel.setText(String.format("%02d:00", hours));
     }
 
-    private void updateWeatherOverlay(WeatherState weather) {
-        // TODO: Implement weather overlay update
+    private void toggleSleepButton(boolean isSleeping) {
+        sleepBtnContainer.setDisable(isSleeping);
+        sleepBtnContainer.setOpacity(isSleeping ? 0.5 : 1.0);
     }
 
-    private void updateSleepButtonVisibility() {
-        if (clock == null || sleepButtonContainer == null) return;
-
-        double gameTime = clock.getGameTime();
-        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
-
-        double hour = normalizedTime * 24.0;
-
-        boolean isSleepTime = (hour >= 20.0 && hour < 24.0) || (hour >= 0.0 && hour < 8.0);
-        sleepButtonContainer.setVisible(isSleepTime);
+    public void showMinigameResult(MinigameResult result) {
     }
 }
-
-
-
-

@@ -152,9 +152,9 @@ public class PetModel implements TimeListener, WeatherListener {
         int energy = stats.getStat(PetStats.STAT_ENERGY).get();
 
         boolean isNight = hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
-        boolean isTired = energy <= GameConfig.SLEEP_ENERGY_THRESHOLD;
+        //boolean isTired = energy <= GameConfig.SLEEP_ENERGY_THRESHOLD;
 
-        return isNight && isTired;
+        return isNight;
     }
 
     // Stat decay system
@@ -176,7 +176,7 @@ public class PetModel implements TimeListener, WeatherListener {
             pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
         }
 
-        pet.getStats().calculateDerivedHappiness();
+        //pet.getStats().calculateDerivedHappiness();
     }
 
     // Environment listeners
