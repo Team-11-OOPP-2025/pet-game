@@ -16,10 +16,10 @@ public class AssetLoaderTest {
 
     @Test
     void testAssetLoading() {
-        String imagePath = "sprites/idle/Bear";
+        String imagePath = "backgrounds/Day";
         Image image = assetLoader.getImage(imagePath);
-        assertEquals(309.0, image.getWidth(), 0.1);
-        assertEquals(460.0, image.getHeight(), 0.1);
+        assertEquals(624.0, image.getWidth(), 0.1);
+        assertEquals(351.0, image.getHeight(), 0.1);
     }
 
     @Test
