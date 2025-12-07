@@ -25,25 +25,21 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PetControllerTest {
 
     /**
-     * Simple no-op encryption service for testing purposes.
+     * A mock encryption service that does not modify the data.
+     * It simply passes the streams through, allowing us to inspect the saved file
+     * as plain text or JSON if needed, and isolating tests from encryption logic.
      */
     private static class NoOpEncryptionService implements EncryptionService {
         @Override
-        public void encrypt(InputStream in, OutputStream out) throws GameException {
-            try {
-                in.transferTo(out);
-            } catch (Exception e) {
-                throw new GameException("NoOp encrypt failed", e);
-            }
+        public OutputStream wrapOutputStream(OutputStream out) {
+            // Pass-through: Do not encrypt, just return the original stream
+            return out;
         }
 
         @Override
-        public void decrypt(InputStream in, OutputStream out) throws GameException {
-            try {
-                in.transferTo(out);
-            } catch (Exception e) {
-                throw new GameException("NoOp decrypt failed", e);
-            }
+        public InputStream wrapInputStream(InputStream in) {
+            // Pass-through: Do not decrypt, just return the original stream
+            return in;
         }
     }
 
@@ -53,11 +49,11 @@ public class PetControllerTest {
     private static class MockPersistenceService extends PersistenceService {
         private final AtomicInteger saveCallCount = new AtomicInteger(0);
         private boolean throwOnSave = false;
-        
+
         public MockPersistenceService(Path savePath) {
             super(new NoOpEncryptionService(), savePath);
         }
-        
+
         @Override
         public void save(PetModel model) throws GameException {
             saveCallCount.incrementAndGet();
@@ -66,11 +62,11 @@ public class PetControllerTest {
             }
             super.save(model);
         }
-        
+
         public int getSaveCallCount() {
             return saveCallCount.get();
         }
-        
+
         public void setThrowOnSave(boolean throwOnSave) {
             this.throwOnSave = throwOnSave;
         }
@@ -79,7 +75,7 @@ public class PetControllerTest {
     private PetModel model;
     private GameClock clock;
     private MockPersistenceService persistence;
-    
+
     @TempDir
     Path tempDir;
 
@@ -105,10 +101,10 @@ public class PetControllerTest {
     @Test
     void testShutdownPerformsSave() {
         PetController controller = new PetController(model, clock, null, persistence);
-        
+
         // Shutdown should save the game
         controller.shutdown();
-        
+
         assertEquals(1, persistence.getSaveCallCount(), "Shutdown should trigger one save");
     }
 
@@ -116,7 +112,7 @@ public class PetControllerTest {
     void testShutdownHandlesSaveError() {
         PetController controller = new PetController(model, clock, null, persistence);
         persistence.setThrowOnSave(true);
-        
+
         // Shutdown with save error should not throw
         assertDoesNotThrow(controller::shutdown);
     }
@@ -124,10 +120,10 @@ public class PetControllerTest {
     @Test
     void testMultipleShutdownCallsAreIdempotent() {
         PetController controller = new PetController(model, clock, null, persistence);
-        
+
         controller.shutdown();
         controller.shutdown();
-        
+
         // Only the first shutdown should trigger a save
         assertEquals(1, persistence.getSaveCallCount(), "Multiple shutdowns should only save once");
     }
@@ -142,13 +138,13 @@ public class PetControllerTest {
     @Test
     void testShutdownStopsAutosaveAndSaves() {
         PetController controller = new PetController(model, clock, null, persistence);
-        
+
         // Shutdown should stop autosave (if running) and save
         controller.shutdown();
-        
+
         // Should have saved once
         assertEquals(1, persistence.getSaveCallCount(), "Shutdown should save once");
-        
+
         // Stopping autosave again should work without error
         assertDoesNotThrow(controller::stopAutosave);
     }

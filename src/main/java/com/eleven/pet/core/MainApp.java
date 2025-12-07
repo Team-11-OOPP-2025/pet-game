@@ -16,15 +16,13 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import javax.crypto.SecretKey;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
+/**
+ * Main application class for the virtual sprites game "Björni".
+ * Initializes and starts the game, including loading assets, setting up the UI,
+ * and managing the game loop.
+ */
 public class MainApp extends Application {
-    private static final int WINDOW_WIDTH = 1920;
-    private static final int WINDOW_HEIGHT = 1080;
-    private static final String APP_TITLE = "Björni";
-    private static final Path SAVE_PATH = Paths.get("savegame.dat");
-
     private final GameClock clock = new GameClock();
     private final WeatherSystem weatherSystem = new WeatherSystem();
 
@@ -32,6 +30,11 @@ public class MainApp extends Application {
     private GameEngine gameEngine;
     private PersistenceService persistenceService;
 
+    /**
+     * Application entry point.
+     *
+     * @param primaryStage the primary stage for this application
+     */
     @Override
     public void start(Stage primaryStage) {
         AssetLoader.getInstance().loadAll();
@@ -50,6 +53,10 @@ public class MainApp extends Application {
         configureStage(primaryStage, view.initializeUI());
     }
 
+    /**
+     * Initializes the persistence service with encryption.
+     * Falls back to disabling persistence if initialization fails.
+     */
     private void initializePersistence() {
         try {
             SecretKey key;
@@ -59,28 +66,41 @@ public class MainApp extends Application {
                 System.out.println("Generating new development key...");
                 key = KeyLoader.generateDevKey();
             }
-            persistenceService = new PersistenceService(new GcmEncryptionService(key), SAVE_PATH);
+            persistenceService = new PersistenceService(new GcmEncryptionService(key), GameConfig.SAVE_PATH);
         } catch (Exception e) {
             System.err.println("CRITICAL: Persistence init failed. Saving disabled.");
             persistenceService = null;
         }
     }
 
+    /**
+     * Loads the sprites from persistence or creates a new one if loading fails.
+     *
+     * @return the loaded or newly created PetModel
+     */
     private PetModel loadOrCreatePet() {
         if (persistenceService != null) {
             try {
+                // TODO: Allow user to choose Pet name on first launch in future
                 return persistenceService.load(weatherSystem, clock)
                         .orElseGet(() -> PetFactory.createNewPet("Björni", weatherSystem, clock));
             } catch (Exception e) {
                 System.err.println("Save file corrupted or version mismatch. Creating new.");
             }
         }
+        // TODO: Allow user to choose name on first launch
         return PetFactory.createNewPet("Björni", weatherSystem, clock);
     }
 
+    /**
+     * Configures and shows the main application stage.
+     *
+     * @param stage the primary stage
+     * @param root  the root pane of the scene
+     */
     private void configureStage(Stage stage, Pane root) {
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        stage.setTitle(APP_TITLE);
+        Scene scene = new Scene(root, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
+        stage.setTitle(GameConfig.APP_TITLE);
         stage.setScene(scene);
         stage.setResizable(false);
 

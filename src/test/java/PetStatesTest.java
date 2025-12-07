@@ -3,6 +3,7 @@ import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.inventory.Item;
+import com.eleven.pet.minigames.MinigameResult;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +38,8 @@ public class PetStatesTest {
             }
 
             @Override
-            public void handlePlay(PetModel pet) {
+            public MinigameResult handlePlay(PetModel pet) {
+                return null;
             }
 
             @Override

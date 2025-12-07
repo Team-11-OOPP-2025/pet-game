@@ -4,6 +4,7 @@ import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
+import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 @AutoService(PetState.class)
@@ -18,8 +19,9 @@ public class AsleepState implements PetState {
     }
 
     @Override
-    public void handlePlay(PetModel pet) {
+    public MinigameResult handlePlay(PetModel pet) {
         System.out.println(pet.getName() + " is asleep and cannot play right now.");
+        return null;
     }
 
     @Override

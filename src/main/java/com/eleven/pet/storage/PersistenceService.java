@@ -14,8 +14,6 @@ import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.storage.dto.PetDataDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -50,12 +48,10 @@ public class PersistenceService {
             dto.setSleepStartTime(model.getCurrentSleepDuration());
             dto.setSleptThisNight(model.isSleptThisNight());
 
-            ByteArrayOutputStream jsonBuffer = new ByteArrayOutputStream();
-            jsonMapper.writeValue(jsonBuffer, dto);
+            try (OutputStream fileOut = Files.newOutputStream(savePath);
+                 OutputStream encryptedOut = encryptionService.wrapOutputStream(fileOut)) {
+                jsonMapper.writeValue(encryptedOut, dto);
 
-            try (InputStream sourceStream = new ByteArrayInputStream(jsonBuffer.toByteArray());
-                 OutputStream fileOutput = Files.newOutputStream(savePath)) {
-                encryptionService.encrypt(sourceStream, fileOutput);
             }
 
             System.out.println("Game data saved successfully to " + savePath);
@@ -65,11 +61,11 @@ public class PersistenceService {
     }
 
     /**
-     * Load pet data from the save file.
+     * Load sprites data from the save file.
      *
-     * @param weatherSystem the weather system to attach to the loaded pet
-     * @param gameClock     the game clock to attach to the loaded pet
-     * @return Optional containing the loaded pet model, or empty if no save file exists
+     * @param weatherSystem the weather system to attach to the loaded sprites
+     * @param gameClock     the game clock to attach to the loaded sprites
+     * @return Optional containing the loaded sprites model, or empty if no save file exists
      * @throws GameException if the save file exists but cannot be read or is corrupted
      */
     public Optional<PetModel> load(WeatherSystem weatherSystem, GameClock gameClock) throws GameException {
@@ -80,12 +76,11 @@ public class PersistenceService {
         try {
             PetDataDTO dto;
             try (InputStream fileInput = Files.newInputStream(savePath);
-                 ByteArrayOutputStream decryptedBuffer = new ByteArrayOutputStream()) {
+                 // Decrypt the input stream on-the-fly
+                 InputStream decryptedInput = encryptionService.wrapInputStream(fileInput)) {
 
-                encryptionService.decrypt(fileInput, decryptedBuffer);
-                byte[] jsonBytes = decryptedBuffer.toByteArray();
-
-                dto = jsonMapper.readValue(jsonBytes, PetDataDTO.class);
+                // Read all bytes from the decrypted stream
+                dto = jsonMapper.readValue(decryptedInput, PetDataDTO.class);
             }
 
             PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock);

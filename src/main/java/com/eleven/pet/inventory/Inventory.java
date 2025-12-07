@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manages the inventory of items owned by the player.
+ */
 public class Inventory {
     private final Map<Integer, IntegerProperty> items = new HashMap<>();
 
@@ -38,17 +41,32 @@ public class Inventory {
         return true;
     }
 
-    // Get how many of that item we have
+    /**
+     * Get the quantity of a specific item.
+     *
+     * @param item non-null item
+     * @return quantity owned (0 if none)
+     */
     public int getQuantity(Item item) {
         IntegerProperty count = items.get(item.id());
         return count == null ? 0 : count.get();
     }
 
+    /**
+     * Check if the inventory has at least one of the specified item.
+     *
+     * @param item non-null item
+     * @return true if at least one is owned; false otherwise
+     */
     public boolean has(Item item) {
         return getQuantity(item) > 0;
     }
 
-    // Item ID and quantity map for persistence
+    /**
+     * Get a map of all owned items and their quantities.
+     *
+     * @return unmodifiable map of item IDs to quantities
+     */
     public Map<Integer, Integer> getAllOwnedItems() {
         Map<Integer, Integer> result = new HashMap<>();
         for (Integer id : items.keySet()) {
@@ -61,7 +79,12 @@ public class Inventory {
         return Collections.unmodifiableMap(result);
     }
 
-    // Property for JavaFX binding
+    /**
+     * Get the IntegerProperty representing the quantity of a specific item.
+     *
+     * @param item non-null item
+     * @return IntegerProperty for the item's quantity
+     */
     public IntegerProperty amountProperty(Item item) {
         return items.computeIfAbsent(item.id(), _ -> new SimpleIntegerProperty(0));
     }

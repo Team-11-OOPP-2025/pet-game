@@ -8,6 +8,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * AssetLoader is responsible for loading and caching image assets.
+ * It supports loading images from the /resources/images/ directory
+ * and handles missing assets by providing a placeholder image.
+ */
 public class AssetLoader {
     private static AssetLoader instance;
     private final Map<String, Image> imageCache = new HashMap<>();
@@ -15,6 +20,9 @@ public class AssetLoader {
     // Base path for all images
     private static final String IMAGE_ROOT = "/images/";
 
+    /**
+     * Private constructor for singleton pattern.
+     */
     public static AssetLoader getInstance() {
         if (instance == null) {
             instance = new AssetLoader();
@@ -32,6 +40,12 @@ public class AssetLoader {
         return imageCache.computeIfAbsent(relativePath, this::loadImage);
     }
 
+    /**
+     * Loads an image from disk, trying multiple extensions.
+     *
+     * @param relativePath The path relative to /resources/images/
+     * @return The loaded Image, or a placeholder if not found
+     */
     private Image loadImage(String relativePath) {
         // Try PNG first, then JPG
         String[] extensions = {".png", ".jpg", ".jpeg"};
@@ -52,7 +66,11 @@ public class AssetLoader {
         return createPlaceholderImage();
     }
 
-    // Creates a bright pink square to visually warn you a texture is missing
+    /**
+     * Creates a simple placeholder image (magenta square).
+     *
+     * @return Placeholder Image
+     */
     private Image createPlaceholderImage() {
         WritableImage placeholder = new WritableImage(64, 64);
         for (int x = 0; x < 64; x++) {
@@ -63,37 +81,24 @@ public class AssetLoader {
         return placeholder;
     }
 
+    /**
+     * Preloads all essential assets into the cache.
+     */
     public void loadAll() {
         System.out.println("Preloading assets...");
         String[] assets = {
-                // Backgrounds
                 "backgrounds/Dawn",
                 "backgrounds/Morning",
                 "backgrounds/Day",
                 "backgrounds/Evening",
-                "backgrounds/EarlyNight",
-                "backgrounds/DeepNight",
+                "backgrounds/EARLY_NIGHT",
+                "backgrounds/DEEP_NIGHT",
 
-                // Pet - Idle
-                "pet/idle/Bear",
-                "pet/idle/LookingLeftBear",
-                "pet/idle/LookingRightBear",
-
-                // Pet - Sleeping
-                "pet/sleeping/SpriteSheetSleeping",
-
-                // Pet - Happy
-                "pet/happy/HappyBear1",
-                "pet/happy/HappyBear2",
-                "pet/happy/HappyBearLookingLeft",
-                "pet/happy/HappyBearLookingRight",
-
-                // Pet - Sad
-                "pet/sad/CryingBear1",
-                "pet/sad/CryingBear2",
-                "pet/sad/SadBear1",
-                "pet/sad/SadBear2",
-                "pet/sad/SpriteSheetSad",
+                "sprites/idle/SpriteSheetNeutral",
+                "sprites/happy/SpriteSheetHappy",
+                "sprites/sleeping/SpriteSheetSleeping",
+                "sprites/sad/SpriteSheetSad",
+                "sprites/sad/SpriteSheetCrying"
         };
 
         for (String asset : assets) {
