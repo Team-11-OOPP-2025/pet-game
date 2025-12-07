@@ -1,5 +1,7 @@
 package com.eleven.pet.character;
 
+import com.eleven.pet.character.behavior.AsleepState;
+import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
@@ -212,7 +214,9 @@ public class PetView {
         Text label = new Text("Food: ");
         label.setFont(Font.font("Arial", FontWeight.BOLD, 18));
 
-        foodCounterText = new Text("0");
+        String initialFood = Integer.toString(model.getInventory().getQuantity(ItemRegistry.get(0)));
+
+        foodCounterText = new Text(initialFood);
         foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         foodCounterText.setFill(Color.web("#e74c3c"));
 
@@ -235,11 +239,11 @@ public class PetView {
     }
 
     private void loadAssets() {
-        sheetHappy = assetLoader.getImage("pet/happy/SpriteSheetHappy");
-        sheetNeutral = assetLoader.getImage("pet/idle/SpriteSheetNeutral");
-        sheetSad = assetLoader.getImage("pet/sad/SpriteSheetSad");
-        sheetCrying = assetLoader.getImage("pet/sad/SpriteSheetCrying");
-        sheetSleeping = assetLoader.getImage("pet/sleeping/SpriteSheetSleeping");
+        sheetHappy = assetLoader.getImage("sprites/happy/SpriteSheetHappy");
+        sheetNeutral = assetLoader.getImage("sprites/idle/SpriteSheetNeutral");
+        sheetSad = assetLoader.getImage("sprites/sad/SpriteSheetSad");
+        sheetCrying = assetLoader.getImage("sprites/sad/SpriteSheetCrying");
+        sheetSleeping = assetLoader.getImage("sprites/sleeping/SpriteSheetSleeping");
         backgroundDay = assetLoader.getImage("backgrounds/DAY");
     }
 
@@ -369,9 +373,9 @@ public class PetView {
     private void refreshPetState() {
         if (model == null) return;
 
-        String stateName = model.getCurrentState().getStateName();
+        PetState currentState = model.getCurrentState();
 
-        if ("ASLEEP".equalsIgnoreCase(stateName)) {
+        if (currentState instanceof AsleepState) {
             changeAnimation(animSleeping);
             toggleSleepButton(true);
         } else {

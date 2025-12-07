@@ -13,6 +13,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Controller for managing sprites interactions and game logic.
+ * Acts as an intermediary between the PetModel and the UI or other systems.
+ */
 public class PetController {
     private final PetModel model;
     private final GameClock clock;
@@ -28,6 +32,14 @@ public class PetController {
     private ExecutorService saveExecutor;
     private volatile boolean isShutdown = false;
 
+    /**
+     * Constructs a PetController with the given model, clock, weather system, and persistence service.
+     *
+     * @param model       The sprites model to control
+     * @param clock       The game clock for time management
+     * @param weather     The weather system for environmental effects
+     * @param persistence The persistence service for saving/loading
+     */
     public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
         this.model = model;
         this.clock = clock;
@@ -35,7 +47,6 @@ public class PetController {
         this.persistence = persistence;
         initControllerLogic();
     }
-
 
     /**
      * Watches for state changes to adjust environment timescale.
@@ -46,18 +57,18 @@ public class PetController {
             // Pet fell asleep -> Speed up
             if (newState instanceof AsleepState) {
                 System.out.println("[Controller] Pet is asleep. Accelerating time.");
-                clock.setTimeScale(GameConfig.TIME_SCALE_SLEEP);
+                clock.setTimeScale(GameConfig.TIMESCALE_SLEEP);
             }
             // Pet woke up (from sleep) -> Normal speed
             else if (oldState instanceof AsleepState) {
                 System.out.println("[Controller] Pet woke up. Normalizing time.");
-                clock.setTimeScale(GameConfig.TIME_SCALE_NORMAL);
+                clock.setTimeScale(GameConfig.TIMESCALE_NORMAL);
             }
         });
     }
 
     /**
-     * LOGIC: Determines the pet's emotion based on happiness stats.
+     * Determines the sprites's emotion based on happiness stats.
      * Centralizes the rules for mood changes.
      */
     public AnimationState calculateEmotion() {
@@ -69,13 +80,16 @@ public class PetController {
     }
 
     /**
-     * LOGIC: Determines if the player is allowed to sleep based on time.
+     * Determines if the player is allowed to sleep based on time.
      * Rule: Sleep is allowed between 20:00 (8 PM) and 08:00 (8 AM).
      */
     public boolean isSleepAllowed() {
         return model.shouldPromptSleep();
     }
 
+    /**
+     * Handles the feed action by delegating to the model.
+     */
     public void handleFeedAction() {
         // Delegates the consumption to the current state
         // TODO: Use actual food item from inventory instead of placeholder
@@ -83,34 +97,52 @@ public class PetController {
         if (model.performConsume(ItemRegistry.get(0))) {
             System.out.println("Pet has been fed.");
         } else {
-            System.out.println("No food available to feed the pet.");
+            System.out.println("No food available to feed the sprites.");
         }
     }
 
+    /**
+     * Handles the sleep action by delegating to the model after checking for conditions.
+     */
     public void handleSleepAction() {
         model.requestSleepInteraction();
     }
 
+    /**
+     * Handles the play action by delegating to the model after checking for conditions..
+     */
     public void handlePlayAction() {
         // Delegate the task to model which delegates to current state
+        // TODO: Update view based on MinigameResult
         model.playRandomMinigame();
     }
 
+    /**
+     * Handles the clean action by delegating to the model after checking for conditions.
+     */
     public void handleCleanAction() {
         // TODO: Cleaning requires certain conditions are met
         model.performClean();
     }
 
+    /**
+     * Toggles the paused state of the game clock.
+     */
     public void togglePause() {
         clock.setPaused(!clock.isPaused());
     }
 
+    /**
+     * DEBUG: Forces a weather change immediately.
+     */
     public void debugChangeWeather() {
         weather.changeWeather();
     }
 
 
-    // Save Management
+    /**
+     * Initializes and starts the autosave timer. If the timer is already running, this method does nothing.
+     */
     public void initAutosave() {
         if (autosaveTimer != null || persistence == null) {
             return;
@@ -137,6 +169,9 @@ public class PetController {
         autosaveTimer.play();
     }
 
+    /**
+     * Stops the autosave timer if it is running.
+     */
     public void stopAutosave() {
         if (autosaveTimer == null) {
             return;
@@ -145,6 +180,11 @@ public class PetController {
         autosaveTimer = null;
     }
 
+    /**
+     * Perform an asynchronous save operation.
+     *
+     * @param reason Reason for the save (for logging purposes)
+     */
     private void performAsyncSave(String reason) {
         // Submit save to single-threaded executor to serialize saves and prevent race conditions
         saveExecutor.submit(() -> {
@@ -158,8 +198,11 @@ public class PetController {
         });
     }
 
+    /**
+     * Shutdown the controller, ensuring all resources are cleaned up and
+     * a final save is performed.
+     */
     public void shutdown() {
-        // Make shutdown idempotent - only perform shutdown operations once
         if (isShutdown) {
             return;
         }

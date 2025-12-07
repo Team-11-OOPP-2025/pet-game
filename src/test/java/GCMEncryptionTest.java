@@ -4,43 +4,51 @@ import com.eleven.pet.storage.KeyLoader;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GCMEncryptionTest {
+
     @Test
-    void roundTripEncryptionProducesOriginalData() {
+    void roundTripEncryptionProducesOriginalData() throws Exception {
         SecretKey key = KeyLoader.generateDevKey();
         GcmEncryptionService gcmService = new GcmEncryptionService(key);
         String data = "This is some test data for encryption";
 
-        ByteArrayInputStream in = new ByteArrayInputStream(data.getBytes());
         ByteArrayOutputStream encryptedOut = new ByteArrayOutputStream();
-        gcmService.encrypt(in, encryptedOut);
+        try (OutputStream wrapped = gcmService.wrapOutputStream(encryptedOut)) {
+            wrapped.write(data.getBytes());
+        }
 
         ByteArrayInputStream encryptedIn = new ByteArrayInputStream(encryptedOut.toByteArray());
         ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
-        gcmService.decrypt(encryptedIn, decryptedOut);
+
+        try (InputStream wrapped = gcmService.wrapInputStream(encryptedIn)) {
+            wrapped.transferTo(decryptedOut);
+        }
 
         String decrypted = decryptedOut.toString();
         assertEquals(data, decrypted);
     }
 
     @Test
-    void encryptAndDecryptEmptyInputStream() {
+    void encryptAndDecryptEmptyInputStream() throws Exception {
         SecretKey key = KeyLoader.generateDevKey();
         GcmEncryptionService gcmService = new GcmEncryptionService(key);
 
-        ByteArrayInputStream in = new ByteArrayInputStream(new byte[0]);
         ByteArrayOutputStream encryptedOut = new ByteArrayOutputStream();
-        gcmService.encrypt(in, encryptedOut);
+        try (OutputStream _ = gcmService.wrapOutputStream(encryptedOut)) {
+            // Write nothing
+        }
 
         ByteArrayInputStream encryptedIn = new ByteArrayInputStream(encryptedOut.toByteArray());
         ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
-        gcmService.decrypt(encryptedIn, decryptedOut);
+
+        try (InputStream wrapped = gcmService.wrapInputStream(encryptedIn)) {
+            wrapped.transferTo(decryptedOut);
+        }
 
         assertEquals(0, decryptedOut.toByteArray().length);
     }
@@ -51,16 +59,15 @@ public class GCMEncryptionTest {
         GcmEncryptionService gcmService = new GcmEncryptionService(key);
 
         ByteArrayInputStream encryptedIn = new ByteArrayInputStream(new byte[0]);
-        ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
 
         assertThrows(
                 GameException.class,
-                () -> gcmService.decrypt(encryptedIn, decryptedOut)
+                () -> gcmService.wrapInputStream(encryptedIn)
         );
     }
 
     @Test
-    void decryptWithCorruptedCipherTextThrowsGameException() {
+    void decryptWithCorruptedCipherTextThrowsIOException() throws Exception {
         SecretKey key = KeyLoader.generateDevKey();
         GcmEncryptionService gcmService = new GcmEncryptionService(key);
 
@@ -68,12 +75,14 @@ public class GCMEncryptionTest {
         new java.security.SecureRandom().nextBytes(corrupted);
 
         ByteArrayInputStream encryptedIn = new ByteArrayInputStream(corrupted);
-        ByteArrayOutputStream decryptedOut = new ByteArrayOutputStream();
 
+        // Wrapping succeeds (reads IV)
+        InputStream wrapped = gcmService.wrapInputStream(encryptedIn);
+
+        // Reading fails (Auth Tag mismatch)
         assertThrows(
-                GameException.class,
-                () -> gcmService.decrypt(encryptedIn, decryptedOut)
+                IOException.class,
+                () -> wrapped.transferTo(new ByteArrayOutputStream())
         );
     }
-
 }

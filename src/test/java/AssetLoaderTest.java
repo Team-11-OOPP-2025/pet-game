@@ -16,7 +16,7 @@ public class AssetLoaderTest {
 
     @Test
     void testAssetLoading() {
-        String imagePath = "pet/idle/Bear";
+        String imagePath = "sprites/idle/Bear";
         Image image = assetLoader.getImage(imagePath);
         assertEquals(309.0, image.getWidth(), 0.1);
         assertEquals(460.0, image.getHeight(), 0.1);
