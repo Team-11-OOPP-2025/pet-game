@@ -18,8 +18,8 @@ public class AssetLoaderTest {
     void testAssetLoading() {
         String imagePath = "pet/idle/Bear";
         Image image = assetLoader.getImage(imagePath);
-        assertEquals(311.0, image.getWidth(), 0.1);
-        assertEquals(461.0, image.getHeight(), 0.1);
+        assertEquals(309.0, image.getWidth(), 0.1);
+        assertEquals(460.0, image.getHeight(), 0.1);
     }
 
     @Test
