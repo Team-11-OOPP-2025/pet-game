@@ -56,6 +56,26 @@ public class PetController {
         });
     }
 
+    /**
+     * LOGIC: Determines the pet's emotion based on happiness stats.
+     * Centralizes the rules for mood changes.
+     */
+    public AnimationState calculateEmotion() {
+        int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+        if (happiness >= 80) return AnimationState.VERY_HAPPY;
+        if (happiness >= 50) return AnimationState.NEUTRAL;
+        if (happiness >= 20) return AnimationState.SAD;
+        return AnimationState.VERY_SAD;
+    }
+
+    /**
+     * LOGIC: Determines if the player is allowed to sleep based on time.
+     * Rule: Sleep is allowed between 20:00 (8 PM) and 08:00 (8 AM).
+     */
+    public boolean isSleepAllowed() {
+        return model.shouldPromptSleep();
+    }
+
     public void handleFeedAction() {
         // Delegates the consumption to the current state
         // TODO: Use actual food item from inventory instead of placeholder

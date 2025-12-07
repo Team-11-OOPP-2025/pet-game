@@ -24,6 +24,8 @@ public enum AnimationState {
         return NEUTRAL;
     }
     
+    
+
     public int getMinHappiness() {
         return minHappiness;
     }
