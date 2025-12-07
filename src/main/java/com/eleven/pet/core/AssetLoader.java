@@ -87,10 +87,10 @@ public class AssetLoader {
     public void loadAll() {
         System.out.println("Preloading assets...");
         String[] assets = {
-                "backgrounds/Dawn",
-                "backgrounds/Morning",
-                "backgrounds/Day",
-                "backgrounds/Evening",
+                "backgrounds/DAWN",
+                "backgrounds/MORNING",
+                "backgrounds/DAY",
+                "backgrounds/EVENING",
                 "backgrounds/EARLY_NIGHT",
                 "backgrounds/DEEP_NIGHT",
 
