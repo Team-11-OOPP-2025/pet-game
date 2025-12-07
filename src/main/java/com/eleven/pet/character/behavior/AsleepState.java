@@ -46,6 +46,14 @@ public class AsleepState implements PetState {
         // Reward energy and happiness for each hour slept
         int hoursToReward = totalHoursSlept - pet.getHoursSleptRewardCount();
 
+        // If we suddenly have a huge backlog (e.g. > 10 hours) on the very first update,
+        // it likely means 'hoursSleptRewardCount' wasn't saved properly or clock skew occurred.
+        // We skip the reward to prevent massive spikes/cheating and just sync the counter.
+        if (hoursToReward > 10 && pet.getHoursSleptRewardCount() == 0) {
+            pet.setHoursSleptRewardCount(totalHoursSlept);
+            System.out.println("Synced sleep reward counter (prevented massive load spike).");
+        }
+
         if (hoursToReward > 0) {
             int energyGain = hoursToReward * GameConfig.SLEEP_ENERGY_PER_HOUR;
             int happinessGain = hoursToReward * GameConfig.SLEEP_HAPPINESS_PER_HOUR;
