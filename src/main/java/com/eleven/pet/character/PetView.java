@@ -26,6 +26,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -86,10 +87,10 @@ public class PetView {
     private AnimationState currentAnimationState = AnimationState.NEUTRAL;
 
     // NEW: SpriteSheetAnimation fields
-    private SpriteSheetAnimation neutralAnimation;
-    private SpriteSheetAnimation happyAnimation;
-    private SpriteSheetAnimation sadAnimation;
-    private SpriteSheetAnimation cryingAnimation;
+    private SpriteSheetAnimation NEUTRAL;
+    private SpriteSheetAnimation VERY_HAPPY;
+    private SpriteSheetAnimation SAD;
+    private SpriteSheetAnimation VERY_SAD;
     private SpriteSheetAnimation sleepingAnimation;
     private SpriteSheetAnimation currentAnimation;
     private AnimationTimer animationTimer;
@@ -97,6 +98,9 @@ public class PetView {
     private Image currentSpriteSheet;
     private Image sleepingBear;
     private Image cryingBear;
+
+    // NEW: Map for state-to-sprite mapping
+    private Map<AnimationState, Image> animationStateToSpriteMap;
 
     private Image DAWN;
     private Image MORNING;
@@ -112,10 +116,9 @@ public class PetView {
         this.clock = clock;
         this.weatherSystem = weather;
         this.assetLoader = AssetLoader.getInstance();
-        // Remove loadBackgroundImages() call
         loadSpriteSheets();
         initializeSpriteSheetAnimations();
-        // Initialize background provider with AssetLoader
+        initializeAnimationStateMap();
     }
     
     // Remove loadBackgroundImages() method entirely
@@ -141,28 +144,37 @@ public class PetView {
     private void initializeSpriteSheetAnimations() {
 
         // Neutral: 3 frames (neutral, lookLeft, lookRight), 0.5s per frame
-        neutralAnimation = new SpriteSheetAnimation(309, 460, 2, 3, 1f);
-        neutralAnimation.setLoop(true);
+        NEUTRAL = new SpriteSheetAnimation(309, 460, 2, 3, 1f);
+        NEUTRAL.setLoop(true);
 
         // Happy: 4 frames, faster animation
-        happyAnimation = new SpriteSheetAnimation(309, 460, 4, 4, 0.3f);
-        happyAnimation.setLoop(true);
+        VERY_HAPPY = new SpriteSheetAnimation(309, 460, 4, 4, 0.3f);
+        VERY_HAPPY.setLoop(true);
 
         // Sad: 2 frames, slower with custom timing handled separately
-        sadAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 0.5f);
-        sadAnimation.setLoop(true);
+        SAD = new SpriteSheetAnimation(309, 460, 1, 2, 0.5f);
+        SAD.setLoop(true);
 
         // Crying: 2 frames, fast
-        cryingAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 0.7f);
-        cryingAnimation.setLoop(true);
+        VERY_SAD = new SpriteSheetAnimation(309, 460, 1, 2, 0.7f);
+        VERY_SAD.setLoop(true);
 
         // Sleeping: 2 frames, slow breathing
-        sleepingAnimation = new SpriteSheetAnimation(309, 460, 2, 2, 1.5f);
+        sleepingAnimation = new SpriteSheetAnimation(309, 460, 1, 2, 1.5f);
         sleepingAnimation.setLoop(true);
 
         // Start with neutral animation
-        currentAnimation = neutralAnimation;
+        currentAnimation = NEUTRAL;
         currentAnimation.play();
+    }
+
+    private void initializeAnimationStateMap() {
+        animationStateToSpriteMap = Map.of(
+            AnimationState.VERY_HAPPY, neutralBear,
+            AnimationState.NEUTRAL, neutralBear,
+            AnimationState.SAD, sadBear,
+            AnimationState.VERY_SAD, cryingBear
+        );
     }
 
     public Pane initializeUI() {
@@ -614,8 +626,17 @@ public class PetView {
 
     private void updateAnimationState(int happiness) {
         AnimationState newState = AnimationState.fromHappiness(happiness);
-        return;
+        
+        // Only update if the mood changed AND we aren't in a blocking state (like sleeping)
+        if (currentAnimationState != newState) {
+            currentAnimationState = newState;
+            
+            // If the pet is currently just IDLE (not sleeping), update the visual immediately
+            if (model != null && "IDLE".equals(model.getCurrentState().getStateName())) {
+                updateAnimationForState("IDLE");
+            }
         }
+    }
     
 
     private void updatePetImageFromAnimation() {
@@ -627,15 +648,18 @@ public class PetView {
         petImageView.setViewport(new Rectangle2D(frameX, frameY,
                 currentAnimation.getFrameWidth(), currentAnimation.getFrameHeight()));
 
-        Image targetSheet = getSpriteSheetForCurrentState();
+        Image targetSheet = getCurrentAnimation();
         if (targetSheet != currentSpriteSheet) {
             currentSpriteSheet = targetSheet;
             petImageView.setImage(currentSpriteSheet);
         }
     }
 
-    private Image getSpriteSheetForCurrentState() {
-        return null;
+    private Image getCurrentAnimation() {
+        String state = model != null ? model.getCurrentState().getStateName() : "IDLE";
+        return state.equals("ASLEEP") 
+            ? sleepingBear 
+            : animationStateToSpriteMap.getOrDefault(currentAnimationState, neutralBear);
     }
 
     private void switchAnimation(SpriteSheetAnimation newAnimation) {
@@ -728,7 +752,19 @@ public class PetView {
     }
 
     private void updateAnimationForState(String stateName) {
-       //Todo: Implement animation update based on pet state
+        Map<String, SpriteSheetAnimation> stateAnimations = Map.of(
+            "ASLEEP", sleepingAnimation,
+            "IDLE", animationStateToSpriteMap.containsKey(currentAnimationState) 
+                ? Map.of(AnimationState.VERY_HAPPY, VERY_HAPPY, 
+                         AnimationState.NEUTRAL, NEUTRAL,
+                         AnimationState.SAD, SAD,
+                         AnimationState.VERY_SAD, VERY_SAD)
+                    .getOrDefault(currentAnimationState, NEUTRAL)
+                : NEUTRAL
+        );
+        
+        SpriteSheetAnimation targetAnimation = stateAnimations.getOrDefault(stateName, NEUTRAL);
+        switchAnimation(targetAnimation);
     }
 
     private void observeEnvironment() {
