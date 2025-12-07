@@ -60,7 +60,8 @@ public class PetController {
      * LOGIC: Determines the pet's emotion based on happiness stats.
      * Centralizes the rules for mood changes.
      */
-    public AnimationState calculateEmotion(int happiness) {
+    public AnimationState calculateEmotion() {
+        int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
         if (happiness >= 80) return AnimationState.VERY_HAPPY;
         if (happiness >= 50) return AnimationState.NEUTRAL;
         if (happiness >= 20) return AnimationState.SAD;

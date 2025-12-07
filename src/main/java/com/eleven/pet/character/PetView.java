@@ -375,10 +375,7 @@ public class PetView {
             changeAnimation(animSleeping);
             toggleSleepButton(true);
         } else {
-            // Check Model for Happiness -> Ask Controller for Emotion -> Set Animation
-            int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
-
-            switch (controller.calculateEmotion(happiness)) {
+            switch (controller.calculateEmotion()) {
                 case VERY_HAPPY:
                     changeAnimation(animHappy);
                     break;
