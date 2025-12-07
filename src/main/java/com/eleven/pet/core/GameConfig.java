@@ -33,7 +33,7 @@ public final class GameConfig {
     /**
      * Energy decrease per in-game second.
      */
-    public static final double ENERGY_DECAY_RATE = 0.3;
+    public static final double HAPPINESS_DECAY_RATE = 0.3;
 
     /**
      * Cleanliness decrease per in-game second.

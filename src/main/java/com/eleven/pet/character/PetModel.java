@@ -82,6 +82,11 @@ public class PetModel implements TimeListener, WeatherListener {
     private double cleanlinessDecayAccum = 0.0;
 
     /**
+     * Accumulator for happiness decay.
+     */
+    private double happinessDecayAccum = 0.0;
+
+    /**
      * Flag to indicate whether the sprites has already slept during the current night cycle.
      */
     private boolean sleptThisNight = false;
@@ -293,7 +298,24 @@ public class PetModel implements TimeListener, WeatherListener {
             stats.modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
         }
 
-        stats.calculateDerivedHappiness();
+        //stats.calculateDerivedHappiness();
+        double currentHunger = stats.getStat(PetStats.STAT_HUNGER).get();
+        double currentClean = stats.getStat(PetStats.STAT_CLEANLINESS).get();
+
+        // Base boredom decay
+        double happinessRate = GameConfig.HAPPINESS_DECAY_RATE;
+
+        // Penalty multipliers: If stats are critical (< 30), happiness drops 2x or 3x faster
+        if (currentHunger < 30) happinessRate *= 2.0;
+        if (currentClean < 30) happinessRate *= 1.5;
+
+        happinessDecayAccum -= happinessRate * timeDelta;
+
+        if (Math.abs(happinessDecayAccum) >= 1.0) {
+            int happyDelta = (int) Math.floor(happinessDecayAccum);
+            happinessDecayAccum -= happyDelta;
+            stats.modifyStat(PetStats.STAT_HAPPINESS, happyDelta);
+        }
     }
 
     /**
