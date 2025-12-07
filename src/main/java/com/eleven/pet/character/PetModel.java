@@ -34,6 +34,8 @@ public class PetModel implements TimeListener, WeatherListener {
     private final WeatherSystem weatherSystem;
     private final GameClock clock;
     private final Inventory inventory = new Inventory();
+    private double hungerDecayAccum = 0.0;
+    private double cleanlinessDecayAccum = 0.0;
 
     private boolean sleptThisNight = false;
     private boolean passedEightAM = false;
