@@ -1,5 +1,4 @@
 package com.eleven.pet.character;
-
 import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.DayCycle;
@@ -84,12 +83,6 @@ public class PetView {
     private Image neutralBear;
     private Image sadBear;
     
-
-
-
-
-  
-
     private AnimationState currentAnimationState = AnimationState.NEUTRAL;
 
     // NEW: SpriteSheetAnimation fields
@@ -105,7 +98,12 @@ public class PetView {
     private Image sleepingBear;
     private Image cryingBear;
 
-    private BackgroundProvider backgroundProvider;
+    private Image DAWN;
+    private Image MORNING;
+    private Image DAY;
+    private Image EVENING;
+    private Image EARLY_NIGHT;
+    private Image DEEP_NIGHT;
    
 
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
@@ -118,10 +116,18 @@ public class PetView {
         loadSpriteSheets();
         initializeSpriteSheetAnimations();
         // Initialize background provider with AssetLoader
-        this.backgroundProvider = new BackgroundProvider(assetLoader);
     }
     
     // Remove loadBackgroundImages() method entirely
+    private void loadBackGroundImages() {
+        AssetLoader loader = AssetLoader.getInstance();
+        DAWN = loader.getImage("backgrounds/DAWN");
+        MORNING = loader.getImage("backgrounds/MORNING");
+        DAY = loader.getImage("backgrounds/DAY");
+        EVENING = loader.getImage("backgrounds/EVENING");
+        EARLY_NIGHT = loader.getImage("backgrounds/EARLY_NIGHT");
+        DEEP_NIGHT = loader.getImage("backgrounds/DEEP_NIGHT");
+    }
     
     private void loadSpriteSheets() {
         AssetLoader loader = AssetLoader.getInstance();
@@ -133,9 +139,6 @@ public class PetView {
 
     // NEW: Initialize sprite sheet animations
     private void initializeSpriteSheetAnimations() {
-        // Create animations for different states
-        // Assuming each animation has frames arranged horizontally in the sprite sheet
-        // Adjust parameters based on actual sprite sheet layout
 
         // Neutral: 3 frames (neutral, lookLeft, lookRight), 0.5s per frame
         neutralAnimation = new SpriteSheetAnimation(309, 460, 2, 3, 1f);
@@ -164,21 +167,24 @@ public class PetView {
 
     public Pane initializeUI() {
         StackPane root = new StackPane();
-        root.setStyle("-fx-background-color: #1a1a2e;");
-
+        
         backgroundView = new ImageView();
-        // Observe environment (clock/weather)
-        observeEnvironment();
-        if (clock == null && backgroundView != null) {
-            backgroundView.setImage(dayBackground);
-        }
-
+        
+        // Setup background view properties
         backgroundView.setPreserveRatio(false);
         backgroundView.fitWidthProperty().bind(root.widthProperty());
         backgroundView.fitHeightProperty().bind(root.heightProperty());
-
         root.getChildren().add(backgroundView);
 
+        // Set initial background using the current clock state
+        if (clock != null) {
+            updateBackground(clock.getCycle()); 
+        } else {
+            // Fallback default if clock is null (e.g. Day)
+            backgroundView.setImage(DAY); 
+        }
+        
+        observeEnvironment();
         petImageView = createPetImage();
         StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
         StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
@@ -424,14 +430,16 @@ public class PetView {
         timeLabel.setText(timeString);
     }
 
-    private void updateBackgroundByTime() {
-        if (clock == null || backgroundProvider == null || backgroundView == null) return;
-
-        DayCycle currentCycle = clock.getCycle();
-        Image newBackground = backgroundProvider.getimage(currentCycle);
+    private void updateBackground(DayCycle cycle) {
+        // Dynamically construct the asset path based on the enum name.
+        // E.g. If cycle is DayCycle.DAWN, this looks for "backgrounds/dawn"
+        String assetPath = "backgrounds/" + cycle.name();
         
-        if (newBackground != null && !newBackground.isError()) {
-            backgroundView.setImage(newBackground);
+        Image bgImage = assetLoader.getImage(assetPath);
+        
+        // Only update if the image was successfully found
+        if (bgImage != null) {
+            backgroundView.setImage(bgImage);
         }
     }
 
@@ -515,8 +523,6 @@ public class PetView {
         Text symbol = new Text("⚡️ ");
         symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
-        symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
         StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
 
         Text label = new Text("Energy");
@@ -544,6 +550,8 @@ public class PetView {
         cleanFillRect = new Rectangle(150, 25);
         cleanFillRect.setFill(Color.web("#3498db"));
         StackPane.setAlignment(cleanFillRect, Pos.CENTER_LEFT);
+
+        Text symbol = new Text("🧽 ");
         symbol.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         StackPane.setAlignment(symbol, Pos.CENTER_LEFT);
         StackPane.setMargin(symbol, new Insets(0, 0, 0, 5));
@@ -725,11 +733,11 @@ public class PetView {
 
     private void observeEnvironment() {
         if (clock != null) {
-            updateBackgroundByTime(); // Use the simplified method instead
             updateSleepButtonVisibility();
 
-            clock.cycleProperty().addListener((_, _, _) -> {
-                updateBackgroundByTime(); // Use the simplified method instead
+            // Bind the updateBackground function to the clock cycle property
+            clock.cycleProperty().addListener((_, _, newCycle) -> {
+                updateBackground(newCycle);
             });
 
             clock.gameTimeProperty().addListener((_, _, _) -> {
