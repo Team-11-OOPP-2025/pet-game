@@ -13,6 +13,7 @@ public class PetStats {
     public static final String STAT_ENERGY = "ENERGY";
     public static final String STAT_CLEANLINESS = "CLEANLINESS";
 
+
     private final Map<String, IntegerProperty> stats = new HashMap<>();
 
     public void registerStat(String name, int initialValue) {

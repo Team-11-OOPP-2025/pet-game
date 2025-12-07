@@ -10,6 +10,7 @@ import com.google.auto.service.AutoService;
 public class AwakeState implements PetState {
     public static final String STATE_NAME = "AWAKE";
 
+
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
         if (pet.getInventory().remove(item, 1)) {
@@ -62,6 +63,7 @@ public class AwakeState implements PetState {
         if (pet.getClock() == null) return;
 
         double currentHour = pet.getCurrentGameHour();
+        pet.applyStatDecay(pet, timeDelta);
 
         // 1. Check for Missed Sleep Penalty at 8 AM
         if (currentHour >= GameConfig.HOUR_WAKE_UP && currentHour < (GameConfig.HOUR_WAKE_UP + 1.0)) {
