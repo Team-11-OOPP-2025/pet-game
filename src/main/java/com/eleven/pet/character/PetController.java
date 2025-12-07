@@ -1,5 +1,6 @@
 package com.eleven.pet.character;
 
+import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.environment.time.GameClock;
@@ -32,6 +33,27 @@ public class PetController {
         this.clock = clock;
         this.weather = weather;
         this.persistence = persistence;
+        initControllerLogic();
+    }
+
+
+    /**
+     * Watches for state changes to adjust environment timescale.
+     * This catches BOTH manual button clicks AND automatic wake-ups.
+     */
+    private void initControllerLogic() {
+        model.getStateProperty().addListener((_, oldState, newState) -> {
+            // Pet fell asleep -> Speed up
+            if (newState instanceof AsleepState) {
+                System.out.println("[Controller] Pet is asleep. Accelerating time.");
+                clock.setTimeScale(GameConfig.TIME_SCALE_SLEEP);
+            }
+            // Pet woke up (from sleep) -> Normal speed
+            else if (oldState instanceof AsleepState) {
+                System.out.println("[Controller] Pet woke up. Normalizing time.");
+                clock.setTimeScale(GameConfig.TIME_SCALE_NORMAL);
+            }
+        });
     }
 
     public void handleFeedAction() {
@@ -46,9 +68,7 @@ public class PetController {
     }
 
     public void handleSleepAction() {
-        // Called when player clicks the sleep button during sleep hours
-        // Switch to asleep state which will apply sleep rewards in onEnter
-        model.performSleep();
+        model.requestSleepInteraction();
     }
 
     public void handlePlayAction() {

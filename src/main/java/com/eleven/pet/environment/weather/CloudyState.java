@@ -14,11 +14,6 @@ public class CloudyState implements WeatherState {
     }
 
     @Override
-    public String getOverlayImageName() {
-        return "";
-    }
-
-    @Override
     public double getOverlayOpacity() {
         return 0;
     }

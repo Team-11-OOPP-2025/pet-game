@@ -27,9 +27,9 @@ public class FoodItem implements Item {
 
     @Override
     public boolean use(PetModel pet) {
-        if (pet.getInventory().remove(this, 1)) {
-            return pet.getStats().modifyStat(PetStats.STAT_HUNGER, healAmount);
-        }
-        return false;
+        // Let the Item handle the Pet's stats so the behavior is delegated to the Item
+        // rather then the Model itself for better separation of concerns
+        // This also allows for easier addition of new Item types in the future
+        return pet.getStats().modifyStat(PetStats.STAT_HUNGER, healAmount);
     }
 }
