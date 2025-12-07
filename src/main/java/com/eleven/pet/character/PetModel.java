@@ -157,6 +157,7 @@ public class PetModel implements TimeListener, WeatherListener {
         return isNight && isTired;
     }
 
+    // Stat decay system
     public void applyStatDecay(PetModel pet, double timeDelta) {
         hungerDecayAccum      -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
         cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
