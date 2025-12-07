@@ -87,7 +87,7 @@ public class SleepSystemTest {
 
         // Verify penalty was applied
         assertEquals(-GameConfig.MISSED_SLEEP_ENERGY_PENALTY, energyAfter - energyBefore, "Energy should decrease by penalty");
-        assertTrue(happinessAfter < happinessBefore);
+        assertEquals(-GameConfig.MISSED_SLEEP_HAPPINESS_PENALTY, happinessAfter - happinessBefore, "Happiness should decrease by penalty");
     }
 
     @Test
