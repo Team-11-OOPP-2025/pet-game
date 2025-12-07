@@ -276,10 +276,9 @@ public class PetModel implements TimeListener, WeatherListener {
      * Apply stat decay over the given time delta. This method accumulates fractional decay
      * amounts and applies whole integer deltas to the underlying stats.
      *
-     * @param pet       the sprites instance (unused; kept for potential state-delegation compatibility).
      * @param timeDelta elapsed time in seconds since the last tick.
      */
-    public void applyStatDecay(PetModel pet, double timeDelta) {
+    public void applyStatDecay(double timeDelta) {
         hungerDecayAccum -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
         cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
