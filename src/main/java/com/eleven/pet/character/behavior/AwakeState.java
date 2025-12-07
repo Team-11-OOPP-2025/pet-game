@@ -62,6 +62,7 @@ public class AwakeState implements PetState {
         if (pet.getClock() == null) return;
 
         double currentHour = pet.getCurrentGameHour();
+        pet.applyStatDecay(pet, timeDelta);
 
         // 1. Check for Missed Sleep Penalty at 8 AM
         if (currentHour >= GameConfig.HOUR_WAKE_UP && currentHour < (GameConfig.HOUR_WAKE_UP + 1.0)) {
