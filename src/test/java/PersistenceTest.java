@@ -57,7 +57,7 @@ class PersistenceTest {
         stats.registerStat(PetStats.STAT_HAPPINESS, 50);
         stats.registerStat(PetStats.STAT_HUNGER, GameConfig.MIN_STAT_VALUE);
         Inventory inventory = original.getInventory();
-        original.setSleepStartTime(1234L);
+        original.setCurrentSleepDuration(1234L);
         original.setSleptThisNight(true);
 
         service.save(original);
@@ -69,7 +69,7 @@ class PersistenceTest {
         assertEquals(original.getName(), loaded.getName());
         assertEquals(50, loaded.getStats().getStat(PetStats.STAT_HAPPINESS).get());
         assertEquals(GameConfig.MIN_STAT_VALUE, loaded.getStats().getStat(PetStats.STAT_HUNGER).get());
-        assertEquals(1234L, loaded.getSleepStartTime());
+        assertEquals(1234L, loaded.getCurrentSleepDuration());
         assertTrue(loaded.isSleptThisNight());
         assertTrue(Math.abs(inventory.getAllOwnedItems().size() - loaded.getInventory().getAllOwnedItems().size()) <= 3, "Owned items count should be within a range of 3");
         assertEquals(original.getCurrentState(), loaded.getCurrentState());

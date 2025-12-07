@@ -56,8 +56,6 @@ public class PetStats {
         happiness.set(validate(average));
     }
 
-
-
     private int validate(int value) {
         return Math.max(GameConfig.MIN_STAT_VALUE, Math.min(GameConfig.MAX_STAT_VALUE, value));
     }

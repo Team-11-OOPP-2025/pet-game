@@ -49,20 +49,12 @@ public class PetStatesTest {
             }
 
             @Override
-            public void onTick(PetModel pet) {
+            public void onTick(PetModel pet, double timeDelta) {
             }
 
             @Override
             public String getStateName() {
                 return "TestState";
-            }
-
-            @Override
-            public void onEnter(PetModel pet) {
-            }
-
-            @Override
-            public void onExit(PetModel pet) {
             }
         };
 

@@ -4,7 +4,6 @@ import com.eleven.pet.vfx.effects.ParticleEffect;
 
 public interface WeatherState {
     String getName();
-    String getOverlayImageName();
     double getOverlayOpacity();
     double getHappinessModifier();
     ParticleEffect getParticleEffect();

@@ -12,21 +12,41 @@ public class AwakeState implements PetState {
 
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        return item.use(pet);
+        if (pet.getInventory().remove(item, 1)) {
+            System.out.println(pet.getName() + " is consuming " + item.name() + ".");
+            return item.use(pet);
+        }
+        System.out.println(item.name() + " is not available in inventory.");
+        return false;
     }
 
     @Override
     public void handlePlay(PetModel pet) {
         if (pet.canPlayMinigame()) {
             pet.playRandomMinigame();
-        } else {
-            System.out.println(pet.getName() + " is too tired or hungry to play right now.");
+            return;
         }
+        System.out.println(pet.getName() + " is too tired or hungry to play right now.");
     }
 
     @Override
     public void handleSleep(PetModel pet) {
-        pet.performSleep();
+        System.out.println(pet.getName() + " is getting ready to sleep...");
+
+        // Initialize sleep flags BEFORE changing state
+        pet.setSleptThisNight(true);
+        pet.setPassedEightAM(false);
+
+        if (pet.getClock() != null) {
+            pet.setCurrentSleepDuration(0.0);
+            pet.setHoursSleptRewardCount(0);
+        }
+
+        StateRegistry registry = StateRegistry.getInstance();
+        PetState asleepState = registry.getState(AsleepState.STATE_NAME);
+        if (asleepState != null) {
+            pet.changeState(asleepState);
+        }
     }
 
     @Override
@@ -38,44 +58,41 @@ public class AwakeState implements PetState {
     }
 
     @Override
-    public void onTick(PetModel pet) {
-        // Check sleep cycle when in awake state
-        if (pet.getClock() != null) {
-            double currentHour = (pet.getClock().getGameTime() / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+    public void onTick(PetModel pet, double timeDelta) {
+        if (pet.getClock() == null) return;
 
-            // Check if pet slept at 8 AM
-            if (currentHour >= 8.0 && currentHour < 20.0 && !pet.isPassedEightAM()) {
-                if (!pet.hasSleptThisNight()) {
+        double currentHour = pet.getCurrentGameHour();
+
+        // 1. Check for Missed Sleep Penalty at 8 AM
+        if (currentHour >= GameConfig.HOUR_WAKE_UP && currentHour < (GameConfig.HOUR_WAKE_UP + 1.0)) {
+            if (!pet.isPassedEightAM()) {
+                if (!pet.isSleptThisNight()) {
                     applyMissedSleepPenalty(pet);
                 }
                 pet.setPassedEightAM(true);
             }
+        }
 
-            // Reset sleep flag at 20:00 (sleep window starts)
-            if ((currentHour >= 20.0 || currentHour < 8.0) && pet.isPassedEightAM()) {
-                pet.resetSleepFlag();
-                pet.setPassedEightAM(false);
-            }
+        // 2. Reset the daily check flag after 9 AM
+        if (currentHour >= (GameConfig.HOUR_WAKE_UP + 1.0) && pet.isPassedEightAM()) {
+            pet.setPassedEightAM(false);
+        }
+
+        // 3. Reset sleep flag at 20:00 (Start of new sleep window)
+        if (currentHour >= GameConfig.HOUR_SLEEP_WINDOW_START && pet.isSleptThisNight()) {
+            pet.setSleptThisNight(false);
+            System.out.println("It is now evening. Sleep flag reset.");
         }
     }
 
     private void applyMissedSleepPenalty(PetModel pet) {
-        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -30);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -20);
+        System.out.println(pet.getName() + " stayed up all night! Penalty applied.");
+        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -GameConfig.MISSED_SLEEP_ENERGY_PENALTY);
+        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -GameConfig.MISSED_SLEEP_HAPPINESS_PENALTY);
     }
 
     @Override
     public String getStateName() {
         return STATE_NAME;
-    }
-
-    @Override
-    public void onEnter(PetModel pet) {
-        System.out.println(pet.getName() + " is now awake.");
-    }
-
-    @Override
-    public void onExit(PetModel pet) {
-        System.out.println(pet.getName() + " is leaving the awake state.");
     }
 }

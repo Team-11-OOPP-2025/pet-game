@@ -52,16 +52,16 @@ public class WeatherSystemTest {
     @Test
     void testRainyModifier() {
         RainyState rainyState = new RainyState();
-        assertEquals(0.8, rainyState.getHappinessModifier(), 0.01, 
-            "Rainy weather should have 0.8 happiness modifier (makes pet sad)");
+        assertEquals(0.8, rainyState.getHappinessModifier(), 0.01,
+                "Rainy weather should have 0.8 happiness modifier (makes pet sad)");
         assertEquals("Rainy", rainyState.getName(), "State name should be 'Rainy'");
     }
 
     @Test
     void testSunnyModifier() {
         SunnyState sunnyState = new SunnyState();
-        assertEquals(1.2, sunnyState.getHappinessModifier(), 0.01, 
-            "Sunny weather should have 1.2 happiness modifier (makes pet happy)");
+        assertEquals(1.2, sunnyState.getHappinessModifier(), 0.01,
+                "Sunny weather should have 1.2 happiness modifier (makes pet happy)");
         assertEquals("Sunny", sunnyState.getName(), "State name should be 'Sunny'");
     }
 }
