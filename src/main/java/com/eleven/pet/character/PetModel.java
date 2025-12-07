@@ -34,9 +34,6 @@ public class PetModel implements TimeListener, WeatherListener {
     private final WeatherSystem weatherSystem;
     private final GameClock clock;
     private final Inventory inventory = new Inventory();
-    private double hungerDecayAccum = 0.0;
-    private double cleanlinessDecayAccum = 0.0;
-
 
     private boolean sleptThisNight = false;
     private boolean passedEightAM = false;
@@ -158,44 +155,16 @@ public class PetModel implements TimeListener, WeatherListener {
         return isNight && isTired;
     }
 
-    private void applyStatDecay(double timeDelta) {
-        if (clock == null) return;
 
-        if (!(currentState.get() instanceof AsleepState)) {
-            hungerDecayAccum      -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
-            cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
-
-            int hungerDelta = 0;
-            if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
-                hungerDelta = (int) Math.floor(hungerDecayAccum);
-                hungerDecayAccum -= hungerDelta;
-                stats.modifyStat(PetStats.STAT_HUNGER, hungerDelta);
-            }
-
-            int cleanDelta = 0;
-            if (cleanlinessDecayAccum <= -1.0 || cleanlinessDecayAccum >= 1.0) {
-                cleanDelta = (int) Math.floor(cleanlinessDecayAccum);
-                cleanlinessDecayAccum -= cleanDelta;
-                stats.modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
-            }
-        }
-
-        stats.calculateDerivedHappiness();
-    }
 
 
     // Environment listeners
     @Override
     public void onTick(double timeDelta) {
-
-        applyStatDecay(timeDelta);
-
         if (currentState.get() != null) {
             currentState.get().onTick(this, timeDelta);
         }
     }
-
-
 
     @Override
     public void onWeatherChange(WeatherState newWeather) {
