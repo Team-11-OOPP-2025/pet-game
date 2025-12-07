@@ -24,9 +24,9 @@ public class AsleepState implements PetState {
 
     @Override
     public void handleSleep(PetModel pet) {
-        // When the pet is already asleep and the user presses the sleep button,
-        // treat it as a request to wake up.
-        pet.wakeUp();
+        // Manual Wake Up
+        System.out.println("Player woke up " + pet.getName() + " manually.");
+        wakeUp(pet);
     }
 
     @Override
@@ -35,52 +35,58 @@ public class AsleepState implements PetState {
     }
 
     @Override
-    public void onTick(PetModel pet) {
-        // Auto-wake up at 8:00 AM when sleeping
-        if (pet.getClock() != null && pet.isSleepingWithTimeAcceleration()) {
-            double gameTime = pet.getClock().getGameTime();
-            double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
-            double hour = normalizedTime * 24.0;
+    public void onTick(PetModel pet, double timeDelta) {
+        double newDuration = pet.getCurrentSleepDuration() + timeDelta;
+        pet.setCurrentSleepDuration(newDuration);
 
-            // Wake up at 8:00 AM
-            if (hour >= 8.0 && hour < 9.0 && !pet.isPassedEightAM()) {
-                pet.wakeUp();
-                pet.setPassedEightAM(true);
-                System.out.println(pet.getName() + " automatically woke up at 8:00 AM.");
-            }
+        // Calculate total hours slept
+        double secondsPerGameHour = GameConfig.DAY_LENGTH_SECONDS / 24.0;
+        int totalHoursSlept = (int) (newDuration / secondsPerGameHour);
 
-            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
-            if (hour >= 9.0 || hour < 8.0) {
-                if (pet.isPassedEightAM()) {
-                    pet.setPassedEightAM(false);
-                }
-            }
+        // Reward energy and happiness for each hour slept
+        int hoursToReward = totalHoursSlept - pet.getHoursSleptRewardCount();
+
+        // If we suddenly have a huge backlog (e.g. > 10 hours) on the very first update,
+        // it likely means 'hoursSleptRewardCount' wasn't saved properly or clock skew occurred.
+        // We skip the reward to prevent massive spikes/cheating and just sync the counter.
+        if (hoursToReward > 10 && pet.getHoursSleptRewardCount() == 0) {
+            pet.setHoursSleptRewardCount(totalHoursSlept);
+            System.out.println("Synced sleep reward counter (prevented massive load spike).");
+        }
+
+        if (hoursToReward > 0) {
+            int energyGain = hoursToReward * GameConfig.SLEEP_ENERGY_PER_HOUR;
+            int happinessGain = hoursToReward * GameConfig.SLEEP_HAPPINESS_PER_HOUR;
+
+            pet.getStats().modifyStat(PetStats.STAT_ENERGY, energyGain);
+            pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, happinessGain);
+
+            pet.setHoursSleptRewardCount(pet.getHoursSleptRewardCount() + hoursToReward);
+
+            System.out.println("Sleep Duration " + totalHoursSlept + "h: Energy +" + energyGain
+                    + ", Happiness +" + happinessGain);
+        }
+
+        // Automatic wake up at 8:00 AM
+        if (pet.getCurrentGameHour() >= GameConfig.HOUR_WAKE_UP &&
+                pet.getCurrentGameHour() < (GameConfig.HOUR_WAKE_UP + 1.0)) {
+
+            System.out.println(pet.getName() + " automatically woke up at 8:00 AM.");
+            pet.setPassedEightAM(true);
+            wakeUp(pet);
         }
     }
 
-    private void applyMissedSleepPenalty(PetModel pet) {
-        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -30);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -20);
+    private void wakeUp(PetModel pet) {
+        StateRegistry registry = StateRegistry.getInstance();
+        PetState awakeState = registry.getState(AwakeState.STATE_NAME);
+        if (awakeState != null) {
+            pet.changeState(awakeState);
+        }
     }
 
     @Override
     public String getStateName() {
         return STATE_NAME;
     }
-
-    @Override
-    public void onEnter(PetModel pet) {
-        // Apply sleep rewards when entering sleep state
-        pet.getStats().modifyStat(PetStats.STAT_ENERGY, 40);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 20);
-        pet.setSleptThisNight(true);
-        System.out.println(pet.getName() + " had a good night's sleep! Energy and happiness restored.");
-    }
-
-    @Override
-    public void onExit(PetModel pet) {
-        // Currently nothing special to do; kept for symmetry and future use
-        System.out.println(pet.getName() + " woke up from sleep.");
-    }
-
 }

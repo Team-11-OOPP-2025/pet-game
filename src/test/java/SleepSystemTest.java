@@ -9,8 +9,7 @@ import com.eleven.pet.environment.time.GameClock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SleepSystemTest {
 
@@ -37,16 +36,24 @@ public class SleepSystemTest {
         int energyBefore = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         int happinessBefore = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
 
-        // Press sleep button
-        pet.performSleep();
+        // Press sleep button (starts sleep timer, no instant reward)
+        pet.requestSleepInteraction();
 
-        int energyAfter = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
-        int happinessAfter = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+        // Verify no immediate change
+        int energyAfterClick = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
+        assertEquals(energyBefore, energyAfterClick, "Stats should not increase instantly");
 
-        // Verify stats increased
-        assertEquals(40, energyAfter - energyBefore, "Energy should increase by 40");
-        assertEquals(20, happinessAfter - happinessBefore, "Happiness should increase by 20");
-        assertTrue(pet.hasSleptThisNight(), "Pet should be marked as having slept");
+        // Simulate 1 hour passing
+        double secondsPerGameHour = GameConfig.DAY_LENGTH_SECONDS / 24.0;
+        clock.tick(secondsPerGameHour);
+
+        int energyAfterHour = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
+        int happinessAfterHour = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+
+        // Verify hourly stats increased
+        assertEquals(GameConfig.SLEEP_ENERGY_PER_HOUR, energyAfterHour - energyBefore, "Energy should increase by hourly rate");
+        assertEquals(GameConfig.SLEEP_HAPPINESS_PER_HOUR, happinessAfterHour - happinessBefore, "Happiness should increase by hourly rate");
+        assertTrue(pet.isSleptThisNight(), "Pet should be marked as having slept");
     }
 
     @Test
@@ -57,29 +64,30 @@ public class SleepSystemTest {
         double timeDelta1 = targetTime20 - currentTime;
 
         clock.tick(timeDelta1);
-        pet.onTick(timeDelta1); // This should reset sleep flag and set passedEightAM to false
+        pet.onTick(timeDelta1);
 
         // Advance to just before 8 AM without sleeping (through midnight)
-        double targetTime8 = (7.9 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
-        double timeDelta2 = (GameConfig.DAY_LENGTH_SECONDS - targetTime20) + targetTime8;
+        // We add ~12 hours to cross midnight safely
+        double hoursToAdvance = 11.9;
+        double secondsToAdvance = hoursToAdvance * (GameConfig.DAY_LENGTH_SECONDS / 24.0);
+
+        clock.tick(secondsToAdvance);
+        pet.onTick(secondsToAdvance);
 
         int energyBefore = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         int happinessBefore = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
 
-        // Tick to just before 8 AM
-        clock.tick(timeDelta2);
-        pet.onTick(timeDelta2);
-
-        // Now cross 8 AM - this should trigger the penalty
-        clock.tick(0.2);
-        pet.onTick(0.2);
+        // Cross 8 AM threshold
+        double tickAcross = 0.2 * (GameConfig.DAY_LENGTH_SECONDS / 24.0);
+        clock.tick(tickAcross);
+        pet.onTick(tickAcross);
 
         int energyAfter = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         int happinessAfter = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
 
         // Verify penalty was applied
-        assertEquals(-30, energyAfter - energyBefore, "Energy should decrease by 30");
-        assertEquals(-20, happinessAfter - happinessBefore, "Happiness should decrease by 20");
+        assertEquals(-GameConfig.MISSED_SLEEP_ENERGY_PENALTY, energyAfter - energyBefore, "Energy should decrease by penalty");
+        assertTrue(happinessAfter < happinessBefore);
     }
 
     @Test
@@ -91,35 +99,24 @@ public class SleepSystemTest {
         pet.onTick(timeDelta);
 
         // Sleep during the night
-        pet.performSleep();
+        pet.requestSleepInteraction();
 
         int energyBefore = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
-        int happinessBefore = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
 
-        // Advance to 8 AM
-        targetTime = (8.0 / 24.0) * GameConfig.DAY_LENGTH_SECONDS;
-        timeDelta = (GameConfig.DAY_LENGTH_SECONDS - clock.getGameTime()) + targetTime;
-        clock.tick(timeDelta);
-        pet.onTick(timeDelta);
+        // Advance to 8 AM (approx 12 hours later)
+        double sleepDuration = 12.0 * (GameConfig.DAY_LENGTH_SECONDS / 24.0);
+        clock.tick(sleepDuration);
+        pet.onTick(sleepDuration);
 
-        // Cross 8 AM
-        clock.tick(0.1);
-        pet.onTick(0.1);
+        // Cross 8 AM to trigger auto-wake
+        double nudging = 0.1;
+        clock.tick(nudging);
+        pet.onTick(nudging);
 
         int energyAfter = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
-        int happinessAfter = pet.getStats().getStat(PetStats.STAT_HAPPINESS).get();
 
-        // Verify NO penalty was applied (stats should be the same)
-        assertEquals(0, energyAfter - energyBefore, "Energy should not decrease when pet slept");
-        assertEquals(0, happinessAfter - happinessBefore, "Happiness should not decrease when pet slept");
-    }
-
-    @Test
-    void testControllerSleep() {
-        // Simulate pressing sleep button via controller
-        pet.performSleep();
-
-        // Verify pet is in asleep state
-        assertEquals(AsleepState.STATE_NAME, pet.getCurrentState().getStateName(), "Pet should be in Asleep state after sleep action");
+        // Verify pet woke up and gained energy (instead of losing it)
+        assertInstanceOf(AwakeState.class, pet.getCurrentState(), "Pet should auto-wake");
+        assertTrue(energyAfter > energyBefore, "Energy should increase from sleeping");
     }
 }

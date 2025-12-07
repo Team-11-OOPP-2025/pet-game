@@ -47,7 +47,7 @@ public class PersistenceService {
             dto.setStatsData(extractStats(model.getStats()));
             dto.setInventoryData(extractInventory(model.getInventory()));
 
-            dto.setSleepStartTime(model.getSleepStartTime());
+            dto.setSleepStartTime(model.getCurrentSleepDuration());
             dto.setSleptThisNight(model.isSleptThisNight());
 
             ByteArrayOutputStream jsonBuffer = new ByteArrayOutputStream();
@@ -100,7 +100,7 @@ public class PersistenceService {
             applyStats(dto.getStatsData(), model.getStats());
             applyInventory(dto.getInventoryData(), model.getInventory());
 
-            model.setSleepStartTime(dto.getSleepStartTime());
+            model.setCurrentSleepDuration(dto.getSleepStartTime());
             model.setSleptThisNight(dto.isSleptThisNight());
 
             System.out.println("[" + dto.getVersion() + "] Game loaded successfully!");
@@ -139,16 +139,15 @@ public class PersistenceService {
         if (data == null || inventory == null) return;
 
         // 1) Clear current inventory (including any default/replenished items)
+        // (by default there will be no items in inventory at this point)
         inventory.getAllOwnedItems().forEach((id, qty) ->
                 Optional.ofNullable(ItemRegistry.get(id))
                         .ifPresent(item -> inventory.remove(item, qty))
         );
 
         // 2) Apply saved inventory exactly
-        data.forEach((id, qty) -> {
-            Optional.ofNullable(ItemRegistry.get(id))
-                    .ifPresent(item -> inventory.add(item, qty));
-        });
+        data.forEach((id, qty) -> Optional.ofNullable(ItemRegistry.get(id))
+                .ifPresent(item -> inventory.add(item, qty)));
     }
 
 }

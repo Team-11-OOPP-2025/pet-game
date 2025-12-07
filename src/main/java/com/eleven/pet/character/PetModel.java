@@ -29,27 +29,26 @@ import java.util.List;
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
     private final String name;
-    private final PetStats stats;
+    private final PetStats stats = new PetStats();
     private final ObjectProperty<PetState> currentState;
     private final WeatherSystem weatherSystem;
     private final GameClock clock;
-    private final Inventory inventory;
+    private final Inventory inventory = new Inventory();
+    private double hungerDecayAccum = 0.0;
+    private double cleanlinessDecayAccum = 0.0;
 
-    private boolean sleptThisNight;
-    private double sleepStartTime;
-    private boolean passedEightAM = false; // Track if we've passed 8 AM check
-    private boolean isSleepingWithTimeAcceleration = false;
+    private boolean sleptThisNight = false;
+    private boolean passedEightAM = false;
+
+    private double currentSleepDuration = 0.0;
+    private int hoursSleptRewardCount = 0;
 
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
-        this.inventory = new Inventory();
-        this.sleptThisNight = false;
-        this.sleepStartTime = 0;
 
         // Initialize stats
-        this.stats = new PetStats();
         stats.registerStat(PetStats.STAT_HUNGER, 50);
         stats.registerStat(PetStats.STAT_HAPPINESS, 50);
         stats.registerStat(PetStats.STAT_ENERGY, 50);
@@ -62,31 +61,17 @@ public class PetModel implements TimeListener, WeatherListener {
 
 
         // Subscribe to environment systems
-        if (clock != null) {
-            clock.subscribe(this);
-        }
-        if (weatherSystem != null) {
-            weatherSystem.subscribe(this);
-        }
+        if (clock != null) clock.subscribe(this);
+
+        if (weatherSystem != null) weatherSystem.subscribe(this);
         replenishDailyFood();
     }
 
     // State management
     public void changeState(PetState newState) {
-        if (newState != null) {
-            // Call onExit on current state if exists
-            PetState oldState = currentState.get();
-            if (oldState != null) {
-                oldState.onExit(this);
-            }
-
-            // Change to new state
-            currentState.set(newState);
-            System.out.println(name + " changed state to: " + newState.getStateName());
-
-            // Call onEnter on new state
-            newState.onEnter(this);
-        }
+        if (newState == null) return;
+        currentState.set(newState);
+        System.out.println(name + " changed state to: " + newState.getStateName());
     }
 
     public PetState getCurrentState() {
@@ -97,58 +82,25 @@ public class PetModel implements TimeListener, WeatherListener {
         return currentState;
     }
 
+    public double getCurrentGameHour() {
+        if (clock == null) return 0.0;
+        double gameTime = clock.getGameTime();
+        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS;
+        return (normalizedTime * 24.0) % 24.0;
+    }
+
     // Consumable interaction
     public boolean performConsume(Item item) {
-        // TODO: Implement consumable interaction
         return currentState.get().handleConsume(this, item);
     }
 
     // Actions
-    public void performSleep() {
-        if (clock != null) {
-            // Double the time scale for sleep
-            clock.setTimeScale(2.0);
-            isSleepingWithTimeAcceleration = true;
-            sleepStartTime = clock.getGameTime();
-            passedEightAM = false;
-            System.out.println(name + " is going to sleep. Time is accelerating...");
-        }
-
-        // Change to asleep state
-        StateRegistry registry = StateRegistry.getInstance();
-        PetState asleepState = registry.getState(AsleepState.STATE_NAME);
-        if (asleepState != null) {
-            changeState(asleepState);
-        }
-    }
-
-    public void wakeUp() {
-        if (clock != null) {
-            // Restore normal time scale
-            clock.setTimeScale(1.0);
-            isSleepingWithTimeAcceleration = false;
-            System.out.println(name + " woke up. Time has returned to normal.");
-        }
-
-        // Change to awake state
-        StateRegistry registry = StateRegistry.getInstance();
-        PetState awakeState = registry.getState(AwakeState.STATE_NAME);
-        if (awakeState != null) {
-            changeState(awakeState);
-        }
+    public void requestSleepInteraction() {
+        currentState.get().handleSleep(this);
     }
 
     public void performClean() {
-        stats.modifyStat(PetStats.STAT_CLEANLINESS, 30);
-        System.out.println(name + " is now cleaner! Cleanliness increased.");
-    }
-
-    public void resetSleepFlag() {
-        sleptThisNight = false;
-    }
-
-    public boolean hasSleptThisNight() {
-        return sleptThisNight;
+        currentState.get().handleClean(this);
     }
 
     // Minigame system
@@ -193,57 +145,45 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     public boolean shouldPromptSleep() {
-        // No clock -> no prompt
-        if (clock == null) {
-            return false;
-        }
+        if (clock == null) return false;
+        if (currentState.get() instanceof AsleepState || sleptThisNight) return false;
 
-        // Already asleep or has slept this night -> no prompt
-        if (currentState.get() instanceof AsleepState || sleptThisNight) {
-            return false;
-        }
-
-        // Current in-game hour
-        double gameTime = clock.getGameTime();
-        double normalizedTime = gameTime / GameConfig.DAY_LENGTH_SECONDS; // 0.0–1.0
-        double hour = (normalizedTime * 24.0) % 24.0;
-
-        // Pet's energy level
+        double hour = getCurrentGameHour();
         int energy = stats.getStat(PetStats.STAT_ENERGY).get();
 
-        boolean isLate = hour >= 20.0 || hour < 2.0; // “night” window: 20:00–02:00
-        boolean isTired = energy <= 40;
+        boolean isNight = hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
+        boolean isTired = energy <= GameConfig.SLEEP_ENERGY_THRESHOLD;
 
-        return isLate && isTired;
+        return isNight && isTired;
     }
 
+    // Stat decay system
+    public void applyStatDecay(PetModel pet, double timeDelta) {
+        hungerDecayAccum      -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
+        cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
+
+        int hungerDelta = 0;
+        if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
+            hungerDelta = (int) Math.floor(hungerDecayAccum);
+            hungerDecayAccum -= hungerDelta;
+            pet.getStats().modifyStat(PetStats.STAT_HUNGER, hungerDelta);
+        }
+
+        int cleanDelta = 0;
+        if (cleanlinessDecayAccum <= -1.0 || cleanlinessDecayAccum >= 1.0) {
+            cleanDelta = (int) Math.floor(cleanlinessDecayAccum);
+            cleanlinessDecayAccum -= cleanDelta;
+            pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
+        }
+
+        pet.getStats().calculateDerivedHappiness();
+    }
 
     // Environment listeners
     @Override
     public void onTick(double timeDelta) {
         if (currentState.get() != null) {
-            currentState.get().onTick(this);
-        }
-
-        // Auto-wake up at 8:00 AM if sleeping
-        if (isSleepingWithTimeAcceleration && clock != null) {
-            double gameTime = clock.getGameTime();
-            double normalizedTime = gameTime / 24;
-            double hour = normalizedTime * 24.0;
-
-            // Wake up at 8:00 AM
-            if (hour >= 8.0 && hour < 9.0 && !passedEightAM) {
-                wakeUp();
-                passedEightAM = true;
-                System.out.println(name + " automatically woke up at 8:00 AM.");
-            }
-
-            // Reset the flag after 9 AM or before 8 AM to allow next day's wake-up
-            if (hour >= 9.0 || hour < 8.0) {
-                if (passedEightAM) {
-                    passedEightAM = false;
-                }
-            }
+            currentState.get().onTick(this, timeDelta);
         }
     }
 

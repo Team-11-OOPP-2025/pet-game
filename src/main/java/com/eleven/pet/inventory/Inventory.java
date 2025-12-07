@@ -33,11 +33,8 @@ public class Inventory {
         if (count == null || count.get() < quantity) return false;
 
         int newCount = count.get() - quantity;
-        if (newCount == 0) {
-            items.remove(item.id());
-        } else {
-            count.set(newCount);
-        }
+        count.set(newCount);
+
         return true;
     }
 
@@ -66,6 +63,6 @@ public class Inventory {
 
     // Property for JavaFX binding
     public IntegerProperty amountProperty(Item item) {
-        return items.computeIfAbsent(item.id(), n -> new SimpleIntegerProperty(0));
+        return items.computeIfAbsent(item.id(), _ -> new SimpleIntegerProperty(0));
     }
 }
