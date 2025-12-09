@@ -1,3 +1,5 @@
+import com.eleven.pet.character.PetFactory;
+import com.eleven.pet.character.PetModel;
 import com.eleven.pet.inventory.Inventory;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
@@ -5,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InventoryTest {
 
@@ -30,5 +33,14 @@ public class InventoryTest {
         inventory.remove(apple, 1);
 
         assertEquals(1, inventory.getQuantity(apple));
+    }
+
+    @Test
+    void testReplenishItem() {
+        PetModel pet = PetFactory.createNewPet("TestPet", null, null);
+        int size = pet.getInventory().getAllOwnedItems().size();
+        int min = 1;
+        int max = 5;
+        assertTrue((size >= min && size <= max), "owned items size not within range");
     }
 }

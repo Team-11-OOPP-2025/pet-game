@@ -30,7 +30,7 @@ public class Inventory {
     /**
      * Consume one item instance.
      *
-     * @return 1 if an item was consumed; 0 if none is consumed (item not found or quantity is zero)
+     * @return true if an item was consumed; false if none is consumed (item not found or quantity is zero)
      */
     public boolean remove(Item item, int quantity) {
         if (item == null || quantity <= 0) return false;
