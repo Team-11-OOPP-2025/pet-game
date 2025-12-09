@@ -5,7 +5,7 @@ import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.inventory.Item;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
 import javafx.scene.control.Label;
@@ -93,11 +93,8 @@ public class PetController {
     /**
      * Handles the feed action by delegating to the model.
      */
-    public void handleFeedAction() {
-        // Delegates the consumption to the current state
-        // TODO: Use actual food item from inventory instead of placeholder
-        // Achieve that through accepting a Item parameter in this method and passing it down
-        if (model.performConsume(ItemRegistry.get(0))) {
+    public void handleConsumeAction(Item item) {
+        if (model.performConsume(item)) {
             System.out.println("Pet has been fed.");
         } else {
             System.out.println("No food available to feed the sprites.");

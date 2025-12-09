@@ -2,6 +2,8 @@ package com.eleven.pet.inventory;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,7 +13,7 @@ import java.util.Map;
  * Manages the inventory of items owned by the player.
  */
 public class Inventory {
-    private final Map<Integer, IntegerProperty> items = new HashMap<>();
+    private final Map<Integer, IntegerProperty> items = FXCollections.observableHashMap();
 
     /**
      * Add multiple items.
@@ -37,6 +39,11 @@ public class Inventory {
 
         int newCount = count.get() - quantity;
         count.set(newCount);
+
+        // Don't keep zero-quantity items in the inventory
+        if (newCount == 0) {
+            items.remove(item.id());
+        }
 
         return true;
     }
@@ -87,5 +94,9 @@ public class Inventory {
      */
     public IntegerProperty amountProperty(Item item) {
         return items.computeIfAbsent(item.id(), _ -> new SimpleIntegerProperty(0));
+    }
+
+    public ObservableMap<Integer, IntegerProperty> getItems() {
+        return (ObservableMap<Integer, IntegerProperty>) items;
     }
 }

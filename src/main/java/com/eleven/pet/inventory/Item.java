@@ -7,5 +7,9 @@ public interface Item {
 
     String name();
 
+    String description();
+
+    int statsRestore();
+
     boolean use(PetModel pet);
 }
