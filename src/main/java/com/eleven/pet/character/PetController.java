@@ -8,6 +8,9 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -236,5 +239,23 @@ public class PetController {
         } else {
             System.err.println("Cannot save game on shutdown: persistence is not initialized.");
         }
+    }
+
+    /**
+     * Returns the Game Pane for the TV to display.
+     * This replaces the old logic of opening a new Window.
+     */
+    public Pane getMinigamePane() {
+        // TODO: Implement actual minigame pane retrieval
+        // This should call the MiniGameController to get the actual game pane
+        // and then call model with the result of the minigame.
+        StackPane placeholder = new StackPane();
+        placeholder.setStyle("-fx-background-color: black; -fx-border-color: #444; -fx-border-width: 2;");
+
+        Label label = new Label("Woops... You killed the Pet just now! CRY ABOUT IT NOW HA HA HA HA!");
+        label.setStyle("-fx-text-fill: #00ff00; -fx-font-family: 'Monospaced'; -fx-font-weight: bold; -fx-text-alignment: center; -fx-font-size: 14px;");
+
+        placeholder.getChildren().add(label);
+        return placeholder;
     }
 }

@@ -7,11 +7,11 @@ import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ItemRegistry;
-import com.eleven.pet.minigames.MinigameResult;
-import javafx.animation.AnimationTimer;
+import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -24,12 +24,17 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
 public class PetView {
     private final PetModel model;
     private final PetController controller;
     private final GameClock clock;
     private final AssetLoader assetLoader;
+
+    private StackPane worldLayer; // Zoomable layer (BG + Pet + TV)
+    private StackPane uiLayer;    // Static layer (HUD + Controls)
+    private StackPane tvClickArea; // The clickable TV box
 
     private ImageView backgroundView;
     private ImageView petImageView;
@@ -47,6 +52,7 @@ public class PetView {
     private static final int SHEET_HEIGHT = 460;
     private static final int GRID_COLS = 2;
 
+    // Animations
     private SpriteSheetAnimation animNeutral;
     private SpriteSheetAnimation animHappy;
     private SpriteSheetAnimation animSad;
@@ -58,12 +64,11 @@ public class PetView {
     private AnimationTimer renderLoop;
     private long lastFrameTime;
 
-    private Image sheetNeutral;
-    private Image sheetSad;
-    private Image sheetSleeping;
-    private Image sheetCrying;
-    private Image sheetHappy;
-    private Image backgroundDay;
+    private Image sheetNeutral, sheetSad, sheetSleeping, sheetCrying, sheetHappy, backgroundDay;
+
+    // Zoom State
+    private boolean isGameMode = false;
+    private static final double ZOOM_FACTOR = 3.0;
 
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weather) {
         this.model = model;
@@ -78,10 +83,22 @@ public class PetView {
     public Pane initializeUI() {
         StackPane root = new StackPane();
 
-        setupBackgroundLayer(root);
-        setupPetLayer(root);
-        setupHUDLayer(root);
-        setupControlLayer(root);
+        // 1. Create the Layers
+        worldLayer = new StackPane(); // This will scale up
+        uiLayer = new StackPane(); // This stays static
+        uiLayer.setPickOnBounds(false); // Allow clicking through empty UI space
+
+        // 2. Setup World (Background -> TV -> Pet)
+        setupBackgroundLayer(worldLayer);
+        setupTVLayer(worldLayer);
+        setupPetLayer(worldLayer);
+
+        // 3. Setup UI (HUD -> Controls)
+        setupHUDLayer(uiLayer);
+        setupControlLayer(uiLayer);
+
+        // 4. Add to Root
+        root.getChildren().addAll(worldLayer, uiLayer);
 
         bindData();
         observeEnvironment();
@@ -91,19 +108,54 @@ public class PetView {
         return root;
     }
 
-    private void setupBackgroundLayer(StackPane root) {
+    private void setupBackgroundLayer(StackPane container) {
         backgroundView = new ImageView();
         backgroundView.setPreserveRatio(false);
-        backgroundView.fitWidthProperty().bind(root.widthProperty());
-        backgroundView.fitHeightProperty().bind(root.heightProperty());
+        // Bind to the container so it resizes dynamically
+        backgroundView.fitWidthProperty().bind(container.widthProperty());
+        backgroundView.fitHeightProperty().bind(container.heightProperty());
 
         if (clock != null) updateBackground(clock.getCycle());
         else backgroundView.setImage(backgroundDay);
 
-        root.getChildren().add(backgroundView);
+        container.getChildren().add(backgroundView);
     }
 
-    private void setupPetLayer(StackPane root) {
+    private void setupTVLayer(StackPane container) {
+        // We use a transparent Pane overlay to position the TV click area
+        Pane tvOverlay = new Pane();
+        tvOverlay.setPickOnBounds(false); // Only the TV box should be clickable
+
+        tvClickArea = new StackPane();
+        tvClickArea.setCursor(Cursor.HAND);
+
+        // Reference canvas dimensions that the UI layout was originally designed for.
+        // These are used to compute relative positions and sizes so the TV area scales
+        // correctly on different window sizes.
+        double REF_WIDTH = 624;
+        double REF_HEIGHT = 351;
+
+        // TV rectangle coordinates and size in the reference canvas (pixels).
+        // They represent the TV's top-left corner (TV_X, TV_Y) and its width/height.
+        double TV_X = 462;
+        double TV_Y = 142;
+        double TV_WIDTH = 112;
+        double TV_HEIGHT = 72;
+
+        // Bind the tvClickArea position and preferred size to the container's size,
+        // preserving the same relative position/size as in the reference layout.
+        tvClickArea.layoutXProperty().bind(container.widthProperty().multiply(TV_X / REF_WIDTH));
+        tvClickArea.layoutYProperty().bind(container.heightProperty().multiply(TV_Y / REF_HEIGHT));
+        tvClickArea.prefWidthProperty().bind(container.widthProperty().multiply(TV_WIDTH / REF_WIDTH));
+        tvClickArea.prefHeightProperty().bind(container.heightProperty().multiply(TV_HEIGHT / REF_HEIGHT));
+
+        tvClickArea.setOnMouseClicked(e -> enterMinigameMode());
+
+        tvOverlay.getChildren().add(tvClickArea);
+        container.getChildren().add(tvOverlay);
+    }
+
+    private void setupPetLayer(StackPane container) {
         petImageView = new ImageView();
         petImageView.setFitWidth(SHEET_WIDTH);
         petImageView.setFitHeight(SHEET_HEIGHT);
@@ -113,7 +165,125 @@ public class PetView {
         StackPane.setAlignment(petImageView, Pos.BOTTOM_CENTER);
         StackPane.setMargin(petImageView, new Insets(0, 0, 20, 0));
 
-        root.getChildren().add(petImageView);
+        container.getChildren().add(petImageView);
+    }
+
+    private void enterMinigameMode() {
+        if (isGameMode) return;
+        isGameMode = true;
+
+        // Calculate Center Points
+        double sceneW = worldLayer.getWidth();
+        double sceneH = worldLayer.getHeight();
+
+        // The center of the TV (Target)
+        double tvCenterX = tvClickArea.getLayoutX() + (tvClickArea.getWidth() / 2);
+        double tvCenterY = tvClickArea.getLayoutY() + (tvClickArea.getHeight() / 2);
+
+        // Justification: We shift the view center 100px to the Right.
+        // This pushes the TV 100px to the Left of the screen, leaving empty space on the Right.
+        double viewOffsetX = 100;
+
+        // Formula: (ScreenCenter - ObjectCenter + Offset) * ZoomFactor
+        // We add Offset to shift the camera focus point
+        double transX = ((sceneW / 2) - tvCenterX + viewOffsetX) * ZOOM_FACTOR;
+        double transY = ((sceneH / 2) - tvCenterY) * ZOOM_FACTOR;
+
+        ParallelTransition pt = new ParallelTransition();
+
+        // Zoom and Pan the World
+        Timeline zoom = new Timeline(
+                new KeyFrame(Duration.millis(800),
+                        new KeyValue(worldLayer.scaleXProperty(), ZOOM_FACTOR, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.scaleYProperty(), ZOOM_FACTOR, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateXProperty(), transX, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateYProperty(), transY, Interpolator.EASE_BOTH)
+                )
+        );
+
+        // Move Pet to the side
+        TranslateTransition movePet = new TranslateTransition(Duration.millis(800), petImageView);
+
+        // MATH DERIVATION:
+        // We calculate the delta required to move from Current Layout Position to Target (Right of TV)
+        // Target X (600) - Start X (approx 250) = 350
+        // Target Y (-20) - Start Y (approx 180) = -200
+        // Using "movePet.setByX" would also work, but setToX works on translation property directly.
+        movePet.setToX(350);
+        movePet.setToY(-200);
+
+        // Scale Pet Down (Perspective effect - 0.5 is 50% of the ORIGINAL size, making it look deeper in scene)
+        ScaleTransition scalePet = new ScaleTransition(Duration.millis(800), petImageView);
+        scalePet.setToX(0.5);
+        scalePet.setToY(0.5);
+
+        // Fade out UI
+        FadeTransition fadeUI = new FadeTransition(Duration.millis(300), uiLayer);
+        fadeUI.setToValue(0);
+
+        pt.getChildren().addAll(zoom, movePet, scalePet, fadeUI);
+        pt.setOnFinished(_ -> {
+            loadGameContent();
+        });
+        pt.play();
+    }
+
+    private void exitMinigameMode() {
+        if (!isGameMode) return;
+        isGameMode = false;
+
+        tvClickArea.getChildren().clear(); // Remove game pane
+
+        ParallelTransition pt = new ParallelTransition();
+
+        // Reset World Scale and Position
+        Timeline zoomOut = new Timeline(
+                new KeyFrame(Duration.millis(800),
+                        new KeyValue(worldLayer.scaleXProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.scaleYProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateXProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateYProperty(), 0, Interpolator.EASE_BOTH)
+                )
+        );
+
+        // Reset Pet Position
+        TranslateTransition movePet = new TranslateTransition(Duration.millis(800), petImageView);
+        movePet.setToX(0);
+        movePet.setToY(0);
+
+        // Reset Pet Scale (Back to original)
+        ScaleTransition scalePet = new ScaleTransition(Duration.millis(800), petImageView);
+        scalePet.setToX(1);
+        scalePet.setToY(1);
+
+        // Fade UI In
+        FadeTransition fadeUI = new FadeTransition(Duration.millis(500), uiLayer);
+        fadeUI.setToValue(1.0);
+        fadeUI.setDelay(Duration.millis(300));
+
+        pt.getChildren().addAll(zoomOut, movePet, scalePet, fadeUI);
+        pt.play();
+    }
+
+    private void loadGameContent() {
+        tvClickArea.getChildren().clear();
+
+        // Get the pane from your controller
+        Pane gamePane = controller.getMinigamePane();
+
+        if (gamePane != null) {
+            // Bind the game pane to fill the TV box area
+            gamePane.prefWidthProperty().bind(tvClickArea.widthProperty());
+            gamePane.prefHeightProperty().bind(tvClickArea.heightProperty());
+
+            // TODO: Style the exit button properly
+            Button exitBtn = new Button("X");
+            exitBtn.setStyle("-fx-background-color: rgba(255,0,0,0.5); -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;");
+            exitBtn.setOnAction(e -> exitMinigameMode());
+            StackPane.setAlignment(exitBtn, Pos.TOP_RIGHT);
+
+            tvClickArea.getChildren().addAll(gamePane, exitBtn);
+        }
     }
 
     private void setupHUDLayer(StackPane root) {
@@ -411,8 +581,5 @@ public class PetView {
     private void toggleSleepButton(boolean isSleeping) {
         sleepBtnContainer.setDisable(isSleeping);
         sleepBtnContainer.setOpacity(isSleeping ? 0.5 : 1.0);
-    }
-
-    public void showMinigameResult(MinigameResult result) {
     }
 }
