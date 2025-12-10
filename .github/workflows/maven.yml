@@ -32,13 +32,3 @@ jobs:
         if: success() || failure()
         with:
           report_paths: '**/surefire-reports/TEST-*.xml'
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pet-${{ github.run_id }}
-          path: |
-            target/*.jar
-            !target/*-sources.jar
-            !target/*-javadoc.jar
-          retention-days: 7
