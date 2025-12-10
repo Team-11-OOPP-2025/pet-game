@@ -11,7 +11,7 @@ public class GuessingGameTest {
     @Test
     public void testGuessGameWin() {
         GuessingGame game = new GuessingGame();
-        PetModel pet = new PetModel(null, null, null);
+        PetModel pet = new PetModel(null, null, null, null);
 
         // Generate the secret number once, then try all possible guesses
         game.generateNewNumber();

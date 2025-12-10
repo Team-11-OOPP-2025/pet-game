@@ -41,6 +41,7 @@ public class PersistenceService {
             dto.setPetName(model.getName());
             dto.setCurrentStateName(model.getCurrentState().getStateName());
             dto.setLastSaveTimestamp(System.currentTimeMillis());
+            dto.setPetDefinition(model.getDefinition());
 
             dto.setStatsData(extractStats(model.getStats()));
             dto.setInventoryData(extractInventory(model.getInventory()));
@@ -83,7 +84,7 @@ public class PersistenceService {
                 dto = jsonMapper.readValue(decryptedInput, PetDataDTO.class);
             }
 
-            PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock);
+            PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock, dto.getPetDefinition());
 
             String stateName = dto.getCurrentStateName();
             PetState restoredState = StateRegistry.getInstance().getState(stateName);

@@ -50,7 +50,7 @@ class PersistenceTest {
         EncryptionService encryptionService = new NoOpEncryptionService();
         PersistenceService service = new PersistenceService(encryptionService, savePath);
 
-        PetModel original = PetFactory.createNewPet("Fluffy", null, null);
+        PetModel original = PetFactory.createNewPet("Fluffy", null, null, null);
         original.changeState(StateRegistry.getInstance().getState(AsleepState.STATE_NAME));
 
         PetStats stats = original.getStats();

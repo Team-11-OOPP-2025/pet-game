@@ -2,6 +2,7 @@ package com.eleven.pet.character;
 
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
+import com.eleven.pet.character.behavior.PetDefinition;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameConfig;
@@ -107,6 +108,12 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     private int hoursSleptRewardCount = 0;
 
+    
+    /**
+     * Definition of pet varition (species, decay rates, etc.).
+     */
+    private PetDefinition definition;
+
     /**
      * Constructs a new PetModel and subscribes it to the provided environment systems.
      *
@@ -114,16 +121,22 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param weatherSystem Weather system to subscribe to; may be {@code null}.
      * @param clock         Game clock to subscribe to; may be {@code null}.
      */
-    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
+    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock, PetDefinition definition) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
+        this.definition = definition;
 
-        // Initialize stats
-        stats.registerStat(PetStats.STAT_HUNGER, 50);
-        stats.registerStat(PetStats.STAT_HAPPINESS, 50);
-        stats.registerStat(PetStats.STAT_ENERGY, 50);
-        stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
+        // Initialize stats from definition or defaults
+       /* if (definition.initialStats() != null && !definition.initialStats().isEmpty()) {
+            definition.initialStats().forEach(stats::registerStat);
+        } else {
+            // Fallback to default values
+            stats.registerStat(PetStats.STAT_HUNGER, 50);
+            stats.registerStat(PetStats.STAT_HAPPINESS, 50);
+            stats.registerStat(PetStats.STAT_ENERGY, 50);
+            stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
+        }*/
 
         // Initialize default state
         StateRegistry registry = StateRegistry.getInstance();
@@ -288,8 +301,8 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param timeDelta elapsed time in seconds since the last tick.
      */
     public void applyStatDecay(double timeDelta) {
-        hungerDecayAccum -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
-        cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
+        hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
+        cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
             hungerDecayAccum -= hungerDelta;
@@ -307,7 +320,7 @@ public class PetModel implements TimeListener, WeatherListener {
         double currentClean = stats.getStat(PetStats.STAT_CLEANLINESS).get();
 
         // Base boredom decay
-        double happinessRate = GameConfig.HAPPINESS_DECAY_RATE;
+        double happinessRate = definition.happinessDecayRate();
 
         // Penalty multipliers: If stats are critical (< 30), happiness drops 2x or 3x faster
         if (currentHunger < 30) happinessRate *= 2.0;

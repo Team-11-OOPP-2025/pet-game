@@ -87,7 +87,7 @@ public class PetControllerTest {
         registry.registerState(new AsleepState());
 
         clock = new GameClock();
-        model = PetFactory.createNewPet("TestPet", null, clock);
+        model = PetFactory.createNewPet("TestPet", null, clock, null);
         persistence = new MockPersistenceService(tempDir.resolve("test-save.dat"));
     }
 

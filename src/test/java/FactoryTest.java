@@ -12,13 +12,13 @@ public class FactoryTest {
 
     @Test
     void testFactoryCreatesValidPet() {
-        PetModel pet = PetFactory.createNewPet("TestPet", weather, clock);
+        PetModel pet = PetFactory.createNewPet("TestPet", weather, clock, null);
         assertNotNull(pet);
     }
 
     @Test
     void testDependenciesInjected() {
-        PetModel pet = PetFactory.createNewPet("TestDep", weather, clock);
+        PetModel pet = PetFactory.createNewPet("TestDep", weather, clock, null);
         assertNotNull(pet.getWeatherSystem());
         assertNotNull(pet.getInventory());
     }

@@ -1,6 +1,7 @@
 package com.eleven.pet.storage.dto;
 
 import com.eleven.pet.core.GameConfig;
+import com.eleven.pet.character.behavior.PetDefinition;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ public class PetDataDTO {
     private long lastSaveTimestamp;
     private double sleepStartTime;
     private boolean sleptThisNight;
+    private PetDefinition petDefinition;
 
     private Map<String, Integer> statsData = new HashMap<>();
     private Map<Integer, Integer> inventoryData = new HashMap<>();

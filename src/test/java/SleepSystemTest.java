@@ -24,7 +24,7 @@ public class SleepSystemTest {
         registry.registerState(new AsleepState());
 
         clock = new GameClock();
-        pet = PetFactory.createNewPet("TestPet", null, clock);
+        pet = PetFactory.createNewPet("TestPet", null, clock, null);
     }
 
     @Test

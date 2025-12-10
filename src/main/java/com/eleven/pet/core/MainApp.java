@@ -4,6 +4,7 @@ import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetView;
+import com.eleven.pet.character.behavior.PetDefinition;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.storage.GcmEncryptionService;
@@ -29,7 +30,7 @@ public class MainApp extends Application {
     private PetController controller;
     private GameEngine gameEngine;
     private PersistenceService persistenceService;
-
+    private PetDefinition petDefinition;
     /**
      * Application entry point.
      *
@@ -83,13 +84,13 @@ public class MainApp extends Application {
             try {
                 // TODO: Allow user to choose Pet name on first launch in future
                 return persistenceService.load(weatherSystem, clock)
-                        .orElseGet(() -> PetFactory.createNewPet("Björni", weatherSystem, clock));
+                        .orElseGet(() -> PetFactory.createNewPet("Björni", weatherSystem, clock, petDefinition));
             } catch (Exception e) {
                 System.err.println("Save file corrupted or version mismatch. Creating new.");
             }
         }
         // TODO: Allow user to choose name on first launch
-        return PetFactory.createNewPet("Björni", weatherSystem, clock);
+        return PetFactory.createNewPet("Björni", weatherSystem, clock, petDefinition);
     }
 
     /**
