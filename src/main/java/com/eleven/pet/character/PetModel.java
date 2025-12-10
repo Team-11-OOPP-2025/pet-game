@@ -257,9 +257,13 @@ public class PetModel implements TimeListener, WeatherListener {
      * Replenish the sprites's daily food items into its inventory.
      */
     public void replenishDailyFood() {
-        Item apple = ItemRegistry.get(0);
-        int amount = random.nextInt(3, 5);
-        inventory.add(apple, amount);
+        // TODO: Fix this logic to be more dynamic
+        System.out.println("Replenishing Daily Food");
+        for (int i = 0; i < random.nextInt(1, 4); i++) {
+            Item foodItem = ItemRegistry.get(i);
+            int amount = random.nextInt(1, 4);
+            inventory.add(foodItem, amount);
+        }
     }
 
     /**

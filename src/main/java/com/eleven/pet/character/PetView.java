@@ -6,19 +6,23 @@ import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
 import javafx.animation.*;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.collections.MapChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -36,10 +40,11 @@ public class PetView {
     private StackPane uiLayer;    // Static layer (HUD + Controls)
     private StackPane tvClickArea; // The clickable TV box
 
+    private StackPane inventoryModal;
+
     private ImageView backgroundView;
     private ImageView petImageView;
     private Label timeLabel;
-    private Text foodCounterText;
 
     private Rectangle hungerFill;
     private Rectangle energyFill;
@@ -96,6 +101,7 @@ public class PetView {
         // 3. Setup UI (HUD -> Controls)
         setupHUDLayer(uiLayer);
         setupControlLayer(uiLayer);
+        setupInventoryUI(uiLayer);
 
         // 4. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
@@ -106,6 +112,196 @@ public class PetView {
         refreshPetState();
 
         return root;
+    }
+
+    private void setupInventoryUI(StackPane root) {
+        inventoryModal = new StackPane();
+        inventoryModal.setVisible(false); // Hidden by default
+
+        // Darkened background (Clicking this closes the inventory)
+        Region backdrop = new Region();
+        backdrop.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
+        backdrop.setOnMouseClicked(e -> toggleInventory(false));
+
+        // The Main Panel
+        VBox inventoryPanel = new VBox(10);
+        inventoryPanel.setMaxSize(350, 250);
+        inventoryPanel.setStyle("-fx-background-color: #fdf5e6; -fx-background-radius: 15; -fx-border-color: #8b4513; -fx-border-width: 4; -fx-border-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);");
+        inventoryPanel.setAlignment(Pos.TOP_CENTER);
+
+        // Title
+        Label title = new Label("INVENTORY");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        title.setTextFill(Color.web("#8b4513"));
+
+        // Grid of Items
+        TilePane itemGrid = new TilePane();
+        itemGrid.setHgap(10);
+        itemGrid.setVgap(10);
+        itemGrid.setPrefColumns(3);
+        itemGrid.setAlignment(Pos.CENTER);
+
+        // Add items that are ALREADY in the inventory map
+        model.getInventory().getItems().forEach((id, qtyProp) -> {
+            if (qtyProp.get() > 0) {
+                Item item = ItemRegistry.get(id);
+                if (item != null) {
+                    StackPane slot = createItemSlot(item);
+                    slot.setUserData(id); // Store ID to find it later for removal
+                    itemGrid.getChildren().add(slot);
+                }
+            }
+        });
+
+        // Listen for changes in the inventory map (ADDITIONS and REMOVALS)
+        model.getInventory().getItems().addListener((MapChangeListener<Integer, IntegerProperty>) change -> {
+            // CASE A: New Item Type Added to Map
+            if (change.wasAdded()) {
+                // Check if we already have a slot (just in case)
+                boolean exists = itemGrid.getChildren().stream()
+                        .anyMatch(node -> node.getUserData().equals(change.getKey()));
+
+                if (!exists) {
+                    Item item = ItemRegistry.get(change.getKey());
+                    if (item != null) {
+                        StackPane slot = createItemSlot(item);
+                        slot.setUserData(change.getKey());
+                        itemGrid.getChildren().add(slot);
+                    }
+                }
+            }
+        });
+
+        ScrollPane scroll = new ScrollPane(itemGrid);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+        // Close Button
+        Button closeBtn = new Button("CLOSE");
+        closeBtn.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        closeBtn.setStyle("-fx-background-color: #8b4513; -fx-text-fill: white; -fx-background-radius: 20;");
+        closeBtn.setCursor(Cursor.HAND);
+        closeBtn.setOnAction(e -> toggleInventory(false));
+
+        inventoryPanel.getChildren().addAll(title, scroll, closeBtn);
+
+        // Layout: Add backdrop then panel
+        inventoryModal.getChildren().add(backdrop);
+        inventoryModal.getChildren().add(inventoryPanel);
+
+        // POSITIONING: Bottom Left, aligned above the Feed Button
+        StackPane.setAlignment(inventoryPanel, Pos.BOTTOM_LEFT);
+        // Margin Bottom = 90 (Button Y) + 50 (Button Height) + 10 (Gap) = 150
+        StackPane.setMargin(inventoryPanel, new Insets(0, 0, 150, 20));
+
+        root.getChildren().add(inventoryModal);
+    }
+
+    private StackPane createItemSlot(Item item) {
+        StackPane slot = new StackPane();
+        slot.setPrefSize(70, 70);
+        slot.setStyle("-fx-background-color: white; -fx-border-color: #d2b48c; -fx-border-width: 2; -fx-border-radius: 5; -fx-background-radius: 5;");
+        slot.setCursor(Cursor.HAND);
+
+        String lowerName = item.name().toLowerCase();
+        javafx.scene.Node iconNode;
+
+        // Try a conventional path in the asset loader: items/<name>
+        Image itemImage = assetLoader.getImage("items/" + lowerName);
+
+        ImageView iv = new ImageView(itemImage);
+        iv.setFitWidth(70);
+        iv.setFitHeight(70);
+        iv.setPreserveRatio(true);
+        iconNode = iv;
+
+        // Ensure icon is centered and visible
+        StackPane.setAlignment(iconNode, Pos.CENTER);
+        StackPane.setMargin(iconNode, new Insets(-5, 0, 0, 0));
+
+        // Item Name (Tooltip style, small at bottom)
+        Label name = new Label(item.name());
+        name.setTextFill(Color.BLACK);
+        name.setFont(Font.font("Arial", 9));
+        StackPane.setAlignment(name, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(name, new Insets(0, 0, 5, 0));
+
+        // Quantity Badge
+        Label qty = new Label();
+        qty.setFont(Font.font("Arial", FontWeight.BOLD, 10));
+        qty.setTextFill(Color.WHITE);
+        qty.setStyle("-fx-background-color: red; -fx-background-radius: 10; -fx-padding: 1 5;");
+        StackPane.setAlignment(qty, Pos.TOP_RIGHT);
+        StackPane.setMargin(qty, new Insets(-5, -5, 0, 0));
+
+        // Bind Quantity
+        IntegerProperty amountProp = model.getInventory().amountProperty(item);
+        qty.textProperty().bind(Bindings.convert(amountProp));
+
+        // Auto-remove slot when quantity hits 0
+        amountProp.addListener((obs, oldVal, newVal) -> {
+            if (newVal.intValue() <= 0) {
+                if (slot.getParent() instanceof Pane) {
+                    ((Pane) slot.getParent()).getChildren().remove(slot);
+                }
+            }
+        });
+
+        // Tooltip with preview
+        Tooltip tooltip = new Tooltip();
+        tooltip.setText("Name: " + item.name() + "\nHeal: " + item.statsRestore() + "\nDescription: " + item.description());
+        tooltip.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-background-color: rgba(50, 50, 50, 0.9); -fx-text-fill: white;");
+        Tooltip.install(slot, tooltip);
+
+        // Interaction
+        slot.setOnMouseClicked(e -> {
+            controller.handleConsumeAction(item);
+            ScaleTransition st = new ScaleTransition(Duration.millis(100), slot);
+            st.setFromX(1.0);
+            st.setFromY(1.0);
+            st.setToX(0.9);
+            st.setToY(0.9);
+            st.setAutoReverse(true);
+            st.setCycleCount(2);
+            st.play();
+        });
+
+        slot.getChildren().addAll(iconNode, name, qty);
+        return slot;
+    }
+
+    private void toggleInventory(boolean show) {
+        if (show) {
+            inventoryModal.setVisible(true);
+            inventoryModal.setOpacity(0);
+            FadeTransition ft = new FadeTransition(Duration.millis(200), inventoryModal);
+            ft.setToValue(1.0);
+            ft.play();
+        } else {
+            FadeTransition ft = new FadeTransition(Duration.millis(200), inventoryModal);
+            ft.setToValue(0);
+            ft.setOnFinished(e -> inventoryModal.setVisible(false));
+            ft.play();
+        }
+    }
+
+    private void setupControlLayer(StackPane root) {
+        // TODO: Update to be a beautiful icon instead of TEXT!
+        StackPane feedBtnContainer = createActionButton("FEED", Color.WHITE, 120, () -> toggleInventory(true));
+        addToLayout(root, feedBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 20);
+
+        StackPane cleanBtnContainer = createActionButton("CLEAN", Color.WHITE, 120, controller::handleCleanAction);
+        addToLayout(root, cleanBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 150);
+
+        sleepBtnContainer = createActionButton("SLEEP", Color.web("#3498db"), 120, controller::handleSleepAction);
+        ((Button) sleepBtnContainer.getChildren().get(1)).setTextFill(Color.WHITE);
+        sleepBtnContainer.setVisible(false);
+        addToLayout(root, sleepBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 150, 20);
+
+        StackPane playBtnContainer = createActionButton("PLAY", Color.WHITE, 140, controller::handlePlayAction);
+        addToLayout(root, playBtnContainer, Pos.BOTTOM_RIGHT, 0, 20, 90, 0);
     }
 
     private void setupBackgroundLayer(StackPane container) {
@@ -304,28 +500,8 @@ public class PetView {
         cleanFill = (Rectangle) cleanBar.getChildren().get(1);
         addToLayout(root, cleanBar, Pos.TOP_LEFT, 238, 0, 0, 20);
 
-        // Widgets
-        HBox foodCounter = createFoodWidget();
-        addToLayout(root, foodCounter, Pos.TOP_RIGHT, 90, 20, 0, 0);
-
         timeLabel = createClockWidget();
         addToLayout(root, timeLabel, Pos.TOP_CENTER, 20, 0, 0, 0);
-    }
-
-    private void setupControlLayer(StackPane root) {
-        StackPane feedBtnContainer = createActionButton("FEED", Color.WHITE, 120, controller::handleFeedAction);
-        addToLayout(root, feedBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 20);
-
-        StackPane cleanBtnContainer = createActionButton("CLEAN", Color.WHITE, 120, controller::handleCleanAction);
-        addToLayout(root, cleanBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 150);
-
-        sleepBtnContainer = createActionButton("SLEEP", Color.web("#3498db"), 120, controller::handleSleepAction);
-        ((Button) sleepBtnContainer.getChildren().get(1)).setTextFill(Color.WHITE);
-        sleepBtnContainer.setVisible(false);
-        addToLayout(root, sleepBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 150, 20);
-
-        StackPane playBtnContainer = createActionButton("PLAY", Color.WHITE, 140, controller::handlePlayAction);
-        addToLayout(root, playBtnContainer, Pos.BOTTOM_RIGHT, 0, 20, 90, 0);
     }
 
     private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
@@ -373,25 +549,6 @@ public class PetView {
 
         container.getChildren().addAll(border, btn);
         return container;
-    }
-
-    private HBox createFoodWidget() {
-        HBox box = new HBox(10);
-        box.setAlignment(Pos.CENTER);
-        box.setStyle("-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 10; -fx-padding: 10;");
-        box.setMaxSize(HBox.USE_PREF_SIZE, HBox.USE_PREF_SIZE);
-
-        Text label = new Text("Food: ");
-        label.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-
-        String initialFood = Integer.toString(model.getInventory().getQuantity(ItemRegistry.get(0)));
-
-        foodCounterText = new Text(initialFood);
-        foodCounterText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        foodCounterText.setFill(Color.web("#e74c3c"));
-
-        box.getChildren().addAll(label, foodCounterText);
-        return box;
     }
 
     private Label createClockWidget() {
@@ -487,14 +644,6 @@ public class PetView {
 
     private void bindData() {
         if (model == null) return;
-
-        // Inventory
-        if (model.getInventory() != null) {
-            var foodItem = ItemRegistry.get(0);
-            model.getInventory().amountProperty(foodItem).addListener((obs, old, val) ->
-                    foodCounterText.setText(val.toString())
-            );
-        }
 
         // Stats
         PetStats stats = model.getStats();
