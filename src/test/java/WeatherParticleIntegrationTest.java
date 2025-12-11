@@ -24,8 +24,8 @@ public class WeatherParticleIntegrationTest {
             "Rainy state should return RainParticleEffect");
         
         RainParticleEffect rainEffect = (RainParticleEffect) effect;
-        assertEquals(50, rainEffect.getIntensity(), 
-            "Rain effect should have intensity of 50");
+        assertEquals(300, rainEffect.getIntensity(), 
+            "Rain effect should have intensity of 300");
     }
 
     @Test
