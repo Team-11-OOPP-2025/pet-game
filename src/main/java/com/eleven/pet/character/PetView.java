@@ -45,6 +45,8 @@ public class PetView {
     private ImageView backgroundView;
     private ImageView petImageView;
     private Label timeLabel;
+    private StackPane backgroundClockPane; // Clock displayed on the background wall
+    private Label backgroundClockLabel;
 
     private Rectangle hungerFill;
     private Rectangle energyFill;
@@ -96,6 +98,7 @@ public class PetView {
         // 2. Setup World (Background -> TV -> Pet)
         setupBackgroundLayer(worldLayer);
         setupTVLayer(worldLayer);
+        setupBackgroundClock(worldLayer);
         setupPetLayer(worldLayer);
 
         // 3. Setup UI (HUD -> Controls)
@@ -349,6 +352,53 @@ public class PetView {
 
         tvOverlay.getChildren().add(tvClickArea);
         container.getChildren().add(tvOverlay);
+    }
+
+    private void setupBackgroundClock(StackPane container) {
+        // Reference canvas dimensions (same as TV layer)
+        double REF_WIDTH = 624;
+        double REF_HEIGHT = 351;
+
+        // Position the clock more to the right - moved further right and made bigger
+        // TV is at X:462, Y:142 with width:112, height:72
+        // Clock will be positioned at X:480, Y:95 (above TV, further to the right)
+        double CLOCK_X = 480;
+        double CLOCK_Y = 95;
+        double CLOCK_WIDTH = 100;  // Width for the digital clock frame (increased from 80)
+        double CLOCK_HEIGHT = 50; // Height for the digital clock frame (increased from 40)
+
+        // Create the clock container with the digital clock image
+        backgroundClockPane = new StackPane();
+        backgroundClockPane.setPickOnBounds(false);
+
+        // Load the digital clock frame image
+        Image clockFrameImage = assetLoader.getImage("ui/digital-clock");
+        if (clockFrameImage != null) {
+            ImageView clockFrame = new ImageView(clockFrameImage);
+            clockFrame.setPreserveRatio(true);
+            clockFrame.setFitWidth(CLOCK_WIDTH);
+            backgroundClockPane.getChildren().add(clockFrame);
+        }
+
+        // Create the time label that overlays the clock frame
+        backgroundClockLabel = new Label("12:00");
+        backgroundClockLabel.setFont(Font.font("Monospace", FontWeight.BOLD, 14));
+        backgroundClockLabel.setTextFill(Color.BLACK); // Black text for digital display
+        backgroundClockLabel.setStyle("-fx-background-color: transparent;");
+        backgroundClockPane.getChildren().add(backgroundClockLabel);
+
+        // Create a pane to position the clock
+        Pane clockPane = new Pane();
+        clockPane.setPickOnBounds(false);
+        clockPane.getChildren().add(backgroundClockPane);
+
+        // Bind the clock position to scale with container size
+        backgroundClockPane.layoutXProperty().bind(container.widthProperty().multiply(CLOCK_X / REF_WIDTH));
+        backgroundClockPane.layoutYProperty().bind(container.heightProperty().multiply(CLOCK_Y / REF_HEIGHT));
+        backgroundClockPane.prefWidthProperty().bind(container.widthProperty().multiply(CLOCK_WIDTH / REF_WIDTH));
+        backgroundClockPane.prefHeightProperty().bind(container.heightProperty().multiply(CLOCK_HEIGHT / REF_HEIGHT));
+
+        container.getChildren().add(clockPane);
     }
 
     private void setupPetLayer(StackPane container) {
@@ -687,6 +737,9 @@ public class PetView {
             boolean canSleep = controller.isSleepAllowed();
             sleepBtnContainer.setVisible(canSleep);
         });
+        
+        // Initialize clock with current time
+        updateClockLabel(clock.getGameTime());
     }
 
     private void refreshPetState() {
@@ -724,7 +777,16 @@ public class PetView {
 
     private void updateClockLabel(double time) {
         int hours = (int) time % 24;
-        timeLabel.setText(String.format("%02d:00", hours));
+        int minutes = (int) ((time % 1.0) * 60); // Calculate minutes from fractional part
+        String timeString = String.format("%02d:%02d", hours, minutes);
+        
+        // Update HUD clock
+        timeLabel.setText(timeString);
+        
+        // Update background clock
+        if (backgroundClockLabel != null) {
+            backgroundClockLabel.setText(timeString);
+        }
     }
 
     private void toggleSleepButton(boolean isSleeping) {
