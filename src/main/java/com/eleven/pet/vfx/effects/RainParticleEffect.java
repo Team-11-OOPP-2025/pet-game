@@ -3,13 +3,8 @@ package com.eleven.pet.vfx.effects;
 import com.eleven.pet.vfx.ParticleSystem;
 import com.eleven.pet.vfx.RainParticleFactory;
 
-public class RainParticleEffect implements ParticleEffect {
-    private final int intensity;
+public record RainParticleEffect(int intensity) implements ParticleEffect {
     private static final RainParticleFactory RAIN_FACTORY = new RainParticleFactory();
-
-    public RainParticleEffect(int intensity) {
-        this.intensity = intensity;
-    }
 
     @Override
     public void start(ParticleSystem system) {
@@ -24,9 +19,5 @@ public class RainParticleEffect implements ParticleEffect {
         if (system != null) {
             system.stopAnimation();
         }
-    }
-    
-    public int getIntensity() {
-        return intensity;
     }
 }

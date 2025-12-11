@@ -8,6 +8,12 @@ public abstract class Particle {
     protected Color color;
     protected boolean alive;
 
+    /**
+     * Constructor to initialize particle position.
+     *
+     * @param x initial x position
+     * @param y initial y position
+     */
     public Particle(double x, double y) {
         this.x = x;
         this.y = y;
@@ -16,18 +22,21 @@ public abstract class Particle {
 
     /**
      * Update particle position and state based on delta time.
+     *
      * @param deltaTime time elapsed since last update in seconds
      */
     public abstract void update(double deltaTime);
 
     /**
      * Render the particle to the graphics context.
+     *
      * @param gc graphics context to render to
      */
     public abstract void render(GraphicsContext gc);
 
     /**
      * Check if particle is still alive and should be rendered/updated.
+     *
      * @return true if particle is alive
      */
     public boolean isAlive() {

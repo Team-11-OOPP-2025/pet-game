@@ -1,8 +1,3 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.junit.jupiter.api.Test;
-
 import com.eleven.pet.environment.weather.CloudyState;
 import com.eleven.pet.environment.weather.RainyState;
 import com.eleven.pet.environment.weather.SunnyState;
@@ -10,6 +5,9 @@ import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.vfx.effects.NoParticleEffect;
 import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.eleven.pet.vfx.effects.RainParticleEffect;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WeatherParticleIntegrationTest {
 
@@ -24,7 +22,7 @@ public class WeatherParticleIntegrationTest {
             "Rainy state should return RainParticleEffect");
         
         RainParticleEffect rainEffect = (RainParticleEffect) effect;
-        assertEquals(300, rainEffect.getIntensity(), 
+        assertEquals(300, rainEffect.intensity(),
             "Rain effect should have intensity of 300");
     }
 
@@ -69,8 +67,8 @@ public class WeatherParticleIntegrationTest {
     void testRainEffectIntensity() {
         RainParticleEffect lightRain = new RainParticleEffect(25);
         RainParticleEffect heavyRain = new RainParticleEffect(100);
-        
-        assertEquals(25, lightRain.getIntensity(), "Light rain should have lower intensity");
-        assertEquals(100, heavyRain.getIntensity(), "Heavy rain should have higher intensity");
+
+        assertEquals(25, lightRain.intensity(), "Light rain should have lower intensity");
+        assertEquals(100, heavyRain.intensity(), "Heavy rain should have higher intensity");
     }
 }

@@ -14,11 +14,6 @@ public class RainyState implements WeatherState {
     }
 
     @Override
-    public double getOverlayOpacity() {
-        return 0;
-    }
-
-    @Override
     public double getHappinessModifier() {
         return 0.8; // Rain slightly decreases happiness
     }
