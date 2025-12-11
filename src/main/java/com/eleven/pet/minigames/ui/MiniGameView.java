@@ -1,108 +1,98 @@
 package com.eleven.pet.minigames.ui;
 
-import com.eleven.pet.character.PetModel;
-import com.eleven.pet.minigames.MiniGameController;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-import javax.swing.*;
-import java.awt.*;
+public class MiniGameView {
 
-public class MiniGameView extends JPanel {
-    
-    private JLabel titleLabel;
-    private JLabel instructionLabel;
-    private JTextField guessField;
-    private JButton submitButton;
-    private JButton playAgainButton;
-    private JLabel resultLabel;
-    private JLabel feedbackLabel;
-    
-    public MiniGameView() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        // Top panel - Title and instructions
-        JPanel topPanel = new JPanel(new GridLayout(2, 1, 5, 5));
-        titleLabel = new JLabel("🎮 Guessing Game", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        instructionLabel = new JLabel("Guess a number between 1 and 5!", SwingConstants.CENTER);
-        instructionLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-        topPanel.add(titleLabel);
-        topPanel.add(instructionLabel);
-        
-        // Center panel - Input area
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
-        guessField = new JTextField(5);
-        guessField.setFont(new Font("Arial", Font.PLAIN, 18));
-        submitButton = new JButton("Submit Guess");
-        submitButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        centerPanel.add(new JLabel("Your guess:"));
-        centerPanel.add(guessField);
-        centerPanel.add(submitButton);
-        
-        // Bottom panel - Results and feedback
-        JPanel bottomPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        resultLabel = new JLabel("", SwingConstants.CENTER);
-        resultLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        feedbackLabel = new JLabel("", SwingConstants.CENTER);
-        feedbackLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        playAgainButton = new JButton("Play Again");
-        playAgainButton.setFont(new Font("Arial", Font.PLAIN, 14));
-        playAgainButton.setVisible(false);
-        bottomPanel.add(resultLabel);
-        bottomPanel.add(feedbackLabel);
-        bottomPanel.add(playAgainButton);
-        
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+    private final Stage stage;
+    private final ProgressBar progressBar;
+    private final Button stopButton;
+
+    public MiniGameView(String title, double targetMin, double targetMax) {
+        stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setTitle(title);
+        stage.setResizable(false);
+
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(30));
+        root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-background-color: #2c3e50;");
+
+        // Instructions
+        Label instructions = new Label("Stop the bar between the markers!");
+        instructions.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // Progress bar container
+        StackPane progressContainer = new StackPane();
+        progressContainer.setPrefHeight(50);
+
+        progressBar = new ProgressBar(0);
+        progressBar.setPrefWidth(400);
+        progressBar.setPrefHeight(40);
+        progressBar.setStyle("-fx-accent: #3498db;");
+
+        // Calculate visual marker positions
+        // 400px width. Center is 0. 
+        double width = 400;
+        double startX = -width / 2;
+
+        Line leftMarker = createMarker();
+        leftMarker.setTranslateX(startX + (targetMin * width));
+
+        Line rightMarker = createMarker();
+        rightMarker.setTranslateX(startX + (targetMax * width));
+
+        progressContainer.getChildren().addAll(progressBar, leftMarker, rightMarker);
+
+        // Stop button
+        stopButton = new Button("STOP!");
+        stopButton.setPrefSize(200, 50);
+        stopButton.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-background-color: #e74c3c; -fx-text-fill: white;");
+
+        root.getChildren().addAll(instructions, progressContainer, stopButton);
+
+        Scene scene = new Scene(root, 500, 250);
+        stage.setScene(scene);
     }
-    
-    public void displayResult(boolean won, String message) {
-        resultLabel.setText(won ? "🎉 You Won!" : "❌ Wrong Guess");
-        resultLabel.setForeground(won ? new Color(34, 139, 34) : new Color(220, 20, 60));
-        feedbackLabel.setText(message);
-        playAgainButton.setVisible(true);
-        submitButton.setEnabled(false);
-        guessField.setEnabled(false);
+
+    private Line createMarker() {
+        Line line = new Line();
+        line.setStartY(0);
+        line.setEndY(50);
+        line.setStroke(Color.LIME);
+        line.setStrokeWidth(4);
+        return line;
     }
-    
-    public void resetGame() {
-        guessField.setText("");
-        guessField.setEnabled(true);
-        resultLabel.setText("");
-        feedbackLabel.setText("");
-        playAgainButton.setVisible(false);
-        submitButton.setEnabled(true);
-        guessField.requestFocus();
+
+    public void showAndWait() {
+        stage.showAndWait();
     }
-    
-    public JTextField getGuessField() {
-        return guessField;
+
+    public void close() {
+        stage.close();
     }
-    
-    public JButton getSubmitButton() {
-        return submitButton;
+
+    public void setProgress(double progress) {
+        progressBar.setProgress(progress);
     }
-    
-    public JButton getPlayAgainButton() {
-        return playAgainButton;
+
+    public Button getStopButton() {
+        return stopButton;
     }
-    
-    /**
-     * Creates and displays the mini-game in a new window.
-     * @param model The PetModel to interact with
-     */
-    public static void showMiniGame(PetModel model) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame gameFrame = new JFrame("Guessing Game");
-            MiniGameView miniGameView = new MiniGameView();
-            MiniGameController miniGameController = new MiniGameController(miniGameView, model);
-            
-            gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            gameFrame.add(miniGameView);
-            gameFrame.setSize(500, 400);
-            gameFrame.setLocationRelativeTo(null);
-            gameFrame.setVisible(true);
-        });
+
+    public Stage getStage() {
+        return stage;
     }
 }

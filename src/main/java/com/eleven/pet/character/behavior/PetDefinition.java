@@ -1,12 +1,14 @@
 package com.eleven.pet.character.behavior;
 
-import java.util.Map;
-
 /**
  * Pure Data Class. Defines "What makes a Dog a Dog".
  */
 
-public record PetDefinition(String speciesName, float happinessDecayRate, float hungerDecayRate, float energyDecayRate, float cleanlinessDecayRate, Map<String, Integer> initialStats) {
+public record PetDefinition(String speciesName, double happinessDecayRate, double hungerDecayRate, double cleanlinessDecayRate, int energyPerHour, int happinessPerHour) {
+    
+    // Default constructor with baseline values
+    public PetDefinition(String speciesName) {
+        this(speciesName, 0.3, 0.5, 0.2, 5, 2);
+    }
 
-// Still not sure what the map should be
 }

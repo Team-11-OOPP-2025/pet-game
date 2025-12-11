@@ -16,7 +16,6 @@ import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.impl.TimingGame;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -121,22 +120,18 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param weatherSystem Weather system to subscribe to; may be {@code null}.
      * @param clock         Game clock to subscribe to; may be {@code null}.
      */
-    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock, PetDefinition definition) {
+    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
-        this.definition = definition;
+        this.definition = new PetDefinition("Bear");
 
-        // Initialize stats from definition or defaults
-       /* if (definition.initialStats() != null && !definition.initialStats().isEmpty()) {
-            definition.initialStats().forEach(stats::registerStat);
-        } else {
-            // Fallback to default values
-            stats.registerStat(PetStats.STAT_HUNGER, 50);
-            stats.registerStat(PetStats.STAT_HAPPINESS, 50);
-            stats.registerStat(PetStats.STAT_ENERGY, 50);
-            stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
-        }*/
+        // Initialize stats
+        stats.registerStat(PetStats.STAT_HUNGER, 50);
+        stats.registerStat(PetStats.STAT_HAPPINESS, 50);
+        stats.registerStat(PetStats.STAT_ENERGY, 50);
+        stats.registerStat(PetStats.STAT_CLEANLINESS, 50);
+       
 
         // Initialize default state
         StateRegistry registry = StateRegistry.getInstance();
@@ -258,7 +253,6 @@ public class PetModel implements TimeListener, WeatherListener {
         // Create list of available minigames
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
-        availableGames.add(new GuessingGame());
 
         // Pick a random minigame
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));

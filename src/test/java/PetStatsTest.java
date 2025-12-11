@@ -11,7 +11,7 @@ public class PetStatsTest {
 
     @BeforeEach
     public void setup() {
-        PetModel petModel = new PetModel(null, null, null, null);
+        PetModel petModel = new PetModel(null, null, null);
         stats = petModel.getStats();
     }
 

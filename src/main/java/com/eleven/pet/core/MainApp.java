@@ -47,6 +47,7 @@ public class MainApp extends Application {
 
         controller = new PetController(model, clock, weatherSystem, persistenceService);
         PetView view = new PetView(model, controller, clock, weatherSystem);
+        
 
         controller.initAutosave();
         gameEngine.start();
@@ -84,13 +85,13 @@ public class MainApp extends Application {
             try {
                 // TODO: Allow user to choose Pet name on first launch in future
                 return persistenceService.load(weatherSystem, clock)
-                        .orElseGet(() -> PetFactory.createNewPet("Björni", weatherSystem, clock, petDefinition));
+                        .orElseGet(() -> PetFactory.createNewPet("Björni", weatherSystem, clock));
             } catch (Exception e) {
                 System.err.println("Save file corrupted or version mismatch. Creating new.");
             }
         }
         // TODO: Allow user to choose name on first launch
-        return PetFactory.createNewPet("Björni", weatherSystem, clock, petDefinition);
+        return PetFactory.createNewPet("Björni", weatherSystem, clock);
     }
 
     /**

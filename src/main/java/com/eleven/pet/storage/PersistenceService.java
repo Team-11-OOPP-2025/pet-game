@@ -84,7 +84,7 @@ public class PersistenceService {
                 dto = jsonMapper.readValue(decryptedInput, PetDataDTO.class);
             }
 
-            PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock, dto.getPetDefinition());
+            PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock);
 
             String stateName = dto.getCurrentStateName();
             PetState restoredState = StateRegistry.getInstance().getState(stateName);

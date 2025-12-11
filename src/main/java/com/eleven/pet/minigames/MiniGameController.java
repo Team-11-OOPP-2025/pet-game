@@ -1,64 +1,91 @@
-
 package com.eleven.pet.minigames;
-
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.ui.MiniGameView;
+import com.eleven.pet.minigames.impl.TimingGame;
 
-import javax.swing.*;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 public class MiniGameController {
-    private MiniGameView view;
-    private GuessingGame game;
-    private PetModel pet;
+
+    private final TimingGame model; // The game rules/configuration
+    private final MiniGameView view;
+    private final PetModel pet;
     
-    public MiniGameController(MiniGameView view, PetModel pet) {
+    private Timeline timeline;
+    private double currentProgress = 0.0;
+    private boolean isRunning = false;
+    private MinigameResult result;
+
+    public MiniGameController(TimingGame model, MiniGameView view, PetModel pet) {
+        this.model = model;
         this.view = view;
         this.pet = pet;
-        this.game = new GuessingGame();
         
-        initializeListeners();
+        initialize();
     }
-    
-    private void initializeListeners() {
-        view.getSubmitButton().addActionListener(e -> handleGuess());
-        view.getPlayAgainButton().addActionListener(e -> startNewGame());
-        view.getGuessField().addActionListener(e -> handleGuess());
-    }
-    
-    private void handleGuess() {
-        String input = view.getGuessField().getText().trim();
+
+    private void initialize() {
+        // Setup Game Loop
+        timeline = new Timeline(new KeyFrame(Duration.millis(100), e -> updateGame()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
         
-        if (input.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Please enter a number!", "Invalid Input", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        // Bind View Events
+        view.getStopButton().setOnAction(e -> handleStop());
         
-        try {
-            int guess = Integer.parseInt(input);
-            
-            if (guess < game.getMinNumber() || guess > game.getMaxNumber()) {
-                JOptionPane.showMessageDialog(view, 
-                    String.format("Please enter a number between %d and %d!", game.getMinNumber(), game.getMaxNumber()), 
-                    "Invalid Range", 
-                    JOptionPane.WARNING_MESSAGE);
-                return;
+        // Handle window close (X button)
+        view.getStage().setOnCloseRequest(e -> {
+            stopLoop();
+            if (result == null) {
+                result = new MinigameResult(false, -5, 
+                    pet.getName() + " gave up on the game. (-5 happiness)");
             }
-            
-            MinigameResult result = game.checkGuess(guess, pet);
-            view.displayResult(result.isWon(), result.getMessage());
-            
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(view, "Please enter a valid number!", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        });
+    }
+
+    public void startGame() {
+        isRunning = true;
+        currentProgress = 0.0;
+        view.setProgress(0);
+        timeline.play();
+        view.showAndWait(); // Blocks until closed
+    }
+
+    private void updateGame() {
+        if (isRunning && currentProgress < 1.0) {
+            currentProgress += model.getFillSpeed();
+            if (currentProgress > 1.0) currentProgress = 1.0;
+            view.setProgress(currentProgress);
         }
     }
-    
-    private void startNewGame() {
-        game.generateNewNumber();
-        view.resetGame();
+
+    private void handleStop() {
+        if (isRunning) {
+            stopLoop();
+            calculateResult();
+            view.close();
+        }
     }
-    
-    public MiniGameView getView() {
-        return view;
+
+    private void stopLoop() {
+        isRunning = false;
+        timeline.stop();
+    }
+
+    private void calculateResult() {
+        boolean won = currentProgress >= model.getTargetMin() && currentProgress <= model.getTargetMax();
+
+        if (won) {
+            result = new MinigameResult(true, 20, 
+                "🎉 Perfect timing! " + pet.getName() + " is so happy! (+20 happiness)");
+        } else {
+            result = new MinigameResult(false, -5, 
+                "😔 Missed the zone! " + pet.getName() + " is disappointed. (-5 happiness)");
+        }
+    }
+
+    public MinigameResult getResult() {
+        return result;
     }
 }

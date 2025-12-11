@@ -1,5 +1,6 @@
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
+
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import org.junit.jupiter.api.Test;
@@ -12,13 +13,13 @@ public class FactoryTest {
 
     @Test
     void testFactoryCreatesValidPet() {
-        PetModel pet = PetFactory.createNewPet("TestPet", weather, clock, null);
+        PetModel pet = PetFactory.createNewPet("TestPet", weather, clock);
         assertNotNull(pet);
     }
 
     @Test
     void testDependenciesInjected() {
-        PetModel pet = PetFactory.createNewPet("TestDep", weather, clock, null);
+        PetModel pet = PetFactory.createNewPet("TestDep", weather, clock);
         assertNotNull(pet.getWeatherSystem());
         assertNotNull(pet.getInventory());
     }

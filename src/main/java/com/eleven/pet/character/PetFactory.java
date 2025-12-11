@@ -16,7 +16,17 @@ public final class PetFactory {
      * @param clock         The game clock to associate with the sprites.
      * @return A new PetModel instance.
      */
-    public static PetModel createNewPet(String name, WeatherSystem weatherSystem, GameClock clock, PetDefinition petDefinition) {
-        return new PetModel(name, weatherSystem, clock, petDefinition);
+    public static PetModel createNewPet(String name, WeatherSystem weatherSystem, GameClock clock) {
+        return new PetModel(name, weatherSystem, clock);
+    }
+
+
+    private static WeatherSystem weatherSystem;
+    private static GameClock gameClock;
+
+    // 2. En init-metod som du anropar EN gång när spelet startar
+    public static void initialize(WeatherSystem weather, GameClock clock) {
+        weatherSystem = weather;
+        gameClock = clock;
     }
 }

@@ -37,7 +37,7 @@ public class InventoryTest {
 
     @Test
     void testReplenishItem() {
-        PetModel pet = PetFactory.createNewPet("TestPet", null, null, null);
+        PetModel pet = PetFactory.createNewPet("TestPet", null, null);
         int size = pet.getInventory().getAllOwnedItems().size();
         int min = 1;
         int max = 5;
