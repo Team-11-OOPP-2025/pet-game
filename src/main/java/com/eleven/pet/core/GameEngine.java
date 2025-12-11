@@ -3,6 +3,7 @@ package com.eleven.pet.core;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
+
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -84,6 +85,9 @@ public class GameEngine {
      * Initializes and starts the weather change timer.
      */
     private void startWeatherTimer() {
+        // Set initial weather immediately
+        weatherSystem.changeWeather();
+        
         weatherTimer = new Timeline(new KeyFrame(
                 Duration.seconds(GameConfig.WEATHER_CHANGE_INTERVAL),
                 _ -> weatherSystem.changeWeather()

@@ -5,9 +5,12 @@ import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.vfx.ParticleSystem;
+import com.eleven.pet.vfx.effects.ParticleEffect;
 import javafx.animation.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -34,7 +37,9 @@ public class PetView {
     private final PetModel model;
     private final PetController controller;
     private final GameClock clock;
+    private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
+    private final ParticleSystem particleSystem;
 
     private StackPane worldLayer; // Zoomable layer (BG + Pet + TV)
     private StackPane uiLayer;    // Static layer (HUD + Controls)
@@ -79,7 +84,9 @@ public class PetView {
         this.model = model;
         this.controller = controller;
         this.clock = clock;
+        this.weatherSystem = weather;
         this.assetLoader = AssetLoader.getInstance();
+        this.particleSystem = new ParticleSystem(624, 351); // Match scene dimensions
 
         loadAssets();
         initializeAnimations();
@@ -93,8 +100,9 @@ public class PetView {
         uiLayer = new StackPane(); // This stays static
         uiLayer.setPickOnBounds(false); // Allow clicking through empty UI space
 
-        // 2. Setup World (Background -> TV -> Pet)
+        // 2. Setup World (Background -> Particles -> TV -> Pet)
         setupBackgroundLayer(worldLayer);
+        setupParticleLayer(worldLayer);
         setupTVLayer(worldLayer);
         setupPetLayer(worldLayer);
 
@@ -315,6 +323,36 @@ public class PetView {
         else backgroundView.setImage(backgroundDay);
 
         container.getChildren().add(backgroundView);
+    }
+
+    private void setupParticleLayer(StackPane container) {
+        // Reference canvas dimensions (same as TV layer)
+        double REF_WIDTH = 624;
+        double REF_HEIGHT = 351;
+        
+        // Window coordinates - positioned above the pet (center-top area)
+        // The pet is at bottom-center, so window should be center-upper area
+        double WINDOW_X = 230;      // Moved to the right
+        double WINDOW_Y = 20;       // Upper part of the screen
+        double WINDOW_WIDTH = 120;  // Window width (skinnier)
+        double WINDOW_HEIGHT = 200; // Window height (stretched down to pet's head)
+        
+        // Add particle canvas for weather effects (only over window)
+        var canvas = particleSystem.getCanvas();
+        canvas.setMouseTransparent(true); // Don't block mouse events
+        
+        // Create a pane to position the particle canvas
+        Pane particlePane = new Pane();
+        particlePane.setPickOnBounds(false);
+        particlePane.getChildren().add(canvas);
+        
+        // Position and size the canvas to match the window area
+        canvas.layoutXProperty().bind(container.widthProperty().multiply(WINDOW_X / REF_WIDTH));
+        canvas.layoutYProperty().bind(container.heightProperty().multiply(WINDOW_Y / REF_HEIGHT));
+        canvas.widthProperty().bind(container.widthProperty().multiply(WINDOW_WIDTH / REF_WIDTH));
+        canvas.heightProperty().bind(container.heightProperty().multiply(WINDOW_HEIGHT / REF_HEIGHT));
+        
+        container.getChildren().add(particlePane);
     }
 
     private void setupTVLayer(StackPane container) {
@@ -687,6 +725,31 @@ public class PetView {
             boolean canSleep = controller.isSleepAllowed();
             sleepBtnContainer.setVisible(canSleep);
         });
+        
+        // Listen for weather changes and update particle effects
+        if (weatherSystem != null) {
+            weatherSystem.getWeatherProperty().addListener((obs, oldWeather, newWeather) -> {
+                updateWeatherEffects(newWeather);
+            });
+            
+            // Set initial weather effect if weather is already set
+            if (weatherSystem.getCurrentWeather() != null) {
+                updateWeatherEffects(weatherSystem.getCurrentWeather());
+            }
+        }
+    }
+    
+    private void updateWeatherEffects(WeatherState weather) {
+        if (weather == null || particleSystem == null) return;
+        
+        // Stop any existing particle effects first
+        particleSystem.stopAnimation();
+        
+        // Start new effect if one exists for this weather
+        ParticleEffect effect = weather.getParticleEffect();
+        if (effect != null) {
+            effect.start(particleSystem);
+        }
     }
 
     private void refreshPetState() {
