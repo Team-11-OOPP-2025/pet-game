@@ -6,16 +6,11 @@ import com.google.auto.service.AutoService;
 
 @AutoService(WeatherState.class)
 public class RainyState implements WeatherState {
-    private static final ParticleEffect RAIN_EFFECT = new RainParticleEffect(50);
+    private static final ParticleEffect RAIN_EFFECT = new RainParticleEffect(300);
     
     @Override
     public String getName() {
         return "Rainy";
-    }
-
-    @Override
-    public double getOverlayOpacity() {
-        return 0;
     }
 
     @Override
