@@ -14,11 +14,6 @@ public class SunnyState implements WeatherState {
     }
 
     @Override
-    public double getOverlayOpacity() {
-        return 0;
-    }
-
-    @Override
     public double getHappinessModifier() {
         return 1.2; // Sunny weather boosts happiness
     }

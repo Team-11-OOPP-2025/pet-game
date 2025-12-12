@@ -14,11 +14,6 @@ public class CloudyState implements WeatherState {
     }
 
     @Override
-    public double getOverlayOpacity() {
-        return 0;
-    }
-
-    @Override
     public double getHappinessModifier() {
         return 1.0; // Neutral effect
     }
