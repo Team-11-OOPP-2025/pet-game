@@ -55,7 +55,7 @@ public class PetView {
         petAvatarView.setPickOnBounds(false);
 
         inventoryView = new InventoryView(model, controller);
-        hudView = new HUDView(model, controller, inventoryView, clock);
+        hudView = new HUDView(model, controller, clock);
 
         // 3. Compose World
         // WorldView manages the background elements.

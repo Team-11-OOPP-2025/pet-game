@@ -38,6 +38,7 @@ public class InventoryView extends StackPane {
         this.assetLoader = AssetLoader.getInstance();
 
         setupInventoryUI();
+        controller.inventoryOpenProperty().addListener((_, _, isOpen) -> toggleInventory(isOpen));
     }
 
     private void setupInventoryUI() {
@@ -46,7 +47,7 @@ public class InventoryView extends StackPane {
         // Backdrop
         Region backdrop = new Region();
         backdrop.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
-        backdrop.setOnMouseClicked(_ -> toggleInventory(false));
+        backdrop.setOnMouseClicked(_ -> controller.setInventoryOpen(false));
 
         // Main Panel
         VBox inventoryPanel = new VBox(10);
@@ -80,7 +81,7 @@ public class InventoryView extends StackPane {
         closeBtn.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
         closeBtn.setStyle(STYLE_CLOSE_BTN);
         closeBtn.setCursor(Cursor.HAND);
-        closeBtn.setOnAction(_ -> toggleInventory(false));
+        closeBtn.setOnAction(_ -> controller.setInventoryOpen(false));
 
         inventoryPanel.getChildren().addAll(title, scroll, closeBtn);
 
@@ -169,7 +170,7 @@ public class InventoryView extends StackPane {
         tooltip.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-background-color: rgba(50, 50, 50, 0.9); -fx-text-fill: white;");
         Tooltip.install(slot, tooltip);
 
-        slot.setOnMouseClicked(e -> {
+        slot.setOnMouseClicked(_ -> {
             controller.handleConsumeAction(item);
             animateClick(slot);
         });

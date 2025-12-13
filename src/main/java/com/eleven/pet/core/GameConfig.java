@@ -126,7 +126,7 @@ public final class GameConfig {
     /**
      * Current save file version string.
      */
-    public static final String SAVE_FILE_VERSION = "0.0.1";
+    public static final String SAVE_FILE_VERSION = "0.0.2"; // an increment, I am getting tears! I never thought we'd see this day
 
     /**
      * Interval (in in-game seconds) between weather changes.

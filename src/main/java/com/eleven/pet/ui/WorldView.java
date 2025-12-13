@@ -48,6 +48,8 @@ public class WorldView extends StackPane {
     private StackPane tvClickArea;
     private Image backgroundDay;
 
+    private ParticleEffect currentWeatherEffect;
+
     public WorldView(GameClock clock, WeatherSystem weatherSystem) {
         this.clock = clock;
         this.assetLoader = AssetLoader.getInstance();
@@ -172,14 +174,23 @@ public class WorldView extends StackPane {
     private void updateWeatherEffects(WeatherState weather) {
         if (weather == null || particleSystem == null) return;
 
-        // Stop any existing particle effects first
-        particleSystem.stopAnimation();
+        if (currentWeatherEffect != null) {
+            // Stop current effects by calling their internal stop method
+            // to allow the effect to clean up properly
+            currentWeatherEffect.stop(particleSystem);
+        } else {
+            // Hard reset (just in case)
+            particleSystem.stopAnimation();
+        }
 
         // Start new effect if one exists for this weather
-        ParticleEffect effect = weather.getParticleEffect();
-        if (effect != null) {
-            effect.start(particleSystem);
+        ParticleEffect newWeatherEffect = weather.getParticleEffect();
+
+        if (newWeatherEffect != null) {
+            newWeatherEffect.start(particleSystem);
         }
+
+        currentWeatherEffect = newWeatherEffect;
     }
 
     public StackPane getTvClickArea() {

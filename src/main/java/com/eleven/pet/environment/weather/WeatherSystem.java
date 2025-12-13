@@ -1,13 +1,13 @@
 package com.eleven.pet.environment.weather;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.ServiceLoader;
-
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 
 public class WeatherSystem {
     private final List<WeatherListener> listeners = new ArrayList<>();

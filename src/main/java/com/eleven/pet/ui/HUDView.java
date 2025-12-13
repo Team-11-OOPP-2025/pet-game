@@ -6,7 +6,6 @@ import com.eleven.pet.character.PetStats;
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.environment.time.GameClock;
-import com.eleven.pet.inventory.ui.InventoryView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -42,7 +41,6 @@ public class HUDView extends StackPane {
 
     private final PetModel model;
     private final PetController controller;
-    private final InventoryView inventoryView;
     private final GameClock clock;
 
     private Label timeLabel;
@@ -52,10 +50,9 @@ public class HUDView extends StackPane {
     private Rectangle happinessFill;
     private StackPane sleepBtnContainer;
 
-    public HUDView(PetModel model, PetController controller, InventoryView inventoryView, GameClock clock) {
+    public HUDView(PetModel model, PetController controller, GameClock clock) {
         this.model = model;
         this.controller = controller;
-        this.inventoryView = inventoryView;
         this.clock = clock;
 
         setPickOnBounds(false);
@@ -86,7 +83,7 @@ public class HUDView extends StackPane {
         statsBox.getChildren().addAll(happyBar, hungerBar, energyBar, cleanBar);
         statsBox.setMaxSize(BAR_WIDTH_LARGE, VBox.USE_PREF_SIZE); // Clamp size to content
 
-        // Add VBox to Layout (Only ONE margin calculation needed now!)
+        // Add VBox to Layout (So the bars move together)
         addToLayout(statsBox, Pos.TOP_LEFT, MARGIN_STATS_BOX);
 
         // Clock
@@ -95,7 +92,7 @@ public class HUDView extends StackPane {
     }
 
     private void setupControlLayer() {
-        StackPane feedBtnContainer = createActionButton("FEED", COLOR_BTN_PRIMARY, 120, () -> inventoryView.toggleInventory(true));
+        StackPane feedBtnContainer = createActionButton("FEED", COLOR_BTN_PRIMARY, 120, () -> controller.setInventoryOpen(true));
         addToLayout(feedBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
 
         StackPane cleanBtnContainer = createActionButton("CLEAN", COLOR_BTN_PRIMARY, 120, controller::handleCleanAction);
