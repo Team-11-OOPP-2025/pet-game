@@ -49,7 +49,7 @@ public class PetAvatarView extends StackPane {
         initializeAnimations();
         bindData();
         startRenderLoop();
-        refreshPetState(model.getStats().getStat(PetStats.STAT_HAPPINESS).get());
+        refreshPetState(model.getStatProperty(PetStats.STAT_HAPPINESS).get());
     }
 
     private void setupPetLayer() {
@@ -143,7 +143,7 @@ public class PetAvatarView extends StackPane {
 
     private void bindData() {
         if (model == null) return;
-        var happinessStat = model.getStats().getStat(PetStats.STAT_HAPPINESS);
+        var happinessStat = model.getStatProperty(PetStats.STAT_HAPPINESS);
         // Listen for State Changes (Sleeping, Awake, etc.)
         model.getStateProperty().addListener((_, _, _) -> refreshPetState(happinessStat.get()));
 
