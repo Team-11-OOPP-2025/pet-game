@@ -49,7 +49,7 @@ public class PetAvatarView extends StackPane {
         initializeAnimations();
         bindData();
         startRenderLoop();
-        refreshPetState(50); // Always start in neutral state
+        refreshPetState(model.getStats().getStat(PetStats.STAT_HAPPINESS).get());
     }
 
     private void setupPetLayer() {

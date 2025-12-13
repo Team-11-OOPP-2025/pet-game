@@ -18,6 +18,7 @@ import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.impl.TimingGame;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
@@ -320,6 +321,17 @@ public class PetModel implements TimeListener, WeatherListener {
             happinessDecayAccum -= happyDelta;
             stats.modifyStat(PetStats.STAT_HAPPINESS, happyDelta);
         }
+    }
+
+    /**
+     * Retrieve a read-only property for the specified stat name.
+     *
+     * @param statName name of the stat to retrieve.
+     * @return read-only integer property for the stat, or {@code null} if not found.
+     */
+    public ReadOnlyIntegerProperty getStatProperty(String statName) {
+        // Delegate to the internal stats object
+        return stats.getStat(statName);
     }
 
     /**

@@ -183,20 +183,13 @@ public class HUDView extends StackPane {
     }
 
     private void bindData() {
-        if (model == null) return;
+        bindBar(model.getStatProperty(PetStats.STAT_HUNGER), hungerFill, BAR_WIDTH_SMALL);
+        bindBar(model.getStatProperty(PetStats.STAT_ENERGY), energyFill, BAR_WIDTH_SMALL);
+        bindBar(model.getStatProperty(PetStats.STAT_CLEANLINESS), cleanFill, BAR_WIDTH_SMALL);
 
-        PetStats stats = model.getStats();
-        if (stats != null) {
-            bindBar(stats.getStat(PetStats.STAT_HUNGER), hungerFill, BAR_WIDTH_SMALL);
-            bindBar(stats.getStat(PetStats.STAT_ENERGY), energyFill, BAR_WIDTH_SMALL);
-            bindBar(stats.getStat(PetStats.STAT_CLEANLINESS), cleanFill, BAR_WIDTH_SMALL);
-
-            var happyStat = stats.getStat(PetStats.STAT_HAPPINESS);
-            if (happyStat != null) {
-                happyStat.addListener((_, _, val) -> updateFill(happinessFill, val.intValue(), BAR_WIDTH_LARGE));
-                updateFill(happinessFill, happyStat.get(), BAR_WIDTH_LARGE);
-            }
-        }
+        var happyStat = model.getStatProperty(PetStats.STAT_HAPPINESS);
+        happyStat.addListener((_, _, val) -> updateFill(happinessFill, val.intValue(), BAR_WIDTH_LARGE));
+        updateFill(happinessFill, happyStat.get(), BAR_WIDTH_LARGE);
 
         model.getStateProperty().addListener((_, _, state) -> refreshSleepButton(state));
     }
