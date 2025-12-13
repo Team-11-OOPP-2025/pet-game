@@ -127,7 +127,7 @@ public class WorldView extends StackPane {
         }
 
         backgroundClockLabel = new Label("12:00");
-        backgroundClockLabel.setFont(Font.font(FONT_FAMILY_MONO, FontWeight.BOLD, 14));
+        backgroundClockLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 14));
         backgroundClockLabel.setTextFill(Color.BLACK);
         backgroundClockLabel.setStyle("-fx-background-color: transparent;");
         backgroundClockPane.getChildren().add(backgroundClockLabel);

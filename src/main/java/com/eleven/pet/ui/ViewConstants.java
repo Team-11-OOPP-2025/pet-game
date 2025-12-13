@@ -11,8 +11,7 @@ public class ViewConstants {
     public static final double REF_HEIGHT = 351.0;
 
     // Fonts
-    public static final String FONT_FAMILY = "Arial";
-    public static final String FONT_FAMILY_MONO = "Monospaced";
+    public static final String FONT_FAMILY = "Minecraft";
 
     // Colors
     public static final Color COLOR_HAPPINESS = Color.web("#f4d03f");
