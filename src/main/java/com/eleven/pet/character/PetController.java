@@ -8,6 +8,8 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -25,6 +27,7 @@ public class PetController {
     private final GameClock clock;
     private final WeatherSystem weather;
     private final PersistenceService persistence;
+    private final BooleanProperty inventoryOpenProperty = new SimpleBooleanProperty(false);
     private Timeline autosaveTimer;
 
     /**
@@ -74,12 +77,19 @@ public class PetController {
      * Determines the sprites's emotion based on happiness stats.
      * Centralizes the rules for mood changes.
      */
-    public AnimationState calculateEmotion() {
-        int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+    public AnimationState calculateEmotion(int happiness) {
         if (happiness >= 80) return AnimationState.VERY_HAPPY;
         if (happiness >= 50) return AnimationState.NEUTRAL;
         if (happiness >= 20) return AnimationState.SAD;
         return AnimationState.VERY_SAD;
+    }
+
+    public BooleanProperty inventoryOpenProperty() {
+        return inventoryOpenProperty;
+    }
+
+    public void setInventoryOpen(boolean isOpen) {
+        inventoryOpenProperty.set(isOpen);
     }
 
     /**

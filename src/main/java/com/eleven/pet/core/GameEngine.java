@@ -3,7 +3,6 @@ package com.eleven.pet.core;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
-
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

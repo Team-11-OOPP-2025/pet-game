@@ -15,7 +15,7 @@ public class GuessingGame implements Minigame {
     private static final int LOSE_HAPPINESS = -5;
     
     private int secretNumber;
-    private Random random;
+    private final Random random;
     
     public GuessingGame() {
         this.random = new Random();

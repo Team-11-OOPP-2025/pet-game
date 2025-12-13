@@ -19,6 +19,8 @@ public class AssetLoader {
 
     // Base path for all images
     private static final String IMAGE_ROOT = "/images/";
+    // Base path for all fonts
+    private static final String FONT_ROOT = "/fonts/";
 
     /**
      * Private constructor for singleton pattern.
@@ -41,9 +43,29 @@ public class AssetLoader {
     }
 
     /**
+     * Loads a font from disk.
+     *
+     * @param fontName The font file name (e.g., "Minecraft.ttf")
+     * @param size     The font size
+     */
+    public void loadFont(String fontName, double size) {
+        String fontPath = FONT_ROOT + fontName;
+        try (InputStream stream = getClass().getResourceAsStream(fontPath)) {
+            if (stream != null) {
+                javafx.scene.text.Font.loadFont(stream, size);
+            } else {
+                System.err.println("ERROR: Font not found: " + fontPath);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading font: " + fontPath);
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Loads an image from disk, trying multiple extensions.
      *
-     * @param relativePath The path relative to /resources/images/
+     * @param relativePath The path relative to /resources/images/ without extension
      * @return The loaded Image, or a placeholder if not found
      */
     private Image loadImage(String relativePath) {
@@ -86,6 +108,8 @@ public class AssetLoader {
      */
     public void loadAll() {
         System.out.println("Preloading assets...");
+
+        loadFont("Minecraft.ttf", 14);
         String[] assets = {
                 "backgrounds/DAWN",
                 "backgrounds/MORNING",

@@ -3,6 +3,7 @@ package com.eleven.pet.storage;
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
+import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameConfig;
@@ -88,7 +89,8 @@ public class PersistenceService {
             String stateName = dto.getCurrentStateName();
             PetState restoredState = StateRegistry.getInstance().getState(stateName);
 
-            if (restoredState != null) {
+            // Prevent loading into AsleepState directly as the clock may have advanced
+            if (restoredState != null && !(restoredState instanceof AsleepState)) {
                 model.changeState(restoredState);
             }
 

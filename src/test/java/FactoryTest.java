@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class FactoryTest {
-    WeatherSystem weather = new WeatherSystem();
-    GameClock clock = new GameClock();
+    final WeatherSystem weather = new WeatherSystem();
+    final GameClock clock = new GameClock();
 
     @Test
     void testFactoryCreatesValidPet() {
