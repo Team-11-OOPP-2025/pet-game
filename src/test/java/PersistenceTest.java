@@ -15,8 +15,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PersistenceTest {
 
@@ -74,7 +73,9 @@ class PersistenceTest {
         assertTrue(loaded.isSleptThisNight());
         assertTrue(Math.abs(inventory.getAllOwnedItems().size() - loaded.getInventory().getAllOwnedItems().size()) <= 3,
                 "Owned items count should be within a range of 3");
-        assertEquals(original.getCurrentState(), loaded.getCurrentState());
+
+        // State should not be AsleepState as it is transient and should reset on load
+        assertNotEquals(original.getCurrentState(), loaded.getCurrentState());
     }
 
     @Test
