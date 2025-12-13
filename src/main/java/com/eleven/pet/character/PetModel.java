@@ -226,8 +226,8 @@ public class PetModel implements TimeListener, WeatherListener {
 
         if (result != null) {
             // Apply happiness delta from the minigame result
-            stats.modifyStat(PetStats.STAT_HAPPINESS, result.getHappinessDelta());
-            System.out.println(result.getMessage());
+            stats.modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
+            System.out.println(result.message());
         }
 
         return result;

@@ -67,7 +67,7 @@ public class GCMEncryptionTest {
     }
 
     @Test
-    void decryptWithCorruptedCipherTextThrowsIOException() throws Exception {
+    void decryptWithCorruptedCipherTextThrowsIOException() {
         SecretKey key = KeyLoader.generateDevKey();
         GcmEncryptionService gcmService = new GcmEncryptionService(key);
 

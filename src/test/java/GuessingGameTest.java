@@ -18,12 +18,12 @@ public class GuessingGameTest {
         MinigameResult result = null;
         for (int guess = game.getMinNumber(); guess <= game.getMaxNumber(); guess++) {
             result = game.checkGuess(guess, pet);
-            if (result.isWon()) {
+            if (result.won()) {
                 break;
             }
         }
 
         assertNotNull(result);
-        assertTrue(result.getHappinessDelta() > 0, "Winning should give positive happiness");
+        assertTrue(result.happinessDelta() > 0, "Winning should give positive happiness");
     }
 }

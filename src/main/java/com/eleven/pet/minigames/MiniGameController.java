@@ -46,7 +46,7 @@ public class MiniGameController {
             }
             
             MinigameResult result = game.checkGuess(guess, pet);
-            view.displayResult(result.isWon(), result.getMessage());
+            view.displayResult(result.won(), result.message());
             
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(view, "Please enter a valid number!", "Invalid Input", JOptionPane.ERROR_MESSAGE);

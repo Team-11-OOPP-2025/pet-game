@@ -74,8 +74,7 @@ public class PetController {
      * Determines the sprites's emotion based on happiness stats.
      * Centralizes the rules for mood changes.
      */
-    public AnimationState calculateEmotion() {
-        int happiness = model.getStats().getStat(PetStats.STAT_HAPPINESS).get();
+    public AnimationState calculateEmotion(int happiness) {
         if (happiness >= 80) return AnimationState.VERY_HAPPY;
         if (happiness >= 50) return AnimationState.NEUTRAL;
         if (happiness >= 20) return AnimationState.SAD;

@@ -39,9 +39,7 @@ public class TimingGame implements Minigame {
         if (Platform.isFxApplicationThread()) {
             resultHolder[0] = showMinigameDialogSync(pet);
         } else {
-            Platform.runLater(() -> {
-                resultHolder[0] = showMinigameDialogSync(pet);
-            });
+            Platform.runLater(() -> resultHolder[0] = showMinigameDialogSync(pet));
         }
         
         return resultHolder[0];
@@ -77,14 +75,14 @@ public class TimingGame implements Minigame {
         leftMarker.setEndY(50);
         leftMarker.setStroke(Color.LIME);
         leftMarker.setStrokeWidth(4);
-        leftMarker.setTranslateX(-400/2 + (TARGET_MIN * 400)); // Position at 40%
+        leftMarker.setTranslateX((double) -400 / 2 + (TARGET_MIN * 400)); // Position at 40%
         
         Line rightMarker = new Line();
         rightMarker.setStartY(0);
         rightMarker.setEndY(50);
         rightMarker.setStroke(Color.LIME);
         rightMarker.setStrokeWidth(4);
-        rightMarker.setTranslateX(-400/2 + (TARGET_MAX * 400)); // Position at 60%
+        rightMarker.setTranslateX((double) -400 / 2 + (TARGET_MAX * 400)); // Position at 60%
         
         progressContainer.getChildren().addAll(progressBar, leftMarker, rightMarker);
         
