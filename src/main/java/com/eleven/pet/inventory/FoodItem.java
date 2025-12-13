@@ -17,4 +17,5 @@ public record FoodItem(int id, String name, int statsRestore) implements Item {
         // This also allows for easier addition of new Item types in the future
         return pet.getStats().modifyStat(PetStats.STAT_HUNGER, statsRestore);
     }
+    
 }

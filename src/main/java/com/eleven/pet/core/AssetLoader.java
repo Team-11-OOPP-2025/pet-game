@@ -98,7 +98,9 @@ public class AssetLoader {
                 "sprites/happy/SpriteSheetHappy",
                 "sprites/sleeping/SpriteSheetSleeping",
                 "sprites/sad/SpriteSheetSad",
-                "sprites/sad/SpriteSheetCrying"
+                "sprites/sad/SpriteSheetCrying",
+
+                "chest/Chest"
         };
 
         for (String asset : assets) {

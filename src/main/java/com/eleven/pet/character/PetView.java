@@ -3,11 +3,14 @@ package com.eleven.pet.character;
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.core.AssetLoader;
+import com.eleven.pet.daily_reward.ChestComponent;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.daily_reward.Chest;
+
 import javafx.animation.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -40,7 +43,9 @@ public class PetView {
     private StackPane uiLayer;    // Static layer (HUD + Controls)
     private StackPane tvClickArea; // The clickable TV box
 
+    // Modals
     private StackPane inventoryModal;
+    private StackPane dailyRewardModal; // New Modal for Rewards
 
     private ImageView backgroundView;
     private ImageView petImageView;
@@ -101,9 +106,13 @@ public class PetView {
         // 3. Setup UI (HUD -> Controls)
         setupHUDLayer(uiLayer);
         setupControlLayer(uiLayer);
+        
+        // 4. Modals and Triggers
         setupInventoryUI(uiLayer);
+        setupDailyRewardUI(uiLayer); // Creates the chest modal
+        setupRewardTrigger(uiLayer); // Creates the top-right button
 
-        // 4. Add to Root
+        // 5. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
 
         bindData();
@@ -114,50 +123,157 @@ public class PetView {
         return root;
     }
 
+    // =============================================================
+    // NEW: DAILY REWARD SYSTEM
+    // =============================================================
+
+    /**
+     * Creates the modal containing 5 chests in a row.
+     */
+    private void setupDailyRewardUI(StackPane root) {
+        dailyRewardModal = new StackPane();
+        dailyRewardModal.setVisible(false); // Hidden by default
+
+        // 1. Darkened Backdrop (Clicking closes the modal)
+        Region backdrop = new Region();
+        backdrop.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        backdrop.setOnMouseClicked(e -> toggleDailyReward(false));
+
+        // 2. Main Panel
+        VBox panel = new VBox(20);
+        panel.setAlignment(Pos.CENTER);
+        panel.setMaxSize(800, 400);
+        panel.setStyle("-fx-background-color: #fdf5e6; -fx-background-radius: 20; -fx-border-color: #8b4513; -fx-border-width: 5; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);");
+
+        Label title = new Label("DAILY REWARDS");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
+        title.setTextFill(Color.web("#8b4513"));
+
+        Label subTitle = new Label("Select a chest to claim your prize!");
+        subTitle.setFont(Font.font("Arial", 16));
+        subTitle.setTextFill(Color.web("#555"));
+
+        // 3. Row of 5 Chests
+        HBox chestRow = new HBox(30); // 30px spacing between chests
+        chestRow.setAlignment(Pos.CENTER);
+
+        for (int i = 0; i < 5; i++) {
+            Chest chestModel = new Chest(); // Create a new chest with random item
+            ChestComponent visualChest = new ChestComponent(chestModel);
+            visualChest.setScaleX(0.9);
+            visualChest.setScaleY(0.9);
+
+            // When chest opens, add item to inventory
+            visualChest.setOnOpen(() -> {
+                chestModel.open(model);
+            });
+
+            chestRow.getChildren().add(visualChest);
+        }
+
+        // 4. Close Button
+        Button closeBtn = new Button("CLOSE");
+        closeBtn.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        closeBtn.setStyle("-fx-background-color: #8b4513; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 20; -fx-padding: 10 30;");
+        closeBtn.setOnAction(e -> toggleDailyReward(false));
+
+        panel.getChildren().addAll(title, subTitle, chestRow, closeBtn);
+        dailyRewardModal.getChildren().addAll(backdrop, panel);
+        
+        root.getChildren().add(dailyRewardModal);
+    }
+
+    /**
+     * Creates the button in the top right to open the rewards.
+     */
+    private void setupRewardTrigger(StackPane root) {
+        // Try to load an icon
+        Image iconImg = assetLoader.getImage("chest/Chest_Icon");
+        
+        if (iconImg != null) {
+            ImageView triggerIcon = new ImageView(iconImg);
+            triggerIcon.setFitWidth(60);
+            triggerIcon.setFitHeight(60);
+            triggerIcon.setPreserveRatio(true);
+            triggerIcon.setCursor(Cursor.HAND);
+            
+            // Interaction
+            triggerIcon.setOnMouseClicked(e -> toggleDailyReward(true));
+            triggerIcon.setOnMouseEntered(e -> triggerIcon.setScaleX(1.1));
+            triggerIcon.setOnMouseExited(e -> triggerIcon.setScaleX(1.0));
+            
+            addToLayout(root, triggerIcon, Pos.TOP_RIGHT, 20, 20, 0, 0);
+        } else {
+            // Fallback Button
+            Button btn = new Button("🎁 REWARDS");
+            btn.setStyle("-fx-background-color: gold; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-padding: 10 20; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 20;");
+            btn.setOnAction(e -> toggleDailyReward(true));
+            
+            addToLayout(root, btn, Pos.TOP_RIGHT, 20, 20, 0, 0);
+        }
+    }
+
+    private void toggleDailyReward(boolean show) {
+        if (show) {
+            dailyRewardModal.setVisible(true);
+            dailyRewardModal.setOpacity(0);
+            
+            // Fade In + Scale Up
+            FadeTransition ft = new FadeTransition(Duration.millis(300), dailyRewardModal);
+            ft.setToValue(1.0);
+            
+            ScaleTransition st = new ScaleTransition(Duration.millis(300), dailyRewardModal.getChildren().get(1)); // Scale Content
+            st.setFromX(0.8); st.setFromY(0.8);
+            st.setToX(1.0); st.setToY(1.0);
+
+            ParallelTransition pt = new ParallelTransition(ft, st);
+            pt.play();
+        } else {
+            // Fade Out
+            FadeTransition ft = new FadeTransition(Duration.millis(200), dailyRewardModal);
+            ft.setToValue(0);
+            ft.setOnFinished(e -> dailyRewardModal.setVisible(false));
+            ft.play();
+        }
+    }
+
+
     private void setupInventoryUI(StackPane root) {
         inventoryModal = new StackPane();
-        inventoryModal.setVisible(false); // Hidden by default
+        inventoryModal.setVisible(false); 
 
-        // Darkened background (Clicking this closes the inventory)
         Region backdrop = new Region();
         backdrop.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
         backdrop.setOnMouseClicked(e -> toggleInventory(false));
 
-        // The Main Panel
         VBox inventoryPanel = new VBox(10);
         inventoryPanel.setMaxSize(350, 250);
         inventoryPanel.setStyle("-fx-background-color: #fdf5e6; -fx-background-radius: 15; -fx-border-color: #8b4513; -fx-border-width: 4; -fx-border-radius: 10; -fx-padding: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);");
         inventoryPanel.setAlignment(Pos.TOP_CENTER);
 
-        // Title
         Label title = new Label("INVENTORY");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         title.setTextFill(Color.web("#8b4513"));
 
-        // Grid of Items
         TilePane itemGrid = new TilePane();
         itemGrid.setHgap(10);
         itemGrid.setVgap(10);
         itemGrid.setPrefColumns(3);
         itemGrid.setAlignment(Pos.CENTER);
 
-        // Add items that are ALREADY in the inventory map
         model.getInventory().getItems().forEach((id, qtyProp) -> {
             if (qtyProp.get() > 0) {
                 Item item = ItemRegistry.get(id);
                 if (item != null) {
                     StackPane slot = createItemSlot(item);
-                    slot.setUserData(id); // Store ID to find it later for removal
+                    slot.setUserData(id);
                     itemGrid.getChildren().add(slot);
                 }
             }
         });
 
-        // Listen for changes in the inventory map (ADDITIONS and REMOVALS)
         model.getInventory().getItems().addListener((MapChangeListener<Integer, IntegerProperty>) change -> {
-            // CASE A: New Item Type Added to Map
             if (change.wasAdded()) {
-                // Check if we already have a slot (just in case)
                 boolean exists = itemGrid.getChildren().stream()
                         .anyMatch(node -> node.getUserData().equals(change.getKey()));
 
@@ -178,7 +294,6 @@ public class PetView {
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // Close Button
         Button closeBtn = new Button("CLOSE");
         closeBtn.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         closeBtn.setStyle("-fx-background-color: #8b4513; -fx-text-fill: white; -fx-background-radius: 20;");
@@ -187,13 +302,10 @@ public class PetView {
 
         inventoryPanel.getChildren().addAll(title, scroll, closeBtn);
 
-        // Layout: Add backdrop then panel
         inventoryModal.getChildren().add(backdrop);
         inventoryModal.getChildren().add(inventoryPanel);
 
-        // POSITIONING: Bottom Left, aligned above the Feed Button
         StackPane.setAlignment(inventoryPanel, Pos.BOTTOM_LEFT);
-        // Margin Bottom = 90 (Button Y) + 50 (Button Height) + 10 (Gap) = 150
         StackPane.setMargin(inventoryPanel, new Insets(0, 0, 150, 20));
 
         root.getChildren().add(inventoryModal);
@@ -207,8 +319,6 @@ public class PetView {
 
         String lowerName = item.name().toLowerCase();
         javafx.scene.Node iconNode;
-
-        // Try a conventional path in the asset loader: items/<name>
         Image itemImage = assetLoader.getImage("items/" + lowerName);
 
         ImageView iv = new ImageView(itemImage);
@@ -217,18 +327,15 @@ public class PetView {
         iv.setPreserveRatio(true);
         iconNode = iv;
 
-        // Ensure icon is centered and visible
         StackPane.setAlignment(iconNode, Pos.CENTER);
         StackPane.setMargin(iconNode, new Insets(-5, 0, 0, 0));
 
-        // Item Name (Tooltip style, small at bottom)
         Label name = new Label(item.name());
         name.setTextFill(Color.BLACK);
         name.setFont(Font.font("Arial", 9));
         StackPane.setAlignment(name, Pos.BOTTOM_CENTER);
         StackPane.setMargin(name, new Insets(0, 0, 5, 0));
 
-        // Quantity Badge
         Label qty = new Label();
         qty.setFont(Font.font("Arial", FontWeight.BOLD, 10));
         qty.setTextFill(Color.WHITE);
@@ -236,11 +343,9 @@ public class PetView {
         StackPane.setAlignment(qty, Pos.TOP_RIGHT);
         StackPane.setMargin(qty, new Insets(-5, -5, 0, 0));
 
-        // Bind Quantity
         IntegerProperty amountProp = model.getInventory().amountProperty(item);
         qty.textProperty().bind(Bindings.convert(amountProp));
 
-        // Auto-remove slot when quantity hits 0
         amountProp.addListener((obs, oldVal, newVal) -> {
             if (newVal.intValue() <= 0) {
                 if (slot.getParent() instanceof Pane) {
@@ -249,20 +354,16 @@ public class PetView {
             }
         });
 
-        // Tooltip with preview
         Tooltip tooltip = new Tooltip();
         tooltip.setText("Name: " + item.name() + "\nHeal: " + item.statsRestore() + "\nDescription: " + item.description());
         tooltip.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-background-color: rgba(50, 50, 50, 0.9); -fx-text-fill: white;");
         Tooltip.install(slot, tooltip);
 
-        // Interaction
         slot.setOnMouseClicked(e -> {
             controller.handleConsumeAction(item);
             ScaleTransition st = new ScaleTransition(Duration.millis(100), slot);
-            st.setFromX(1.0);
-            st.setFromY(1.0);
-            st.setToX(0.9);
-            st.setToY(0.9);
+            st.setFromX(1.0); st.setFromY(1.0);
+            st.setToX(0.9); st.setToY(0.9);
             st.setAutoReverse(true);
             st.setCycleCount(2);
             st.play();
@@ -288,7 +389,6 @@ public class PetView {
     }
 
     private void setupControlLayer(StackPane root) {
-        // TODO: Update to be a beautiful icon instead of TEXT!
         StackPane feedBtnContainer = createActionButton("FEED", Color.WHITE, 120, () -> toggleInventory(true));
         addToLayout(root, feedBtnContainer, Pos.BOTTOM_LEFT, 0, 0, 90, 20);
 
@@ -307,7 +407,6 @@ public class PetView {
     private void setupBackgroundLayer(StackPane container) {
         backgroundView = new ImageView();
         backgroundView.setPreserveRatio(false);
-        // Bind to the container so it resizes dynamically
         backgroundView.fitWidthProperty().bind(container.widthProperty());
         backgroundView.fitHeightProperty().bind(container.heightProperty());
 
@@ -318,28 +417,19 @@ public class PetView {
     }
 
     private void setupTVLayer(StackPane container) {
-        // We use a transparent Pane overlay to position the TV click area
         Pane tvOverlay = new Pane();
-        tvOverlay.setPickOnBounds(false); // Only the TV box should be clickable
+        tvOverlay.setPickOnBounds(false); 
 
         tvClickArea = new StackPane();
         tvClickArea.setCursor(Cursor.HAND);
 
-        // Reference canvas dimensions that the UI layout was originally designed for.
-        // These are used to compute relative positions and sizes so the TV area scales
-        // correctly on different window sizes.
         double REF_WIDTH = 624;
         double REF_HEIGHT = 351;
-
-        // TV rectangle coordinates and size in the reference canvas (pixels).
-        // They represent the TV's top-left corner (TV_X, TV_Y) and its width/height.
         double TV_X = 462;
         double TV_Y = 142;
         double TV_WIDTH = 112;
         double TV_HEIGHT = 72;
 
-        // Bind the tvClickArea position and preferred size to the container's size,
-        // preserving the same relative position/size as in the reference layout.
         tvClickArea.layoutXProperty().bind(container.widthProperty().multiply(TV_X / REF_WIDTH));
         tvClickArea.layoutYProperty().bind(container.heightProperty().multiply(TV_Y / REF_HEIGHT));
         tvClickArea.prefWidthProperty().bind(container.widthProperty().multiply(TV_WIDTH / REF_WIDTH));
@@ -368,26 +458,17 @@ public class PetView {
         if (isGameMode) return;
         isGameMode = true;
 
-        // Calculate Center Points
         double sceneW = worldLayer.getWidth();
         double sceneH = worldLayer.getHeight();
-
-        // The center of the TV (Target)
         double tvCenterX = tvClickArea.getLayoutX() + (tvClickArea.getWidth() / 2);
         double tvCenterY = tvClickArea.getLayoutY() + (tvClickArea.getHeight() / 2);
-
-        // Justification: We shift the view center 100px to the Right.
-        // This pushes the TV 100px to the Left of the screen, leaving empty space on the Right.
         double viewOffsetX = 100;
 
-        // Formula: (ScreenCenter - ObjectCenter + Offset) * ZoomFactor
-        // We add Offset to shift the camera focus point
         double transX = ((sceneW / 2) - tvCenterX + viewOffsetX) * ZOOM_FACTOR;
         double transY = ((sceneH / 2) - tvCenterY) * ZOOM_FACTOR;
 
         ParallelTransition pt = new ParallelTransition();
 
-        // Zoom and Pan the World
         Timeline zoom = new Timeline(
                 new KeyFrame(Duration.millis(800),
                         new KeyValue(worldLayer.scaleXProperty(), ZOOM_FACTOR, Interpolator.EASE_BOTH),
@@ -397,23 +478,14 @@ public class PetView {
                 )
         );
 
-        // Move Pet to the side
         TranslateTransition movePet = new TranslateTransition(Duration.millis(800), petImageView);
-
-        // MATH DERIVATION:
-        // We calculate the delta required to move from Current Layout Position to Target (Right of TV)
-        // Target X (600) - Start X (approx 250) = 350
-        // Target Y (-20) - Start Y (approx 180) = -200
-        // Using "movePet.setByX" would also work, but setToX works on translation property directly.
         movePet.setToX(350);
         movePet.setToY(-200);
 
-        // Scale Pet Down (Perspective effect - 0.5 is 50% of the ORIGINAL size, making it look deeper in scene)
         ScaleTransition scalePet = new ScaleTransition(Duration.millis(800), petImageView);
         scalePet.setToX(0.5);
         scalePet.setToY(0.5);
 
-        // Fade out UI
         FadeTransition fadeUI = new FadeTransition(Duration.millis(300), uiLayer);
         fadeUI.setToValue(0);
 
@@ -428,11 +500,10 @@ public class PetView {
         if (!isGameMode) return;
         isGameMode = false;
 
-        tvClickArea.getChildren().clear(); // Remove game pane
+        tvClickArea.getChildren().clear(); 
 
         ParallelTransition pt = new ParallelTransition();
 
-        // Reset World Scale and Position
         Timeline zoomOut = new Timeline(
                 new KeyFrame(Duration.millis(800),
                         new KeyValue(worldLayer.scaleXProperty(), 1.0, Interpolator.EASE_BOTH),
@@ -442,17 +513,14 @@ public class PetView {
                 )
         );
 
-        // Reset Pet Position
         TranslateTransition movePet = new TranslateTransition(Duration.millis(800), petImageView);
         movePet.setToX(0);
         movePet.setToY(0);
 
-        // Reset Pet Scale (Back to original)
         ScaleTransition scalePet = new ScaleTransition(Duration.millis(800), petImageView);
         scalePet.setToX(1);
         scalePet.setToY(1);
 
-        // Fade UI In
         FadeTransition fadeUI = new FadeTransition(Duration.millis(500), uiLayer);
         fadeUI.setToValue(1.0);
         fadeUI.setDelay(Duration.millis(300));
@@ -463,16 +531,12 @@ public class PetView {
 
     private void loadGameContent() {
         tvClickArea.getChildren().clear();
-
-        // Get the pane from your controller
         Pane gamePane = controller.getMinigamePane();
 
         if (gamePane != null) {
-            // Bind the game pane to fill the TV box area
             gamePane.prefWidthProperty().bind(tvClickArea.widthProperty());
             gamePane.prefHeightProperty().bind(tvClickArea.heightProperty());
 
-            // TODO: Style the exit button properly
             Button exitBtn = new Button("X");
             exitBtn.setStyle("-fx-background-color: rgba(255,0,0,0.5); -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;");
             exitBtn.setOnAction(e -> exitMinigameMode());
@@ -483,7 +547,6 @@ public class PetView {
     }
 
     private void setupHUDLayer(StackPane root) {
-        // Stats
         StackPane happyBar = createStatBar("Happiness", "😃", Color.web("#f4d03f"), 225, 38);
         happinessFill = (Rectangle) happyBar.getChildren().get(1);
         addToLayout(root, happyBar, Pos.TOP_LEFT, 90, 0, 0, 20);
@@ -645,7 +708,6 @@ public class PetView {
     private void bindData() {
         if (model == null) return;
 
-        // Stats
         PetStats stats = model.getStats();
         if (stats != null) {
             bindBar(stats.getStat(PetStats.STAT_HUNGER), hungerFill, 150);

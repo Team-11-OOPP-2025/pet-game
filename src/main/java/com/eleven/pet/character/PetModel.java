@@ -14,6 +14,8 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Inventory;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.inventory.StatPotion;
+import com.eleven.pet.inventory.StatPotionDefinition;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.TimingGame;
@@ -113,6 +115,8 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     private PetDefinition definition;
 
+    private List<StatPotionDefinition> activePotions;
+
     /**
      * Constructs a new PetModel and subscribes it to the provided environment systems.
      *
@@ -125,6 +129,7 @@ public class PetModel implements TimeListener, WeatherListener {
         this.weatherSystem = weatherSystem;
         this.clock = clock;
         this.definition = new PetDefinition("Bear");
+        List<StatPotionDefinition> activePotions = new ArrayList<>();
 
         // Initialize stats
         stats.registerStat(PetStats.STAT_HUNGER, 50);
@@ -351,4 +356,15 @@ public class PetModel implements TimeListener, WeatherListener {
     public void onWeatherChange(WeatherState newWeather) {
         // TODO: Implement weather change reaction (modify happiness based on weather)
     }
+
+    public void addPotion(StatPotionDefinition potion) {
+        if (potion == null) {
+            activePotions.add(potion);
+        }
+    }
+
+    public void addToInventory(Item item, int quantity) {
+        inventory.add(item, quantity);
+    }
+
 }

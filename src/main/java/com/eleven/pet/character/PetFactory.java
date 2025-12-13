@@ -1,6 +1,4 @@
 package com.eleven.pet.character;
-
-import com.eleven.pet.character.behavior.PetDefinition;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 
