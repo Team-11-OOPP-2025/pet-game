@@ -50,6 +50,10 @@ public class PetView {
     private ImageView backgroundView;
     private ImageView petImageView;
     private Label timeLabel;
+    
+    // Timer labels
+    private Label energyTimerLabel;
+    private Label happinessTimerLabel;
 
     private Rectangle hungerFill;
     private Rectangle energyFill;
@@ -551,6 +555,10 @@ public class PetView {
         happinessFill = (Rectangle) happyBar.getChildren().get(1);
         addToLayout(root, happyBar, Pos.TOP_LEFT, 90, 0, 0, 20);
 
+        // Happiness Timer (Placed to the right of the bar)
+        happinessTimerLabel = createTimerLabel();
+        addToLayout(root, happinessTimerLabel, Pos.TOP_LEFT, 100, 0, 0, 255); 
+
         StackPane hungerBar = createStatBar("Hunger", "🍖 ", Color.web("#2ecc71"), 150, 25);
         hungerFill = (Rectangle) hungerBar.getChildren().get(1);
         addToLayout(root, hungerBar, Pos.TOP_LEFT, 148, 0, 0, 20);
@@ -559,12 +567,26 @@ public class PetView {
         energyFill = (Rectangle) energyBar.getChildren().get(1);
         addToLayout(root, energyBar, Pos.TOP_LEFT, 193, 0, 0, 20);
 
+        // Energy Timer (Placed to the right of the bar)
+        energyTimerLabel = createTimerLabel();
+        addToLayout(root, energyTimerLabel, Pos.TOP_LEFT, 193, 0, 0, 180);
+
         StackPane cleanBar = createStatBar("Clean", "🧽 ", Color.web("#3498db"), 150, 25);
         cleanFill = (Rectangle) cleanBar.getChildren().get(1);
         addToLayout(root, cleanBar, Pos.TOP_LEFT, 238, 0, 0, 20);
 
         timeLabel = createClockWidget();
         addToLayout(root, timeLabel, Pos.TOP_CENTER, 20, 0, 0, 0);
+    }
+    
+    private Label createTimerLabel() {
+        Label lbl = new Label("");
+        lbl.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        lbl.setTextFill(Color.WHITE);
+        // Add a shadow so it's visible against any background
+        lbl.setStyle("-fx-effect: dropshadow(one-pass-box, black, 2, 0.5, 0, 0);");
+        lbl.setVisible(false); // Hidden by default
+        return lbl;
     }
 
     private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
@@ -666,9 +688,24 @@ public class PetView {
                     activeAnimation.update(deltaTime);
                     renderFrame();
                 }
+
+                updateTimer(energyTimerLabel, PetStats.STAT_ENERGY);
+                updateTimer(happinessTimerLabel, PetStats.STAT_HAPPINESS);
             }
         };
         renderLoop.start();
+    }
+
+    private void updateTimer(Label label, String statName) {
+        if (label == null) return;
+        
+        double time = model.getPotionDuration(statName);
+        if (time > 0) {
+            label.setText(String.format("%.1fs", time)); // Displays "9.5s"
+            label.setVisible(true);
+        } else {
+            label.setVisible(false);
+        }
     }
 
     private void renderFrame() {

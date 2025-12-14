@@ -5,12 +5,11 @@ import com.eleven.pet.character.PetModel;
 public class StatPotion implements Item {
     private final int id;
     private final StatPotionDefinition definition;
-    private final int statMultiplier;
 
-    public StatPotion(int id, StatPotionDefinition definition, int statMultiplier) {
+
+    public StatPotion(int id, StatPotionDefinition definition) {
         this.id = id;
         this.definition = definition;
-        this.statMultiplier = statMultiplier;
     }
 
     @Override
@@ -30,8 +29,7 @@ public class StatPotion implements Item {
 
     @Override
     public int statsRestore() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'statsRestore'");
+        return 0;
     }
 
     @Override
