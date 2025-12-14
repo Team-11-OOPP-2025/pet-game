@@ -1,8 +1,11 @@
 package com.eleven.pet.character;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
-
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameConfig;
@@ -19,15 +22,12 @@ import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.impl.TimingGame;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Data
 public class PetModel implements TimeListener, WeatherListener {
@@ -239,6 +239,12 @@ public class PetModel implements TimeListener, WeatherListener {
 
         if (currentHunger < 30) happinessRate *= 2.0;
         if (currentClean < 30) happinessRate *= 1.5;
+        
+        // Apply weather happiness modifier
+        if (weatherSystem != null && weatherSystem.getCurrentWeather() != null) {
+            double weatherModifier = weatherSystem.getCurrentWeather().getHappinessModifier();
+            happinessRate /= weatherModifier; // Higher modifier = slower decay 
+        }
 
         happinessDecayAccum -= happinessRate * timeDelta;
 
@@ -278,7 +284,8 @@ public class PetModel implements TimeListener, WeatherListener {
 
     @Override
     public void onWeatherChange(WeatherState newWeather) {
-        // TODO: Implement weather change reaction
+        System.out.println(name + " notices the weather changed to: " + newWeather.getName());
+        // Weather effects are applied continuously through the happiness decay modifier
     }
 
     public void addToInventory(Item item, int quantity) {
