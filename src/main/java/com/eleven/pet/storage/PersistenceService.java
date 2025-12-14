@@ -48,6 +48,9 @@ public class PersistenceService {
 
             dto.setSleepStartTime(model.getCurrentSleepDuration());
             dto.setSleptThisNight(model.isSleptThisNight());
+            
+            // Save reward cooldown
+            dto.setRewardCooldown(model.getRewardCooldown());
 
             try (OutputStream fileOut = Files.newOutputStream(savePath);
                  OutputStream encryptedOut = encryptionService.wrapOutputStream(fileOut)) {
@@ -99,6 +102,9 @@ public class PersistenceService {
 
             model.setCurrentSleepDuration(dto.getSleepStartTime());
             model.setSleptThisNight(dto.isSleptThisNight());
+            
+            // Load reward cooldown
+            model.setRewardCooldown(dto.getRewardCooldown());
 
             System.out.println("[" + dto.getVersion() + "] Game loaded successfully!");
             return Optional.of(model);

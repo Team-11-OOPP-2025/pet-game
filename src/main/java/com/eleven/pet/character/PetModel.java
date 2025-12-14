@@ -48,6 +48,9 @@ public class PetModel implements TimeListener, WeatherListener {
     private boolean passedEightAM = false;
     private double currentSleepDuration = 0.0;
     private int hoursSleptRewardCount = 0;
+    
+    // Remaining time (in game hours) until the next reward can be claimed
+    private double rewardCooldown = 0.0;
 
     private PetDefinition definition;
 
@@ -256,8 +259,18 @@ public class PetModel implements TimeListener, WeatherListener {
                 System.out.println("Effect Expired: " + potion.getName());
             }
         }
+        
+        // 2. Update Reward Cooldown
+        if (clock != null && rewardCooldown > 0) {
+            // FIX: timeDelta is ALREADY scaled by GameClock, so we use it directly.
+            // 1 unit of timeDelta = 1 in-game hour.
+            rewardCooldown -= timeDelta; 
+            if (rewardCooldown < 0) {
+                rewardCooldown = 0;
+            }
+        }
 
-        // 2. Existing State Logic
+        // 3. Existing State Logic
         if (currentState.get() != null) {
             currentState.get().onTick(this, timeDelta);
         }

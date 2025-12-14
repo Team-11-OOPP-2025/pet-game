@@ -19,13 +19,15 @@ public class Chest {
 
     private void generateReward() {
         this.item = ItemRegistry.getRandomItem();
+        // Generate a random quantity between 1 and 3
+        this.quantity = random.nextInt(3) + 1;
     }
 
     public void open(PetModel pet) {
         if (!isOpened && item != null) {
             pet.addToInventory(item, quantity);
             isOpened = true;
-            System.out.println("Chest opened! Received " + item.name());
+            System.out.println("Chest opened! Received " + quantity + "x " + item.name());
         }
     }
 

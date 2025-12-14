@@ -34,7 +34,10 @@ public final class GameConfig {
     public static final int SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
     public static final Path SAVE_PATH = Paths.get("savegame.dat");
 
-    public static final String SAVE_FILE_VERSION = "0.0.2"; // Updated to reflect new features
+    public static final String SAVE_FILE_VERSION = "0.0.2"; 
 
     public static final int WEATHER_CHANGE_INTERVAL = 30;
+    
+    // Daily Reward Cooldown in Game Hours
+    public static final double DAILY_REWARD_COOLDOWN = 24.0;
 }

@@ -12,7 +12,6 @@ import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
@@ -24,49 +23,48 @@ public class PetView {
     private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
 
-    private StackPane worldLayer; // Zoomable layer (BG + Pet + TV)
-    private StackPane uiLayer;    // Static layer (HUD + Controls + Modals)
+    private StackPane worldLayer; 
+    private StackPane uiLayer;   
 
     private PetAvatarView petAvatarView;
     private InventoryView inventoryView;
     private WorldView worldView;
     private HUDView hudView;
+    private DailyRewardView dailyRewardView;
     
-    // Daily Rewards
-    private StackPane dailyRewardModal;
 
     // Zoom State
     private boolean isGameMode = false;
-        private DailyRewardView dailyRewardView;
-        private static final double ZOOM_FACTOR = 3.0;
-        private static final double VIEW_OFFSET_X = 100.0;
-        private static final double TRANSITION_DURATION_MS = 800.0;
-    
-        public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
-            this.model = model;
-            this.controller = controller;
-            this.clock = clock;
-            this.weatherSystem = weatherSystem;
-            this.assetLoader = AssetLoader.getInstance();
-        }
-    
-        public Pane initializeUI() {
-            StackPane root = new StackPane();
-    
-            // 1. Create the Layers
-            worldLayer = new StackPane(); // This will scale up
-            uiLayer = new StackPane(); // This stays static
-            uiLayer.setPickOnBounds(false); // Allow clicking through empty UI space
-    
-            // 2. Initialize Components
-            worldView = new WorldView(clock, weatherSystem);
-            petAvatarView = new PetAvatarView(model, controller);
-            // Ensure the pet container allows clicks to pass through transparent areas (to hit the TV)
-            petAvatarView.setPickOnBounds(false);
-    
-            inventoryView = new InventoryView(model, controller);
-            hudView = new HUDView(model, controller, clock);
-            dailyRewardView = new DailyRewardView(model);
+    private static final double ZOOM_FACTOR = 3.0;
+    private static final double VIEW_OFFSET_X = 100.0;
+    private static final double TRANSITION_DURATION_MS = 800.0;
+
+    public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
+        this.model = model;
+        this.controller = controller;
+        this.clock = clock;
+        this.weatherSystem = weatherSystem;
+        this.assetLoader = AssetLoader.getInstance();
+    }
+
+    public Pane initializeUI() {
+        StackPane root = new StackPane();
+
+        // 1. Create the Layers
+        worldLayer = new StackPane(); 
+        uiLayer = new StackPane(); 
+        uiLayer.setPickOnBounds(false); 
+
+        // 2. Initialize Components
+        worldView = new WorldView(clock, weatherSystem);
+        petAvatarView = new PetAvatarView(model, controller);
+        petAvatarView.setPickOnBounds(false);
+
+        inventoryView = new InventoryView(model, controller);
+        hudView = new HUDView(model, controller, clock);
+        
+        // Pass controller here
+        dailyRewardView = new DailyRewardView(model, controller);
 
         // 3. Compose World
         worldView.getTvClickArea().setOnMouseClicked(_ -> enterMinigameMode());
@@ -75,15 +73,11 @@ public class PetView {
         // 4. Compose UI
         uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
         
-        // 5. Setup Daily Rewards (The new addition)
-        setupRewardTrigger(uiLayer);;
+        // 5. Setup Daily Rewards Trigger
+        setupRewardTrigger(uiLayer);
 
         // 6. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
-
-        // 7. Update Potion Timers in HUD (Simple implementation injection)
-        // Note: Realistically this should be in HUDView, but for this merge we attach here
-        // or ensure HUDView has labels. For now, we rely on the console/backend for potion effects.
 
         return root;
     }
@@ -97,6 +91,7 @@ public class PetView {
         StackPane.setMargin(btn, new Insets(20, 20, 0, 0));
         root.getChildren().add(btn);
     }
+
     // =============================================================
     // EXISTING ZOOM LOGIC
     // =============================================================

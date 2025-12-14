@@ -51,6 +51,10 @@ public class GameClock {
         this.TIME_SCALE = Math.max(0.1, Math.min(scale, 10.0)); // Clamp between 0.1x and 10x
     }
 
+    public double getTimeScale() {
+        return TIME_SCALE;
+    }
+
 
     private DayCycle calculateCycle() {
         // === STEP 1: NORMALIZE TIME ===
