@@ -48,25 +48,34 @@ public class AsleepState implements PetState {
         // Reward energy and happiness for each hour slept
         int hoursToReward = totalHoursSlept - pet.getHoursSleptRewardCount();
 
-        // If we suddenly have a huge backlog (e.g. > 10 hours) on the very first update,
-        // it likely means 'hoursSleptRewardCount' wasn't saved properly or clock skew occurred.
-        // We skip the reward to prevent massive spikes/cheating and just sync the counter.
+        // Safety check: Prevent massive spikes if logic desyncs or saves are loaded weirdly
         if (hoursToReward > 10 && pet.getHoursSleptRewardCount() == 0) {
             pet.setHoursSleptRewardCount(totalHoursSlept);
             System.out.println("Synced sleep reward counter (prevented massive load spike).");
         }
 
         if (hoursToReward > 0) {
-            int energyGain = hoursToReward * GameConfig.SLEEP_ENERGY_PER_HOUR;
-            int happinessGain = hoursToReward * GameConfig.SLEEP_HAPPINESS_PER_HOUR;
+            // Get multipliers from active potions
+            double energyMult = pet.getStatMultiplier(PetStats.STAT_ENERGY);
+            double happyMult = pet.getStatMultiplier(PetStats.STAT_HAPPINESS);
 
-            pet.getStats().modifyStat(PetStats.STAT_ENERGY, energyGain);
-            pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, happinessGain);
+            // Calculate base values
+            int baseEnergy = hoursToReward * GameConfig.SLEEP_ENERGY_PER_HOUR;
+            int baseHappy = hoursToReward * GameConfig.SLEEP_HAPPINESS_PER_HOUR;
+
+            // Apply multipliers
+            int finalEnergyGain = (int) (baseEnergy * energyMult);
+            int finalHappyGain = (int) (baseHappy * happyMult);
+
+            // Update Stats
+            pet.getStats().modifyStat(PetStats.STAT_ENERGY, finalEnergyGain);
+            pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, finalHappyGain);
 
             pet.setHoursSleptRewardCount(pet.getHoursSleptRewardCount() + hoursToReward);
 
-            System.out.println("Sleep Duration " + totalHoursSlept + "h: Energy +" + energyGain
-                    + ", Happiness +" + happinessGain);
+            System.out.println("Sleep (" + hoursToReward + "h): Energy +" + finalEnergyGain 
+                    + " (x" + energyMult + "), Happiness +" + finalHappyGain 
+                    + " (x" + happyMult + ")");
         }
 
         // Automatic wake up at 8:00 AM
