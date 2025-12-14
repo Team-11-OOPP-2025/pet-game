@@ -2,30 +2,19 @@ package com.eleven.pet.ui;
 
 import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.character.PetStats;
 import com.eleven.pet.character.ui.PetAvatarView;
 import com.eleven.pet.core.AssetLoader;
-import com.eleven.pet.daily_reward.Chest;
-import com.eleven.pet.daily_reward.ChestComponent;
+import com.eleven.pet.daily_reward.DailyRewardView;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ui.InventoryView;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 public class PetView {
@@ -48,45 +37,46 @@ public class PetView {
 
     // Zoom State
     private boolean isGameMode = false;
-    private static final double ZOOM_FACTOR = 3.0;
-    private static final double VIEW_OFFSET_X = 100.0;
-    private static final double TRANSITION_DURATION_MS = 800.0;
-
-    public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
-        this.model = model;
-        this.controller = controller;
-        this.clock = clock;
-        this.weatherSystem = weatherSystem;
-        this.assetLoader = AssetLoader.getInstance();
-    }
-
-    public Pane initializeUI() {
-        StackPane root = new StackPane();
-
-        // 1. Create the Layers
-        worldLayer = new StackPane(); // This will scale up
-        uiLayer = new StackPane(); // This stays static
-        uiLayer.setPickOnBounds(false); // Allow clicking through empty UI space
-
-        // 2. Initialize Components
-        worldView = new WorldView(clock, weatherSystem);
-        petAvatarView = new PetAvatarView(model, controller);
-        // Ensure the pet container allows clicks to pass through transparent areas (to hit the TV)
-        petAvatarView.setPickOnBounds(false);
-
-        inventoryView = new InventoryView(model, controller);
-        hudView = new HUDView(model, controller, clock);
+        private DailyRewardView dailyRewardView;
+        private static final double ZOOM_FACTOR = 3.0;
+        private static final double VIEW_OFFSET_X = 100.0;
+        private static final double TRANSITION_DURATION_MS = 800.0;
+    
+        public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
+            this.model = model;
+            this.controller = controller;
+            this.clock = clock;
+            this.weatherSystem = weatherSystem;
+            this.assetLoader = AssetLoader.getInstance();
+        }
+    
+        public Pane initializeUI() {
+            StackPane root = new StackPane();
+    
+            // 1. Create the Layers
+            worldLayer = new StackPane(); // This will scale up
+            uiLayer = new StackPane(); // This stays static
+            uiLayer.setPickOnBounds(false); // Allow clicking through empty UI space
+    
+            // 2. Initialize Components
+            worldView = new WorldView(clock, weatherSystem);
+            petAvatarView = new PetAvatarView(model, controller);
+            // Ensure the pet container allows clicks to pass through transparent areas (to hit the TV)
+            petAvatarView.setPickOnBounds(false);
+    
+            inventoryView = new InventoryView(model, controller);
+            hudView = new HUDView(model, controller, clock);
+            dailyRewardView = new DailyRewardView(model);
 
         // 3. Compose World
         worldView.getTvClickArea().setOnMouseClicked(_ -> enterMinigameMode());
         worldLayer.getChildren().addAll(worldView, petAvatarView);
 
         // 4. Compose UI
-        uiLayer.getChildren().addAll(hudView, inventoryView);
+        uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
         
         // 5. Setup Daily Rewards (The new addition)
-        setupDailyRewardUI(uiLayer);
-        setupRewardTrigger(uiLayer);
+        setupRewardTrigger(uiLayer);;
 
         // 6. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
@@ -98,99 +88,15 @@ public class PetView {
         return root;
     }
 
-    // =============================================================
-    // DAILY REWARD SYSTEM INTEGRATION
-    // =============================================================
-
-    private void setupDailyRewardUI(StackPane root) {
-        dailyRewardModal = new StackPane();
-        dailyRewardModal.setVisible(false); // Hidden by default
-
-        // Backdrop
-        Region backdrop = new Region();
-        backdrop.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-        backdrop.setOnMouseClicked(e -> toggleDailyReward(false));
-
-        // Main Panel
-        VBox panel = new VBox(20);
-        panel.setAlignment(Pos.CENTER);
-        panel.setMaxSize(800, 400);
-        panel.setStyle("-fx-background-color: #fdf5e6; -fx-background-radius: 20; -fx-border-color: #8b4513; -fx-border-width: 5; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);");
-
-        Label title = new Label("DAILY REWARDS");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        title.setTextFill(Color.web("#8b4513"));
-
-        Label subTitle = new Label("Select a chest to claim your prize!");
-        subTitle.setFont(Font.font("Arial", 16));
-        subTitle.setTextFill(Color.web("#555"));
-
-        // Row of 5 Chests
-        HBox chestRow = new HBox(30);
-        chestRow.setAlignment(Pos.CENTER);
-
-        for (int i = 0; i < 5; i++) {
-            Chest chestModel = new Chest(); 
-            ChestComponent visualChest = new ChestComponent(chestModel);
-            visualChest.setScaleX(0.9);
-            visualChest.setScaleY(0.9);
-
-            visualChest.setOnOpen(() -> {
-                chestModel.open(model);
-            });
-
-            chestRow.getChildren().add(visualChest);
-        }
-
-        Button closeBtn = new Button("CLOSE");
-        closeBtn.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        closeBtn.setStyle("-fx-background-color: #8b4513; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 20; -fx-padding: 10 30;");
-        closeBtn.setOnAction(e -> toggleDailyReward(false));
-
-        panel.getChildren().addAll(title, subTitle, chestRow, closeBtn);
-        dailyRewardModal.getChildren().addAll(backdrop, panel);
-        
-        root.getChildren().add(dailyRewardModal);
-    }
-
     private void setupRewardTrigger(StackPane root) {
-        Image iconImg = assetLoader.getImage("chest/Chest_Icon"); // Ensure you have an icon or it uses fallback
-        
-        // If image loading fails (returns placeholder), use a styled button
-        // Logic checks if asset exists essentially by checking if we get the generic placeholder? 
-        // AssetLoader returns a placeholder if missing. Let's just assume we use a button if image looks small/placeholder-y or just use button for now to be safe.
-        
         Button btn = new Button("🎁 REWARDS");
         btn.setStyle("-fx-background-color: gold; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-padding: 10 20; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 20;");
-        btn.setOnAction(e -> toggleDailyReward(true));
+        btn.setOnAction(e -> dailyRewardView.toggle(true));
         
         StackPane.setAlignment(btn, Pos.TOP_RIGHT);
         StackPane.setMargin(btn, new Insets(20, 20, 0, 0));
         root.getChildren().add(btn);
     }
-
-    private void toggleDailyReward(boolean show) {
-        if (show) {
-            dailyRewardModal.setVisible(true);
-            dailyRewardModal.setOpacity(0);
-            
-            FadeTransition ft = new FadeTransition(Duration.millis(300), dailyRewardModal);
-            ft.setToValue(1.0);
-            
-            ScaleTransition st = new ScaleTransition(Duration.millis(300), dailyRewardModal.getChildren().get(1)); 
-            st.setFromX(0.8); st.setFromY(0.8);
-            st.setToX(1.0); st.setToY(1.0);
-
-            ParallelTransition pt = new ParallelTransition(ft, st);
-            pt.play();
-        } else {
-            FadeTransition ft = new FadeTransition(Duration.millis(200), dailyRewardModal);
-            ft.setToValue(0);
-            ft.setOnFinished(e -> dailyRewardModal.setVisible(false));
-            ft.play();
-        }
-    }
-
     // =============================================================
     // EXISTING ZOOM LOGIC
     // =============================================================
