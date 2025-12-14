@@ -12,10 +12,10 @@ public class ItemRegistry {
     // Static block to register default items
     static {
         // Register default items here
-        ItemRegistry.register(new FoodItem(0, "Apple", 10));
-        ItemRegistry.register(new FoodItem(1, "Banana", 15));
-        ItemRegistry.register(new FoodItem(2, "Pear", 5));
-        ItemRegistry.register(new FoodItem(3, "Grape", -15));
+        ItemRegistry.register(new FoodItem(0, "Apple", "apple", 10));
+        ItemRegistry.register(new FoodItem(1, "Banana", "banana", 15));
+        ItemRegistry.register(new FoodItem(2, "Pear", "pear", 5));
+        ItemRegistry.register(new FoodItem(3, "Grape", "grape", -15));
     }
 
     /**

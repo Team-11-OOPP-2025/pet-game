@@ -7,6 +7,8 @@ public interface Item {
 
     String name();
 
+    String imageFileName();
+
     String description();
 
     int statsRestore();

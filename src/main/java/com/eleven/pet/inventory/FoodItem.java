@@ -3,7 +3,7 @@ package com.eleven.pet.inventory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 
-public record FoodItem(int id, String name, int statsRestore) implements Item {
+public record FoodItem(int id, String name, String imageFileName, int statsRestore) implements Item {
 
     @Override
     public String description() {

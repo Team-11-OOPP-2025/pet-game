@@ -129,8 +129,7 @@ public class InventoryView extends StackPane {
         slot.setStyle(STYLE_ITEM_SLOT);
         slot.setCursor(Cursor.HAND);
 
-        String lowerName = item.name().toLowerCase();
-        Image itemImage = assetLoader.getImage("items/" + lowerName);
+        Image itemImage = assetLoader.getImage("items/" + item.imageFileName());
 
         ImageView iv = new ImageView(itemImage);
         iv.setFitWidth(70);
