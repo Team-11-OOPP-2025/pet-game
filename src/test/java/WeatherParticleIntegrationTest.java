@@ -9,8 +9,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration tests for the mapping between {@link WeatherState} implementations
+ * and their corresponding {@link ParticleEffect} visualizations.
+ */
 public class WeatherParticleIntegrationTest {
 
+    /**
+     * Ensures {@link RainyState} produces a {@link RainParticleEffect}
+     * with the expected default intensity.
+     */
     @Test
     void testRainyStateReturnsRainEffect() {
         WeatherState rainyState = new RainyState();
@@ -26,6 +34,10 @@ public class WeatherParticleIntegrationTest {
             "Rain effect should have intensity of 300");
     }
 
+    /**
+     * Ensures {@link SunnyState} produces a {@link NoParticleEffect},
+     * meaning no visible particles are rendered.
+     */
     @Test
     void testSunnyStateReturnsNoEffect() {
         WeatherState sunnyState = new SunnyState();
@@ -37,6 +49,10 @@ public class WeatherParticleIntegrationTest {
             "Sunny state should return NoParticleEffect (no particles)");
     }
 
+    /**
+     * Ensures {@link CloudyState} produces a {@link NoParticleEffect},
+     * meaning cloudy weather does not emit particles.
+     */
     @Test
     void testCloudyStateReturnsNoEffect() {
         WeatherState cloudyState = new CloudyState();
@@ -48,6 +64,10 @@ public class WeatherParticleIntegrationTest {
             "Cloudy state should return NoParticleEffect (no particles)");
     }
 
+    /**
+     * Sanity check that all known {@link WeatherState} implementations
+     * return a non-{@code null} {@link ParticleEffect}.
+     */
     @Test
     void testAllWeatherStatesHaveParticleEffects() {
         WeatherState[] states = {
@@ -63,6 +83,10 @@ public class WeatherParticleIntegrationTest {
         }
     }
 
+    /**
+     * Verifies that {@link RainParticleEffect} correctly exposes the
+     * configured rain intensity used by the renderer.
+     */
     @Test
     void testRainEffectIntensity() {
         RainParticleEffect lightRain = new RainParticleEffect(25);

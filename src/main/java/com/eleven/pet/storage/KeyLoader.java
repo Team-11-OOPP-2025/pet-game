@@ -7,16 +7,24 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
 /**
- * Utility for loading encryption keys from environment variables.
+ * Utility class for obtaining {@link javax.crypto.SecretKey} instances used for
+ * encrypting and decrypting save data.
+ * <p>
+ * In production, a Base64-encoded key is expected to be provided via a system
+ * property. For local development a deterministic device-specific key can be
+ * generated instead.
  */
 public class KeyLoader {
     private final static String ENV_KEY_NAME = "ENCRYPTION.KEY";
 
     /**
-     * Load the encryption key from environment variable.
+     * Load the AES encryption key from a system property.
+     * <p>
+     * The key must be Base64-encoded and stored under the property name
+     * {@value ENV_KEY_NAME}.
      *
-     * @return SecretKey instance
-     * @throws GameException if the key is not found or invalid
+     * @return a {@link SecretKey} suitable for AES encryption
+     * @throws GameException if the property is missing or cannot be decoded
      */
     public static SecretKey loadKey() throws GameException {
         String keyString = System.getProperty(ENV_KEY_NAME);
@@ -35,12 +43,14 @@ public class KeyLoader {
     }
 
     /**
-     * Generate a deterministic, device-specific dev key.
-     * Same device = same key, different devices = different keys.
-     * WARNING: Not secure, only for development use!
+     * Generate a deterministic, device-specific development key.
+     * <p>
+     * The same environment will always produce the same key, but different
+     * devices should produce different keys. This is intended only for local
+     * development where a real secret-management solution is not available.
      *
-     * @return SecretKey instance
-     * @throws RuntimeException if key generation fails
+     * @return a pseudo-random {@link SecretKey} derived from local machine data
+     * @throws RuntimeException if key derivation fails for any reason
      */
     public static SecretKey generateDevKey() {
         try {

@@ -3,7 +3,10 @@ package com.eleven.pet.ui;
 import javafx.scene.paint.Color;
 
 /**
- * centralized constants for UI layout, dimensions, and styling.
+ * Centralized constants for UI layout, dimensions, colors and styling.
+ * <p>
+ * All view classes should reference these constants instead of hard-coding
+ * pixel values or color literals to keep the UI consistent.
  */
 public class ViewConstants {
     // Reference Resolution (The design resolution of the background art)

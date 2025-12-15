@@ -27,11 +27,25 @@ import javafx.util.Duration;
 
 import static com.eleven.pet.ui.ViewConstants.*;
 
+/**
+ * JavaFX view responsible for rendering and animating the inventory overlay.
+ * <p>
+ * It observes {@link PetModel}'s inventory and displays each item as an
+ * interactive slot that can be clicked to trigger consume actions on the
+ * {@link PetController}. The view listens to the controller's
+ * {@code inventoryOpenProperty} to show and hide itself with a fade animation.
+ */
 public class InventoryView extends StackPane {
     private final PetModel model;
     private final PetController controller;
     private final AssetLoader assetLoader;
 
+    /**
+     * Creates a new {@code InventoryView} bound to the given model and controller.
+     *
+     * @param model      the pet model that exposes the observable inventory
+     * @param controller the controller that handles inventory open/close and item consumption
+     */
     public InventoryView(PetModel model, PetController controller) {
         this.model = model;
         this.controller = controller;
@@ -41,6 +55,10 @@ public class InventoryView extends StackPane {
         controller.inventoryOpenProperty().addListener((_, _, isOpen) -> toggleInventory(isOpen));
     }
 
+    /**
+     * Builds the inventory overlay UI hierarchy and configures layout,
+     * styling, and basic interactions.
+     */
     private void setupInventoryUI() {
         setVisible(false);
 
@@ -78,9 +96,10 @@ public class InventoryView extends StackPane {
 
         // Close Button
         Button closeBtn = new Button("CLOSE");
-        closeBtn.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
-        closeBtn.setStyle(STYLE_CLOSE_BTN);
-        closeBtn.setCursor(Cursor.HAND);
+        // Apply CSS classes
+        closeBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
+        // closeBtn.setStyle(STYLE_CLOSE_BTN); // Removed old style
+        
         closeBtn.setOnAction(_ -> controller.setInventoryOpen(false));
 
         inventoryPanel.getChildren().addAll(title, scroll, closeBtn);
@@ -92,6 +111,12 @@ public class InventoryView extends StackPane {
         setMargin(inventoryPanel, new Insets(0, 0, 150, 20));
     }
 
+    /**
+     * Populates the initial grid of item slots based on the current inventory
+     * contents, only adding items that have a quantity greater than zero.
+     *
+     * @param itemGrid the {@link TilePane} that will hold the item slots
+     */
     private void populateInitialItems(TilePane itemGrid) {
         model.getInventory().getItems().forEach((id, qtyProp) -> {
             if (qtyProp.get() > 0) {
@@ -105,6 +130,12 @@ public class InventoryView extends StackPane {
         });
     }
 
+    /**
+     * Registers listeners on the inventory map so that new item slots are
+     * created whenever a new item entry appears in the inventory.
+     *
+     * @param itemGrid the {@link TilePane} that will receive newly created slots
+     */
     private void listenForInventoryChanges(TilePane itemGrid) {
         model.getInventory().getItems().addListener((MapChangeListener<Integer, IntegerProperty>) change -> {
             if (change.wasAdded()) {
@@ -123,6 +154,14 @@ public class InventoryView extends StackPane {
         });
     }
 
+    /**
+     * Creates a single item slot node for the given {@link Item}, including
+     * image, name, quantity badge, tooltip, and click handler to consume it.
+     * The slot automatically removes itself when the bound quantity reaches zero.
+     *
+     * @param item the inventory item to represent
+     * @return a {@link StackPane} representing the visual slot for the item
+     */
     private StackPane createItemSlot(Item item) {
         StackPane slot = new StackPane();
         slot.setPrefSize(70, 70);
@@ -178,6 +217,11 @@ public class InventoryView extends StackPane {
         return slot;
     }
 
+    /**
+     * Plays a short scale animation to visually acknowledge a click on the slot.
+     *
+     * @param slot the slot node that should be animated
+     */
     private void animateClick(StackPane slot) {
         ScaleTransition st = new ScaleTransition(Duration.millis(100), slot);
         st.setFromX(1.0);
@@ -189,6 +233,11 @@ public class InventoryView extends StackPane {
         st.play();
     }
 
+    /**
+     * Shows or hides the inventory overlay with a fade animation.
+     *
+     * @param show {@code true} to fade the inventory in, {@code false} to fade it out
+     */
     public void toggleInventory(boolean show) {
         if (show) {
             setVisible(true);

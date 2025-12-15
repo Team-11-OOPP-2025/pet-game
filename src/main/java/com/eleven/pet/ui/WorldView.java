@@ -19,6 +19,12 @@ import javafx.scene.text.FontWeight;
 
 import static com.eleven.pet.ui.ViewConstants.*;
 
+/**
+ * Main world background view.
+ * <p>
+ * Renders the room background, window particle effects, TV interaction area,
+ * and a background clock synchronized with {@link GameClock} and {@link WeatherSystem}.
+ */
 public class WorldView extends StackPane {
 
     // Layout Constants (Relative to 624x351)
@@ -50,6 +56,14 @@ public class WorldView extends StackPane {
 
     private ParticleEffect currentWeatherEffect;
 
+    /**
+     * Constructs a new {@code WorldView}.
+     * <p>
+     * Initializes the background, particle effects, TV interaction area, and clock.
+     *
+     * @param clock         the {@link GameClock} instance to synchronize the clock and background
+     * @param weatherSystem the {@link WeatherSystem} instance to render weather effects
+     */
     public WorldView(GameClock clock, WeatherSystem weatherSystem) {
         this.clock = clock;
         this.assetLoader = AssetLoader.getInstance();
@@ -193,6 +207,13 @@ public class WorldView extends StackPane {
         currentWeatherEffect = newWeatherEffect;
     }
 
+    /**
+     * Returns the clickable TV area overlay.
+     * <p>
+     * The caller can attach mouse handlers to trigger minigames or other actions.
+     *
+     * @return the {@link StackPane} representing the TV interaction area
+     */
     public StackPane getTvClickArea() {
         return tvClickArea;
     }

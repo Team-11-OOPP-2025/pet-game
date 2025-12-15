@@ -20,7 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for PetController's autosave functionality.
+ * Tests for {@link PetController}, focusing on autosave, shutdown behavior,
+ * and interaction with {@link PersistenceService}.
  */
 public class PetControllerTest {
 
@@ -44,7 +45,8 @@ public class PetControllerTest {
     }
 
     /**
-     * Mock persistence service that tracks save calls.
+     * Mock persistence service that tracks how many times {@link #save(PetModel)} is called
+     * and can optionally throw to simulate save failures.
      */
     private static class MockPersistenceService extends PersistenceService {
         private final AtomicInteger saveCallCount = new AtomicInteger(0);
@@ -54,6 +56,10 @@ public class PetControllerTest {
             super(new NoOpEncryptionService(), savePath);
         }
 
+        /**
+         * Increments the save call counter and optionally throws a {@link GameException}
+         * to simulate a persistence error before delegating to the real implementation.
+         */
         @Override
         public void save(PetModel model) throws GameException {
             saveCallCount.incrementAndGet();
@@ -63,10 +69,18 @@ public class PetControllerTest {
             super.save(model);
         }
 
+        /**
+         * @return the number of times {@link #save(PetModel)} has been invoked.
+         */
         public int getSaveCallCount() {
             return saveCallCount.get();
         }
 
+        /**
+         * Enables or disables throwing a {@link GameException} during save.
+         *
+         * @param throwOnSave whether saves should fail with an exception
+         */
         public void setThrowOnSave(boolean throwOnSave) {
             this.throwOnSave = throwOnSave;
         }
@@ -79,6 +93,10 @@ public class PetControllerTest {
     @TempDir
     Path tempDir;
 
+    /**
+     * Sets up a fresh {@link PetModel}, {@link GameClock}, and mock persistence
+     * before each test, and registers the basic pet states.
+     */
     @BeforeEach
     void setUp() {
         // Manually register states for testing
@@ -91,6 +109,10 @@ public class PetControllerTest {
         persistence = new MockPersistenceService(tempDir.resolve("test-save.dat"));
     }
 
+    /**
+     * Ensures that calling {@link PetController#stopAutosave()} before autosave
+     * has been initialized does not throw an exception.
+     */
     @Test
     void testStopAutosaveWhenTimerNotInitialized() {
         // Stopping autosave before initialization should not throw
@@ -98,6 +120,9 @@ public class PetControllerTest {
         assertDoesNotThrow(controller::stopAutosave);
     }
 
+    /**
+     * Verifies that {@link PetController#shutdown()} triggers a single save operation.
+     */
     @Test
     void testShutdownPerformsSave() {
         PetController controller = new PetController(model, clock, null, persistence);
@@ -108,6 +133,10 @@ public class PetControllerTest {
         assertEquals(1, persistence.getSaveCallCount(), "Shutdown should trigger one save");
     }
 
+    /**
+     * Verifies that {@link PetController#shutdown()} swallows save errors and
+     * does not propagate {@link GameException} thrown by persistence.
+     */
     @Test
     void testShutdownHandlesSaveError() {
         PetController controller = new PetController(model, clock, null, persistence);
@@ -117,6 +146,10 @@ public class PetControllerTest {
         assertDoesNotThrow(controller::shutdown);
     }
 
+    /**
+     * Ensures that multiple calls to {@link PetController#shutdown()} are idempotent
+     * and only cause a single save.
+     */
     @Test
     void testMultipleShutdownCallsAreIdempotent() {
         PetController controller = new PetController(model, clock, null, persistence);
@@ -128,6 +161,10 @@ public class PetControllerTest {
         assertEquals(1, persistence.getSaveCallCount(), "Multiple shutdowns should only save once");
     }
 
+    /**
+     * Verifies that {@link PetController} can be created with {@code null} weather
+     * and clock dependencies without failing.
+     */
     @Test
     void testControllerCreationWithNullComponents() {
         // Controller should be able to handle null weather and clock
@@ -135,6 +172,10 @@ public class PetControllerTest {
         assertNotNull(controller);
     }
 
+    /**
+     * Ensures that shutdown both stops autosave (if running) and performs a save,
+     * and that stopping autosave afterwards is safe.
+     */
     @Test
     void testShutdownStopsAutosaveAndSaves() {
         PetController controller = new PetController(model, clock, null, persistence);

@@ -25,9 +25,17 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import java.util.Random;
 
+/**
+ * Visual JavaFX component that represents a single reward chest.
+ * <p>
+ * It is responsible for playing the open animation, spawning particles,
+ * and briefly displaying the rewarded item when opened. Game logic
+ * callbacks are delegated via {@link #setOnOpen(Runnable)}.
+ */
 public class ChestComponent extends StackPane {
 
     // --- Configuration Constants ---
+    // These should match the single frame size
     private static final int SHEET_WIDTH = 150;
     private static final int SHEET_HEIGHT = 118;
     private static final int GRID_COLS = 1;
@@ -46,24 +54,33 @@ public class ChestComponent extends StackPane {
     private Runnable onOpenCallback; // Optional: Hook for your main view
     private Chest chestModel; // Add chest model reference
 
+    /**
+     * Creates a new chest component bound to the given chest model.
+     *
+     * @param chest the chest model that describes the contained reward
+     */
     public ChestComponent(Chest chest) {
         this.chestModel = chest;
         // 1. Load Image
         Image sheetChest = AssetLoader.getInstance().getImage("chest/Chest");
         
         // 2. Calculate Frame Sizes
+        // Since GRID_COLS = 1, the frames are vertical.
+        // We must divide total height by number of rows (TOTAL_FRAMES)
         int frameW = (int) sheetChest.getWidth() / GRID_COLS;
-        int frameH = (int) sheetChest.getHeight(); // Assuming 1 row
+        int frameH = (int) sheetChest.getHeight() / TOTAL_FRAMES; 
 
         // 3. Setup Layout
         this.setAlignment(Pos.BOTTOM_CENTER);
         
         // 4. Setup Sprite Logic (Your Class)
-        animLogic = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, TOTAL_FRAMES, FRAME_DURATION);
+        // Pass the calculated single frame dimensions
+        animLogic = new SpriteSheetAnimation(frameW, frameH, GRID_COLS, TOTAL_FRAMES, FRAME_DURATION);
         animLogic.setLoop(false);
 
         // 5. Setup JavaFX ImageView
         spriteView = new ImageView(sheetChest);
+        // Fix: Set viewport to ONLY the first frame initially
         spriteView.setViewport(new Rectangle2D(0, 0, frameW, frameH));
         spriteView.setFitWidth(frameW * SCALE);
         spriteView.setFitHeight(frameH * SCALE);
@@ -85,12 +102,20 @@ public class ChestComponent extends StackPane {
     }
 
     /**
-     * Optional: Set code to run when the chest opens (e.g., give loot)
+     * Registers an action to be executed when the chest is opened.
+     * <p>
+     * Typical usage is to claim the reward in the controller or model.
+     *
+     * @param action callback invoked once when the chest is successfully opened
      */
     public void setOnOpen(Runnable action) {
         this.onOpenCallback = action;
     }
 
+    /**
+     * Starts the internal {@link AnimationTimer} that advances the
+     * spritesheet animation and updates the chest's viewport each frame.
+     */
     private void startGameLoop() {
         gameLoop = new AnimationTimer() {
             private long lastTime = 0;
@@ -104,10 +129,12 @@ public class ChestComponent extends StackPane {
                 // Update Logic
                 animLogic.update(deltaTime);
                 
-                // Update Visuals
-                int x = animLogic.getFrameX();
-                int y = animLogic.getFrameY();
-                spriteView.setViewport(new Rectangle2D(x, y, animLogic.getFrameWidth(), animLogic.getFrameHeight()));
+                // Update Visuals (Only if playing to save resources)
+                if (animLogic.isPlaying()) {
+                    int x = animLogic.getFrameX();
+                    int y = animLogic.getFrameY();
+                    spriteView.setViewport(new Rectangle2D(x, y, animLogic.getFrameWidth(), animLogic.getFrameHeight()));
+                }
 
                 lastTime = now;
             }
@@ -115,18 +142,25 @@ public class ChestComponent extends StackPane {
         gameLoop.start();
     }
 
+    /**
+     * Wires mouse hover and click handlers for the chest:
+     * <ul>
+     * <li>Hover: Move up (translateY) and show hand cursor if not opened.</li>
+     * <li>Click: triggers {@link #performOpen()} if not opened.</li>
+     * </ul>
+     */
     private void setupInteractions() {
         // Hover
         this.setOnMouseEntered(e -> {
             if (!isOpened) {
-                this.setScaleX(1.1);
-                this.setScaleY(1.1);
+                // Use Translation instead of Scale to avoid pixel distortion and size conflicts
+                this.setTranslateY(-10); 
                 this.setCursor(Cursor.HAND);
             }
         });
         this.setOnMouseExited(e -> {
-            this.setScaleX(1.0);
-            this.setScaleY(1.0);
+            // Reset position
+            this.setTranslateY(0);
             this.setCursor(Cursor.DEFAULT);
         });
 
@@ -138,9 +172,17 @@ public class ChestComponent extends StackPane {
         });
     }
 
+    /**
+     * Handles the visual and logical flow when the chest is opened.
+     * <p>
+     * Plays the chest animation, spawns particles, invokes the
+     * on-open callback, and shows the rewarded item.
+     * This method is a no-op if the model is already opened.
+     */
     private void performOpen() {
         if (chestModel != null && !chestModel.isOpened()) {
             isOpened = true;
+            this.setTranslateY(0); // Reset hover elevation
             animLogic.play(); // Play the spritesheet animation
             spawnParticles(); // Fire particles
             
@@ -154,6 +196,12 @@ public class ChestComponent extends StackPane {
         }
     }
 
+    /**
+     * Visually displays the rewarded item above the chest using a
+     * short float-up, scale, and fade animation.
+     * <p>
+     * If the underlying chest has no item, nothing is shown.
+     */
     private void showItemReward() {
         Item item = chestModel.getItem();
         if (item == null) return;
@@ -202,6 +250,10 @@ public class ChestComponent extends StackPane {
         seq.play();
     }
 
+    /**
+     * Spawns a burst of gold particle circles that move outward and fade,
+     * used to give visual feedback when the chest is opened.
+     */
     private void spawnParticles() {
         Random rand = new Random();
         double w = spriteView.getFitWidth();

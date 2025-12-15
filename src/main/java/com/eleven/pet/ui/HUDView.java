@@ -21,6 +21,12 @@ import javafx.scene.text.Text;
 
 import static com.eleven.pet.ui.ViewConstants.*;
 
+/**
+ * Heads-up display overlay for the pet screen.
+ * <p>
+ * Shows pet stats (happiness, hunger, energy, cleanliness), the main clock,
+ * and action buttons (feed, clean, sleep, play) bound to {@link PetController}.
+ */
 public class HUDView extends StackPane {
 
     // Layout Constants
@@ -48,8 +54,15 @@ public class HUDView extends StackPane {
     private Rectangle energyFill;
     private Rectangle cleanFill;
     private Rectangle happinessFill;
-    private StackPane sleepBtnContainer;
+    private Button sleepBtn; // Changed to Button
 
+    /**
+     * Creates a new HUD view for the given pet and clock.
+     *
+     * @param model      pet model providing stat values
+     * @param controller controller invoked by user actions
+     * @param clock      game clock used to update the displayed time
+     */
     public HUDView(PetModel model, PetController controller, GameClock clock) {
         this.model = model;
         this.controller = controller;
@@ -64,7 +77,6 @@ public class HUDView extends StackPane {
     }
 
     private void setupHUDLayer() {
-        // TODO: Decide if we want labels on the bars
         // Create the Bars
         StackPane happyBar = createStatBar(null, "😃", COLOR_HAPPINESS, BAR_WIDTH_LARGE, BAR_HEIGHT_LARGE);
         happinessFill = (Rectangle) happyBar.getChildren().get(1);
@@ -92,19 +104,18 @@ public class HUDView extends StackPane {
     }
 
     private void setupControlLayer() {
-        StackPane feedBtnContainer = createActionButton("FEED", COLOR_BTN_PRIMARY, 120, () -> controller.setInventoryOpen(true));
-        addToLayout(feedBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
+        Button feedBtn = createActionButton("FEED", "pixel-btn-primary", 120, () -> controller.setInventoryOpen(true));
+        addToLayout(feedBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
 
-        StackPane cleanBtnContainer = createActionButton("CLEAN", COLOR_BTN_PRIMARY, 120, controller::handleCleanAction);
-        addToLayout(cleanBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
+        Button cleanBtn = createActionButton("CLEAN", "pixel-btn-primary", 120, controller::handleCleanAction);
+        addToLayout(cleanBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
 
-        sleepBtnContainer = createActionButton("SLEEP", COLOR_BTN_SLEEP, 120, controller::handleSleepAction);
-        ((Button) sleepBtnContainer.getChildren().get(1)).setTextFill(COLOR_BTN_TEXT_LIGHT);
-        sleepBtnContainer.setVisible(false);
-        addToLayout(sleepBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_SLEEP);
+        sleepBtn = createActionButton("SLEEP", "pixel-btn-sleep", 120, controller::handleSleepAction);
+        sleepBtn.setVisible(false);
+        addToLayout(sleepBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_SLEEP);
 
-        StackPane playBtnContainer = createActionButton("PLAY", COLOR_BTN_PRIMARY, 140, controller::handlePlayAction);
-        addToLayout(playBtnContainer, Pos.BOTTOM_RIGHT, MARGIN_BTN_PLAY);
+        Button playBtn = createActionButton("PLAY", "pixel-btn-primary", 140, controller::handlePlayAction);
+        addToLayout(playBtn, Pos.BOTTOM_RIGHT, MARGIN_BTN_PLAY);
     }
 
     private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
@@ -143,26 +154,16 @@ public class HUDView extends StackPane {
         return container;
     }
 
-    private StackPane createActionButton(String text, Color bg, double width, Runnable action) {
-        StackPane container = new StackPane();
-        container.setMaxSize(width, 50);
-
-        Rectangle border = new Rectangle(width, 50, bg);
-        border.setStroke(Color.BLACK);
-        border.setStrokeWidth(3);
-
+    // Refactored to return a styled Button directly
+    private Button createActionButton(String text, String cssClass, double width, Runnable action) {
         Button btn = new Button(text);
-        btn.setPrefSize(width, 50);
-        btn.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 16));
-        btn.setTextFill(bg.equals(Color.WHITE) ? COLOR_BTN_TEXT_DARK : COLOR_BTN_TEXT_LIGHT);
-        btn.setStyle("-fx-background-color: transparent;");
+        btn.setPrefWidth(width);
+        btn.getStyleClass().addAll("pixel-btn", cssClass);
 
         if (controller != null) {
             btn.setOnAction(_ -> action.run());
         }
-
-        container.getChildren().addAll(border, btn);
-        return container;
+        return btn;
     }
 
     private Label createClockWidget() {
@@ -213,7 +214,7 @@ public class HUDView extends StackPane {
             double t = time.doubleValue();
             updateClockLabel(t);
             boolean canSleep = controller.isSleepAllowed();
-            sleepBtnContainer.setVisible(canSleep);
+            sleepBtn.setVisible(canSleep);
         });
 
         updateClockLabel(clock.getGameTime());
@@ -227,7 +228,7 @@ public class HUDView extends StackPane {
     }
 
     private void toggleSleepButton(boolean isSleeping) {
-        sleepBtnContainer.setDisable(isSleeping);
-        sleepBtnContainer.setOpacity(isSleeping ? 0.5 : 1.0);
+        sleepBtn.setDisable(isSleeping);
+        sleepBtn.setOpacity(isSleeping ? 0.5 : 1.0);
     }
 }

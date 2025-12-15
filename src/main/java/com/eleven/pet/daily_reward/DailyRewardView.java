@@ -2,8 +2,6 @@ package com.eleven.pet.daily_reward;
 
 import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.daily_reward.Chest;
-import com.eleven.pet.daily_reward.ChestComponent;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -22,6 +20,14 @@ import javafx.util.Duration;
 
 import java.util.List;
 
+/**
+ * JavaFX view that displays the daily reward screen.
+ * <p>
+ * It shows a set of chests that can be opened when the daily reward
+ * is available and a cooldown timer when it is not.
+ * The view talks to {@link PetModel} for state and {@link PetController}
+ * for reward generation/claiming.
+ */
 public class DailyRewardView extends StackPane {
     private final PetModel model;
     private final PetController controller;
@@ -34,12 +40,22 @@ public class DailyRewardView extends StackPane {
     // Flag to track if we need to regenerate chests when the timer hits 0
     private boolean needsRefresh = false;
 
+    /**
+     * Creates a new daily reward view for the given pet.
+     *
+     * @param model       the pet model that exposes reward cooldown state
+     * @param controller  the controller that generates and claims rewards
+     */
     public DailyRewardView(PetModel model, PetController controller) {
         this.model = model;
         this.controller = controller;
         initializeUI();
     }
 
+    /**
+     * Builds and wires all JavaFX nodes of the daily reward panel.
+     * Called once from the constructor.
+     */
     private void initializeUI() {
         this.setVisible(false); // Hidden by default
 
@@ -75,8 +91,9 @@ public class DailyRewardView extends StackPane {
         refreshChests();
 
         Button closeBtn = new Button("CLOSE");
-        closeBtn.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        closeBtn.setStyle("-fx-background-color: #8b4513; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 20; -fx-padding: 10 30;");
+        // Apply CSS classes
+        closeBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
+        
         closeBtn.setOnAction(e -> toggle(false));
 
         panel.getChildren().addAll(title, subTitle, timerLabel, chestRow, closeBtn);
@@ -86,7 +103,10 @@ public class DailyRewardView extends StackPane {
     }
     
     /**
-     * asks Controller for new chests and builds the UI components.
+     * Asks the {@link PetController} for new daily reward chest options
+     * and rebuilds the chest row UI based on the returned list.
+     * <p>
+     * Existing chest nodes are cleared before new ones are created.
      */
     private void refreshChests() {
         chestRow.getChildren().clear();
@@ -96,8 +116,9 @@ public class DailyRewardView extends StackPane {
         
         for (Chest chestModel : chests) {
             ChestComponent visualChest = new ChestComponent(chestModel);
-            visualChest.setScaleX(0.9);
-            visualChest.setScaleY(0.9);
+            // Removed fixed scaling that was conflicting with animation logic
+            // visualChest.setScaleX(0.9); 
+            // visualChest.setScaleY(0.9);
 
             visualChest.setOnOpen(() -> {
                 // Controller Logic: Check availability
@@ -116,6 +137,11 @@ public class DailyRewardView extends StackPane {
         }
     }
 
+    /**
+     * Creates the {@link AnimationTimer} that periodically calls
+     * {@link #updateState()} to refresh the timer label and chest state.
+     * The timer is started/stopped in {@link #toggle(boolean)}.
+     */
     private void setupTimer() {
         timer = new AnimationTimer() {
             @Override
@@ -125,6 +151,12 @@ public class DailyRewardView extends StackPane {
         };
     }
 
+    /**
+     * Shows or hides the daily reward panel with a short animation.
+     *
+     * @param show {@code true} to show and start the internal timer,
+     * {@code false} to hide and stop the timer
+     */
     public void toggle(boolean show) {
         if (show) {
             updateState();
@@ -154,6 +186,14 @@ public class DailyRewardView extends StackPane {
         }
     }
 
+    /**
+     * Synchronizes the UI with the current reward cooldown.
+     * <ul>
+     * <li>When cooldown &gt; 0: disables chests and shows countdown.</li>
+     * <li>When cooldown == 0: enables chests and, if needed, regenerates them.</li>
+     * </ul>
+     * Uses {@link PetModel#getRewardCooldown()} as the source of truth.
+     */
     private void updateState() {
         // We still check the model for the actual value to drive the timer text
         double cooldown = model.getRewardCooldown();
@@ -179,6 +219,13 @@ public class DailyRewardView extends StackPane {
         }
     }
 
+    /**
+     * Formats a cooldown value expressed in in‑game hours into a string
+     * of the form {@code "HHh MMm"}.
+     *
+     * @param gameHours cooldown duration in game hours
+     * @return formatted string representing hours and minutes
+     */
     private String formatGameTime(double gameHours) {
         int hours = (int) gameHours;
         int minutes = (int) ((gameHours - hours) * 60);

@@ -11,9 +11,15 @@ import com.eleven.pet.inventory.ui.InventoryView;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 public class PetView {
@@ -39,6 +45,14 @@ public class PetView {
     private static final double VIEW_OFFSET_X = 100.0;
     private static final double TRANSITION_DURATION_MS = 800.0;
 
+    /**
+     * Creates the main pet view.
+     *
+     * @param model         the pet model containing stats and state
+     * @param controller    controller handling user actions and game logic
+     * @param clock         game clock driving time-based UI updates
+     * @param weatherSystem weather system used for world background effects
+     */
     public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
         this.model = model;
         this.controller = controller;
@@ -47,6 +61,14 @@ public class PetView {
         this.assetLoader = AssetLoader.getInstance();
     }
 
+    /**
+     * Builds and wires the full UI hierarchy for the pet screen.
+     * <p>
+     * This includes the world layer (background + pet avatar) and the
+     * UI layer (HUD, inventory, daily rewards, etc.).
+     *
+     * @return the root {@link Pane} to be attached to the scene
+     */
     public Pane initializeUI() {
         StackPane root = new StackPane();
 
@@ -83,8 +105,30 @@ public class PetView {
     }
 
     private void setupRewardTrigger(StackPane root) {
-        Button btn = new Button("🎁 REWARDS");
-        btn.setStyle("-fx-background-color: gold; -fx-text-fill: black; -fx-font-weight: bold; -fx-background-radius: 20; -fx-cursor: hand; -fx-padding: 10 20; -fx-border-color: black; -fx-border-width: 2px; -fx-border-radius: 20;");
+        // Load the chest image
+        Image chestImage = assetLoader.getImage("chest/Chest");
+        ImageView chestIcon = new ImageView(chestImage);
+        
+        // Set viewport to the first frame (150x118) to avoid showing the whole sprite sheet
+        chestIcon.setViewport(new Rectangle2D(0, 0, 150, 118));
+        chestIcon.setFitWidth(30);
+        chestIcon.setFitHeight(24);
+        chestIcon.setPreserveRatio(true);
+
+        // Create Bounce Animation
+        TranslateTransition bounce = new TranslateTransition(Duration.millis(600), chestIcon);
+        bounce.setByY(-2); // Reduced bounce height for subtlety
+        bounce.setCycleCount(Animation.INDEFINITE);
+        bounce.setAutoReverse(true);
+        bounce.play();
+
+        // Create Button with Icon
+        Button btn = new Button(" REWARDS", chestIcon);
+        btn.setContentDisplay(ContentDisplay.LEFT); 
+        
+        // Remove inline styles and use CSS classes
+        btn.getStyleClass().addAll("pixel-btn", "pixel-btn-gold");
+        
         btn.setOnAction(e -> dailyRewardView.toggle(true));
         
         StackPane.setAlignment(btn, Pos.TOP_RIGHT);
@@ -183,7 +227,10 @@ public class PetView {
             gamePane.prefHeightProperty().bind(tvClickArea.heightProperty());
 
             Button exitBtn = new Button("X");
-            exitBtn.setStyle("-fx-background-color: rgba(255,0,0,0.5); -fx-text-fill: white; -fx-font-size: 10px; -fx-cursor: hand;");
+            // Also styling exit button
+            exitBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
+            exitBtn.setStyle("-fx-font-size: 10px; -fx-padding: 2 6;"); 
+
             exitBtn.setOnAction(_ -> exitMinigameMode());
             StackPane.setAlignment(exitBtn, Pos.TOP_RIGHT);
 

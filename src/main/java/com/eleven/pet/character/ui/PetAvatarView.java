@@ -14,6 +14,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
+/**
+ * Visual representation of the pet avatar.
+ * <p>
+ * Renders the pet using sprite-sheet based animations and reacts to changes
+ * in the {@link PetModel} (state and happiness) via bound listeners.
+ */
 public class PetAvatarView extends StackPane {
     private final PetModel model;
     private final PetController controller;
@@ -39,6 +45,12 @@ public class PetAvatarView extends StackPane {
 
     private Image sheetNeutral, sheetSad, sheetSleeping, sheetCrying, sheetHappy;
 
+    /**
+     * Creates a new {@code PetAvatarView} bound to the given model and controller.
+     *
+     * @param model      pet model providing state and stats
+     * @param controller controller used to derive emotion from stats
+     */
     public PetAvatarView(PetModel model, PetController controller) {
         this.model = model;
         this.controller = controller;
@@ -52,6 +64,9 @@ public class PetAvatarView extends StackPane {
         refreshPetState(model.getStatProperty(PetStats.STAT_HAPPINESS).get());
     }
 
+    /**
+     * Creates and configures the {@link ImageView} used to render the pet.
+     */
     private void setupPetLayer() {
         petImageView = new ImageView();
         petImageView.setFitWidth(SHEET_WIDTH);
@@ -65,6 +80,9 @@ public class PetAvatarView extends StackPane {
         getChildren().add(petImageView);
     }
 
+    /**
+     * Loads sprite-sheet images for the different pet emotions and states.
+     */
     private void loadAssets() {
         sheetHappy = assetLoader.getImage("sprites/happy/SpriteSheetHappy");
         sheetNeutral = assetLoader.getImage("sprites/idle/SpriteSheetNeutral");
@@ -73,6 +91,9 @@ public class PetAvatarView extends StackPane {
         sheetSleeping = assetLoader.getImage("sprites/sleeping/SpriteSheetSleeping");
     }
 
+    /**
+     * Initializes sprite-sheet animations for the supported emotions and states.
+     */
     private void initializeAnimations() {
         animNeutral = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 3, 1.0f);
         animNeutral.setLoop(true);
@@ -90,6 +111,10 @@ public class PetAvatarView extends StackPane {
         animSleeping.setLoop(true);
     }
 
+    /**
+     * Starts the JavaFX {@link AnimationTimer} render loop that advances the
+     * active animation and updates the viewport.
+     */
     private void startRenderLoop() {
         lastFrameTime = System.nanoTime();
         renderLoop = new AnimationTimer() {
@@ -107,6 +132,10 @@ public class PetAvatarView extends StackPane {
         renderLoop.start();
     }
 
+    /**
+     * Renders the current frame of the active animation by updating the
+     * {@link ImageView}'s viewport and sprite-sheet image when needed.
+     */
     private void renderFrame() {
         if (petImageView == null || activeAnimation == null) return;
 
@@ -124,6 +153,12 @@ public class PetAvatarView extends StackPane {
         }
     }
 
+    /**
+     * Resolves the correct sprite-sheet image for the given animation instance.
+     *
+     * @param anim animation instance
+     * @return matching sprite-sheet image, never {@code null} for known animations
+     */
     private Image resolveSheetForAnimation(SpriteSheetAnimation anim) {
         if (anim == animSleeping) return sheetSleeping;
         if (anim == animSad) return sheetSad;
@@ -132,6 +167,12 @@ public class PetAvatarView extends StackPane {
         return sheetNeutral;
     }
 
+    /**
+     * Switches the active animation to the given one, resetting it and starting
+     * playback if it is different from the current animation.
+     *
+     * @param newAnim animation to activate
+     */
     private void changeAnimation(SpriteSheetAnimation newAnim) {
         if (activeAnimation == newAnim) return;
 
@@ -141,6 +182,10 @@ public class PetAvatarView extends StackPane {
         activeAnimation.play();
     }
 
+    /**
+     * Binds listeners to the model's state and happiness properties so the view
+     * can react and update the displayed animation automatically.
+     */
     private void bindData() {
         if (model == null) return;
         var happinessStat = model.getStatProperty(PetStats.STAT_HAPPINESS);
@@ -153,6 +198,13 @@ public class PetAvatarView extends StackPane {
         }
     }
 
+    /**
+     * Refreshes the pet's visual state based on the current {@link PetState}
+     * and the given happiness value. Chooses the appropriate animation
+     * (sleeping, happy, neutral, sad, crying).
+     *
+     * @param happiness current happiness value from the model
+     */
     private void refreshPetState(int happiness) {
         if (model == null) return;
 

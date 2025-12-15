@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Registry for all items in the game.
+ * Global registry for all items available in the game.
+ * <p>
+ * Items are registered with an integer ID and can later be looked up
+ * by ID or chosen at random.
  */
 public class ItemRegistry {
     private static final Map<Integer, Item> registry = new HashMap<>();
@@ -26,13 +29,15 @@ public class ItemRegistry {
             "EnergyPotion", 
             "ENERGY", 
             10,  // 10 sec duration
-            10.0   // 10x multiplier
+            3.0   // 10x multiplier
         );
         ItemRegistry.register(new StatPotion(0, sleepBoostDef));
     }
 
     /**
      * Registers an {@link Item} in the registry.
+     *
+     * @param item item instance to register
      */
     public static void register(Item item) {
         registry.put(item.id(), item);
@@ -40,6 +45,9 @@ public class ItemRegistry {
 
     /**
      * Retrieves an item by its ID.
+     *
+     * @param id unique item identifier
+     * @return the registered item, or {@code null} if not found
      */
     public static Item get(int id) {
         return registry.get(id);
@@ -47,6 +55,8 @@ public class ItemRegistry {
     
     /**
      * Retrieves a random item from the registry.
+     *
+     * @return a randomly chosen item, or {@code null} if the registry is empty
      */
     public static Item getRandomItem() {
         if (registry.isEmpty()) {

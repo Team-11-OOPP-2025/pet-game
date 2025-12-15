@@ -7,10 +7,28 @@ import com.eleven.pet.inventory.Item;
 import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
+/**
+ * Represents the sleeping behavior/state of a pet.
+ *
+ * <p>While asleep, most interactive actions (consume, play, clean) are
+ * rejected or deferred. This state is responsible for tracking sleep
+ * duration, rewarding stats during sleep, and automatically waking the
+ * pet at the configured wake-up hour.</p>
+ *
+ * <p>This class is registered via {@link AutoService} as an implementation
+ * of {@link PetState}.</p>
+ */
 @AutoService(PetState.class)
 public class AsleepState implements PetState {
     public static final String STATE_NAME = "ASLEEP";
 
+    /**
+     * Rejects consumption attempts while the pet is asleep.
+     *
+     * @param pet  the sleeping pet
+     * @param item the item the user attempted to feed
+     * @return always {@code false}, as items cannot be consumed while asleep
+     */
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
         // Pet is asleep; ignore eating actions
@@ -18,12 +36,23 @@ public class AsleepState implements PetState {
         return false;
     }
 
+    /**
+     * Rejects play requests while the pet is asleep.
+     *
+     * @param pet the sleeping pet
+     * @return always {@code null}, as no minigame can be started
+     */
     @Override
     public MinigameResult handlePlay(PetModel pet) {
         System.out.println(pet.getName() + " is asleep and cannot play right now.");
         return null;
     }
 
+    /**
+     * Handles a manual wake-up triggered by the user while the pet is asleep.
+     *
+     * @param pet the pet to wake up
+     */
     @Override
     public void handleSleep(PetModel pet) {
         // Manual Wake Up
@@ -31,11 +60,26 @@ public class AsleepState implements PetState {
         wakeUp(pet);
     }
 
+    /**
+     * Rejects cleaning requests while the pet is asleep.
+     *
+     * @param pet the sleeping pet
+     */
     @Override
     public void handleClean(PetModel pet) {
         System.out.println(pet.getName() + " is asleep and cannot be cleaned right now.");
     }
 
+    /**
+     * Periodic update while the pet is asleep.
+     *
+     * <p>Accumulates sleep duration, periodically rewards energy and happiness
+     * based on hours slept (taking stat multipliers into account), and
+     * automatically wakes the pet at the configured wake-up hour.</p>
+     *
+     * @param pet       the sleeping pet
+     * @param timeDelta elapsed time since last tick, in game time units
+     */
     @Override
     public void onTick(PetModel pet, double timeDelta) {
         double newDuration = pet.getCurrentSleepDuration() + timeDelta;
@@ -88,6 +132,12 @@ public class AsleepState implements PetState {
         }
     }
 
+    /**
+     * Helper that transitions the pet from asleep to the awake state,
+     * if the {@link AwakeState} is registered in the {@link StateRegistry}.
+     *
+     * @param pet the pet to wake
+     */
     private void wakeUp(PetModel pet) {
         StateRegistry registry = StateRegistry.getInstance();
         PetState awakeState = registry.getState(AwakeState.STATE_NAME);
@@ -96,6 +146,11 @@ public class AsleepState implements PetState {
         }
     }
 
+    /**
+     * Returns the canonical name of this state.
+     *
+     * @return {@link #STATE_NAME}
+     */
     @Override
     public String getStateName() {
         return STATE_NAME;

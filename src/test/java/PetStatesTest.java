@@ -9,15 +9,23 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-
+/**
+ * Tests for pet behavior states and the {@link StateRegistry}.
+ */
 public class PetStatesTest {
 
+    /**
+     * Ensures that {@link AwakeState} exposes the correct state name constant.
+     */
     @Test
     void testStateNames() {
         AwakeState awakeState = new AwakeState();
         assertEquals(AwakeState.STATE_NAME, awakeState.getStateName());
     }
 
+    /**
+     * Verifies that {@link StateRegistry} follows the singleton pattern.
+     */
     @Test
     void testRegistrySingleton() {
         StateRegistry instance1 = StateRegistry.getInstance();
@@ -26,6 +34,9 @@ public class PetStatesTest {
         assertSame(instance1, instance2, "getInstance() should return the same instance");
     }
 
+    /**
+     * Verifies that states registered in {@link StateRegistry} can be retrieved by name.
+     */
     @Test
     void testRegistryRetrieval() {
         StateRegistry registry = StateRegistry.getInstance();
