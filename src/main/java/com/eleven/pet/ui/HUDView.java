@@ -21,6 +21,12 @@ import javafx.scene.text.Text;
 
 import static com.eleven.pet.ui.ViewConstants.*;
 
+/**
+ * Heads-up display overlay for the pet screen.
+ * <p>
+ * Shows pet stats (happiness, hunger, energy, cleanliness), the main clock,
+ * and action buttons (feed, clean, sleep, play) bound to {@link PetController}.
+ */
 public class HUDView extends StackPane {
 
     // Layout Constants
@@ -48,8 +54,15 @@ public class HUDView extends StackPane {
     private Rectangle energyFill;
     private Rectangle cleanFill;
     private Rectangle happinessFill;
-    private StackPane sleepBtnContainer;
+    private Button sleepBtn; // Changed to Button
 
+    /**
+     * Creates a new HUD view for the given pet and clock.
+     *
+     * @param model      pet model providing stat values and current state
+     * @param controller controller invoked by user actions on HUD buttons
+     * @param clock      game clock used to update the displayed time
+     */
     public HUDView(PetModel model, PetController controller, GameClock clock) {
         this.model = model;
         this.controller = controller;
@@ -63,8 +76,11 @@ public class HUDView extends StackPane {
         observeEnvironment();
     }
 
+    /**
+     * Builds the static HUD layer containing the stat bars and clock widget
+     * and adds it to this {@link StackPane}.
+     */
     private void setupHUDLayer() {
-        // TODO: Decide if we want labels on the bars
         // Create the Bars
         StackPane happyBar = createStatBar(null, "😃", COLOR_HAPPINESS, BAR_WIDTH_LARGE, BAR_HEIGHT_LARGE);
         happinessFill = (Rectangle) happyBar.getChildren().get(1);
@@ -91,22 +107,35 @@ public class HUDView extends StackPane {
         addToLayout(timeLabel, Pos.TOP_CENTER, MARGIN_CLOCK);
     }
 
+    /**
+     * Builds the interactive control layer (feed, clean, sleep, play buttons)
+     * and binds them to the {@link PetController}.
+     */
     private void setupControlLayer() {
-        StackPane feedBtnContainer = createActionButton("FEED", COLOR_BTN_PRIMARY, 120, () -> controller.setInventoryOpen(true));
-        addToLayout(feedBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
+        Button feedBtn = createActionButton("FEED", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
+        addToLayout(feedBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
 
-        StackPane cleanBtnContainer = createActionButton("CLEAN", COLOR_BTN_PRIMARY, 120, controller::handleCleanAction);
-        addToLayout(cleanBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
+        Button cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
+        addToLayout(cleanBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
 
-        sleepBtnContainer = createActionButton("SLEEP", COLOR_BTN_SLEEP, 120, controller::handleSleepAction);
-        ((Button) sleepBtnContainer.getChildren().get(1)).setTextFill(COLOR_BTN_TEXT_LIGHT);
-        sleepBtnContainer.setVisible(false);
-        addToLayout(sleepBtnContainer, Pos.BOTTOM_LEFT, MARGIN_BTN_SLEEP);
+        sleepBtn = createActionButton("SLEEP", PIXEL_BUTTON_SLEEP, PIXEL_BUTTON_WIDTH, controller::handleSleepAction);
+        sleepBtn.setVisible(false);
+        addToLayout(sleepBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_SLEEP);
 
-        StackPane playBtnContainer = createActionButton("PLAY", COLOR_BTN_PRIMARY, 140, controller::handlePlayAction);
-        addToLayout(playBtnContainer, Pos.BOTTOM_RIGHT, MARGIN_BTN_PLAY);
+        Button playBtn = createActionButton("PLAY", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handlePlayAction);
+        addToLayout(playBtn, Pos.BOTTOM_RIGHT, MARGIN_BTN_PLAY);
     }
 
+    /**
+     * Creates a single stat bar with icon and optional label.
+     *
+     * @param label  optional text label (may be {@code null})
+     * @param icon   icon text (e.g. emoji) displayed on the bar
+     * @param color  fill color of the bar
+     * @param width  preferred bar width in pixels
+     * @param height preferred bar height in pixels
+     * @return configured {@link StackPane} representing the bar
+     */
     private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
         StackPane container = new StackPane();
         container.setMinSize(width, height);
@@ -143,28 +172,31 @@ public class HUDView extends StackPane {
         return container;
     }
 
-    private StackPane createActionButton(String text, Color bg, double width, Runnable action) {
-        StackPane container = new StackPane();
-        container.setMaxSize(width, 50);
-
-        Rectangle border = new Rectangle(width, 50, bg);
-        border.setStroke(Color.BLACK);
-        border.setStrokeWidth(3);
-
+    /**
+     * Creates a styled pixel-art action button and wires it to the given action.
+     *
+     * @param text     button label
+     * @param cssClass CSS class to apply in addition to the default pixel style
+     * @param width    preferred button width
+     * @param action   action to invoke when the button is pressed
+     * @return configured {@link Button}
+     */
+    private Button createActionButton(String text, String cssClass, double width, Runnable action) {
         Button btn = new Button(text);
-        btn.setPrefSize(width, 50);
-        btn.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 16));
-        btn.setTextFill(bg.equals(Color.WHITE) ? COLOR_BTN_TEXT_DARK : COLOR_BTN_TEXT_LIGHT);
-        btn.setStyle("-fx-background-color: transparent;");
+        btn.setPrefWidth(width);
+        btn.getStyleClass().addAll(PIXEL_BUTTON_STYLE_CLASS, cssClass);
 
         if (controller != null) {
             btn.setOnAction(_ -> action.run());
         }
-
-        container.getChildren().addAll(border, btn);
-        return container;
+        return btn;
     }
 
+    /**
+     * Creates the main clock label used to display in-game time.
+     *
+     * @return configured {@link Label} instance
+     */
     private Label createClockWidget() {
         Label lbl = new Label("00:00");
         lbl.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 36));
@@ -173,12 +205,23 @@ public class HUDView extends StackPane {
         return lbl;
     }
 
+    /**
+     * Adds a node to this HUD with the given alignment and margin.
+     *
+     * @param node   node to add
+     * @param pos    alignment within the {@link StackPane}
+     * @param margin margin around the node
+     */
     private void addToLayout(javafx.scene.Node node, Pos pos, Insets margin) {
         StackPane.setAlignment(node, pos);
         StackPane.setMargin(node, margin);
         getChildren().add(node);
     }
 
+    /**
+     * Binds pet stats, pet state, and other observable data from the model
+     * to the HUD's visual components.
+     */
     private void bindData() {
         bindBar(model.getStatProperty(PetStats.STAT_HUNGER), hungerFill, BAR_WIDTH_SMALL);
         bindBar(model.getStatProperty(PetStats.STAT_ENERGY), energyFill, BAR_WIDTH_SMALL);
@@ -191,10 +234,22 @@ public class HUDView extends StackPane {
         model.getStateProperty().addListener((_, _, state) -> refreshSleepButton(state));
     }
 
+    /**
+     * Updates sleep button enablement based on the current {@link PetState}.
+     *
+     * @param state current pet state
+     */
     private void refreshSleepButton(PetState state) {
         toggleSleepButton(state instanceof AsleepState);
     }
 
+    /**
+     * Binds a numeric stat property (0–100) to a bar rectangle width.
+     *
+     * @param stat   observable stat value
+     * @param fill   rectangle representing the bar fill
+     * @param maxW   maximum width when stat is 100
+     */
     private void bindBar(javafx.beans.value.ObservableValue<Number> stat, Rectangle fill, double maxW) {
         if (stat != null) {
             stat.addListener((_, _, val) -> updateFill(fill, val.intValue(), maxW));
@@ -202,10 +257,21 @@ public class HUDView extends StackPane {
         }
     }
 
+    /**
+     * Updates the width of a stat bar based on a percentage value.
+     *
+     * @param rect      bar rectangle
+     * @param value     stat value in range 0–100
+     * @param maxWidth  width corresponding to value 100
+     */
     private void updateFill(Rectangle rect, int value, double maxWidth) {
         rect.setWidth(maxWidth * (value / 100.0));
     }
 
+    /**
+     * Subscribes to game clock changes and updates the clock label
+     * and sleep button visibility accordingly.
+     */
     private void observeEnvironment() {
         if (clock == null) return;
 
@@ -213,12 +279,18 @@ public class HUDView extends StackPane {
             double t = time.doubleValue();
             updateClockLabel(t);
             boolean canSleep = controller.isSleepAllowed();
-            sleepBtnContainer.setVisible(canSleep);
+            sleepBtn.setVisible(canSleep);
         });
 
         updateClockLabel(clock.getGameTime());
     }
 
+    /**
+     * Formats and displays the given in-game time on the clock label.
+     *
+     * @param time in-game time in hours, where the integer part is hours and
+     *             the fractional part represents minutes (e.g. 13.5 = 13:30)
+     */
     private void updateClockLabel(double time) {
         int hours = (int) time % 24;
         int minutes = (int) ((time % 1.0) * 60);
@@ -226,8 +298,13 @@ public class HUDView extends StackPane {
         timeLabel.setText(timeString);
     }
 
+    /**
+     * Enables or disables the sleep button based on whether the pet is sleeping.
+     *
+     * @param isSleeping {@code true} if pet is currently asleep
+     */
     private void toggleSleepButton(boolean isSleeping) {
-        sleepBtnContainer.setDisable(isSleeping);
-        sleepBtnContainer.setOpacity(isSleeping ? 0.5 : 1.0);
+        sleepBtn.setDisable(isSleeping);
+        sleepBtn.setOpacity(isSleeping ? 0.5 : 1.0);
     }
 }

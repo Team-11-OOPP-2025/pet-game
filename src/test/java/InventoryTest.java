@@ -9,15 +9,25 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Unit tests for {@link Inventory} behavior, including adding,
+ * removing, and initial pet inventory contents.
+ */
 public class InventoryTest {
 
     Inventory inventory;
 
+    /**
+     * Initializes a fresh {@link Inventory} instance before each test.
+     */
     @BeforeEach
     void setUp() {
         inventory = new Inventory();
     }
 
+    /**
+     * Verifies that adding an item increases its quantity as expected.
+     */
     @Test
     void testAddItem() {
         Item apple = ItemRegistry.get(0);
@@ -26,6 +36,9 @@ public class InventoryTest {
         assertEquals(1, inventory.getQuantity(apple));
     }
 
+    /**
+     * Verifies that removing an item decreases its quantity as expected.
+     */
     @Test
     void testRemoveItem() {
         Item apple = ItemRegistry.get(0);
@@ -35,6 +48,10 @@ public class InventoryTest {
         assertEquals(1, inventory.getQuantity(apple));
     }
 
+    /**
+     * Ensures that a newly created pet starts with an inventory size
+     * within the expected bounds.
+     */
     @Test
     void testReplenishItem() {
         PetModel pet = PetFactory.createNewPet("TestPet", null, null);

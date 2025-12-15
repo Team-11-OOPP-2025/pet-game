@@ -6,6 +6,15 @@ import com.eleven.pet.minigames.MiniGameController;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * View component for the mini guessing game.
+ * <p>
+ * This panel renders the UI for a simple number guessing game,
+ * including the title, instructions, input field, action buttons
+ * and result/feedback labels. It is intended to be used together
+ * with {@link MiniGameController} as part of a mini-game flow.
+ * </p>
+ */
 public class MiniGameView extends JPanel {
     
     private JLabel titleLabel;
@@ -16,6 +25,11 @@ public class MiniGameView extends JPanel {
     private JLabel resultLabel;
     private JLabel feedbackLabel;
     
+    /**
+     * Creates a new {@code MiniGameView} and initializes all Swing components.
+     * The layout is split into a title/instruction area, an input area,
+     * and a result/feedback area.
+     */
     public MiniGameView() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -57,6 +71,12 @@ public class MiniGameView extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
     
+    /**
+     * Updates the UI to display the result of a guess.
+     *
+     * @param won     {@code true} if the player guessed correctly, {@code false} otherwise
+     * @param message additional feedback message to show under the result label
+     */
     public void displayResult(boolean won, String message) {
         resultLabel.setText(won ? "🎉 You Won!" : "❌ Wrong Guess");
         resultLabel.setForeground(won ? new Color(34, 139, 34) : new Color(220, 20, 60));
@@ -66,6 +86,13 @@ public class MiniGameView extends JPanel {
         guessField.setEnabled(false);
     }
     
+    /**
+     * Resets the UI state so the player can start a new round.
+     * <p>
+     * This clears the input field, hides result/feedback messages,
+     * re-enables user input, and focuses the guess field.
+     * </p>
+     */
     public void resetGame() {
         guessField.setText("");
         guessField.setEnabled(true);
@@ -76,21 +103,47 @@ public class MiniGameView extends JPanel {
         guessField.requestFocus();
     }
     
+    /**
+     * Returns the text field used for entering guesses.
+     * <p>
+     * Primarily useful for controllers that need to add listeners
+     * or read the current guess.
+     * </p>
+     *
+     * @return the {@link JTextField} used for user guesses
+     */
     public JTextField getGuessField() {
         return guessField;
     }
     
+    /**
+     * Returns the button used to submit a guess.
+     *
+     * @return the "Submit Guess" {@link JButton}
+     */
     public JButton getSubmitButton() {
         return submitButton;
     }
     
+    /**
+     * Returns the button used to start another round after a guess.
+     *
+     * @return the "Play Again" {@link JButton}
+     */
     public JButton getPlayAgainButton() {
         return playAgainButton;
     }
     
     /**
      * Creates and displays the mini-game in a new window.
-     * @param model The PetModel to interact with
+     * <p>
+     * This method is a convenience factory that instantiates the view
+     * and its corresponding {@link MiniGameController}, attaches them
+     * to a {@link JFrame}, and shows the game on the Event Dispatch Thread.
+     * </p>
+     *
+     * @param model the {@link PetModel} used by the mini-game to interact
+     *              with the current pet state and apply game effects
      */
     public static void showMiniGame(PetModel model) {
         SwingUtilities.invokeLater(() -> {

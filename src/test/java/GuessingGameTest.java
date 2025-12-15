@@ -6,8 +6,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for the {@link GuessingGame} minigame.
+ */
 public class GuessingGameTest {
 
+    /**
+     * Verifies that at least one guess eventually wins and produces
+     * a {@link MinigameResult} with a positive happiness delta.
+     */
     @Test
     public void testGuessGameWin() {
         GuessingGame game = new GuessingGame();

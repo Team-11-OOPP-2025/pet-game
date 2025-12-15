@@ -9,8 +9,16 @@ import com.eleven.pet.vfx.ParticleSystem;
 import com.eleven.pet.vfx.RainParticle;
 import com.eleven.pet.vfx.RainParticleFactory;
 
+/**
+ * Unit tests for particle and particle system behavior, including
+ * basic physics updates and factory integration.
+ */
 public class ParticleSystemTest {
 
+    /**
+     * Ensures that a {@link RainParticle} updates its position and velocity
+     * over time and remains alive after a small time step.
+     */
     @Test
     void testParticleUpdate() {
         // Create a rain particle
@@ -33,6 +41,10 @@ public class ParticleSystemTest {
         assertTrue(particle.isAlive(), "Particle should be alive");
     }
 
+    /**
+     * Verifies that {@link RainParticleFactory} creates valid {@link RainParticle}
+     * instances with expected initial properties.
+     */
     @Test
     void testRainFactory() {
         RainParticleFactory factory = new RainParticleFactory();
@@ -59,6 +71,10 @@ public class ParticleSystemTest {
             "Particle X should be within canvas width");
     }
 
+    /**
+     * Ensures that {@link ParticleSystem} creates a canvas with the
+     * configured dimensions.
+     */
     @Test
     void testParticleSystemCreation() {
         ParticleSystem system = new ParticleSystem(800, 600);
@@ -68,6 +84,10 @@ public class ParticleSystemTest {
         assertEquals(600, system.getCanvas().getHeight(), "Canvas height should match");
     }
 
+    /**
+     * Verifies that a {@link ParticleSystem} can accept a particle factory
+     * and that the initial particle count is zero.
+     */
     @Test
     void testParticleSystemWithFactory() {
         ParticleSystem system = new ParticleSystem(800, 600);
@@ -82,6 +102,10 @@ public class ParticleSystemTest {
         assertEquals(0, system.getParticleCount(), "Particle count should start at 0");
     }
 
+    /**
+     * Confirms that repeated updates cause a particle to move
+     * a significant distance.
+     */
     @Test
     void testMultipleParticleUpdates() {
         RainParticle particle = new RainParticle(100, 100, 200);

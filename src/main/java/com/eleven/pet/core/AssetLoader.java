@@ -9,9 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * AssetLoader is responsible for loading and caching image assets.
- * It supports loading images from the /resources/images/ directory
- * and handles missing assets by providing a placeholder image.
+ * AssetLoader is responsible for loading and caching image assets and fonts.
+ *
+ * <p>Images are loaded from the {@code /images/} classpath location and
+ * cached by relative path. Missing images are replaced with a placeholder.
  */
 public class AssetLoader {
     private static AssetLoader instance;
@@ -23,7 +24,9 @@ public class AssetLoader {
     private static final String FONT_ROOT = "/fonts/";
 
     /**
-     * Private constructor for singleton pattern.
+     * Returns the singleton {@code AssetLoader} instance.
+     *
+     * @return the global {@code AssetLoader}
      */
     public static AssetLoader getInstance() {
         if (instance == null) {
@@ -35,18 +38,19 @@ public class AssetLoader {
     /**
      * Loads an image from the cache or disk.
      *
-     * @param relativePath The path relative to /resources/images/ (e.g., "backgrounds/Day")
-     *                     You do NOT need to add .png extension.
+     * @param relativePath the path relative to {@code /resources/images/}
+     *                     (e.g., {@code "backgrounds/Day"} without extension)
+     * @return the loaded image or a placeholder if not found
      */
     public Image getImage(String relativePath) {
         return imageCache.computeIfAbsent(relativePath, this::loadImage);
     }
 
     /**
-     * Loads a font from disk.
+     * Loads a font from disk and registers it with JavaFX.
      *
-     * @param fontName The font file name (e.g., "Minecraft.ttf")
-     * @param size     The font size
+     * @param fontName the font file name (e.g., {@code "Minecraft.ttf"})
+     * @param size     the font size in points
      */
     public void loadFont(String fontName, double size) {
         String fontPath = FONT_ROOT + fontName;
@@ -63,10 +67,13 @@ public class AssetLoader {
     }
 
     /**
-     * Loads an image from disk, trying multiple extensions.
+     * Loads an image from disk, trying multiple file extensions.
      *
-     * @param relativePath The path relative to /resources/images/ without extension
-     * @return The loaded Image, or a placeholder if not found
+     * <p>Extensions are tried in order: {@code .png}, {@code .jpg}, {@code .jpeg}.
+     * If no variant is found, a placeholder image is returned.
+     *
+     * @param relativePath the path relative to {@code /resources/images/} without extension
+     * @return the loaded {@link Image}, or a placeholder if not found
      */
     private Image loadImage(String relativePath) {
         // Try PNG first, then JPG
@@ -91,7 +98,7 @@ public class AssetLoader {
     /**
      * Creates a simple placeholder image (magenta square).
      *
-     * @return Placeholder Image
+     * @return placeholder image used when real assets are missing
      */
     private Image createPlaceholderImage() {
         WritableImage placeholder = new WritableImage(64, 64);
@@ -105,6 +112,9 @@ public class AssetLoader {
 
     /**
      * Preloads all essential assets into the cache.
+     *
+     * <p>This is typically called once at application startup to reduce
+     * stuttering when assets are first requested.
      */
     public void loadAll() {
         System.out.println("Preloading assets...");

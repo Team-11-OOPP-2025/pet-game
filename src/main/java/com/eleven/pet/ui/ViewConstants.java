@@ -3,12 +3,16 @@ package com.eleven.pet.ui;
 import javafx.scene.paint.Color;
 
 /**
- * centralized constants for UI layout, dimensions, and styling.
+ * Centralized constants for UI layout, dimensions, colors and styling.
+ * <p>
+ * All view classes should reference these constants instead of hard-coding
+ * pixel values or color literals to keep the UI consistent.
  */
 public class ViewConstants {
     // Reference Resolution (The design resolution of the background art)
     public static final double REF_WIDTH = 624.0;
     public static final double REF_HEIGHT = 351.0;
+
 
     // Fonts
     public static final String FONT_FAMILY = "Minecraft";
@@ -24,6 +28,10 @@ public class ViewConstants {
     public static final Color COLOR_BTN_TEXT_DARK = Color.BLACK;
     public static final Color COLOR_BTN_TEXT_LIGHT = Color.WHITE;
 
+    public static final String PIXEL_BUTTON_PRIMARY = "pixel-btn-primary";
+    public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
+    public static final Integer PIXEL_BUTTON_WIDTH = 120;
+    
     // Styling
     public static final String STYLE_INVENTORY_PANEL =
             "-fx-background-color: #fdf5e6; " +
@@ -46,4 +54,6 @@ public class ViewConstants {
 
     // Layout Spacing
     public static final double STATS_BOX_SPACING = 20.0;
+
+    public static final String PIXEL_BUTTON_STYLE_CLASS = "pixel-btn";
 }

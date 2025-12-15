@@ -5,15 +5,25 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for the {@link AssetLoader} singleton and asset retrieval behavior.
+ */
 public class AssetLoaderTest {
     private AssetLoader assetLoader;
 
+    /**
+     * Initializes the shared {@link AssetLoader} instance and loads all assets
+     * before each test.
+     */
     @BeforeEach
     void setUp() {
         assetLoader = AssetLoader.getInstance();
         assetLoader.loadAll();
     }
 
+    /**
+     * Verifies that a known image asset is loaded with the expected dimensions.
+     */
     @Test
     void testAssetLoading() {
         String imagePath = "backgrounds/DAY";
@@ -22,11 +32,18 @@ public class AssetLoaderTest {
         assertEquals(351.0, image.getHeight(), 0.1);
     }
 
+    /**
+     * Ensures that {@link AssetLoader} behaves as a singleton.
+     */
     @Test
     void testSingleton() {
         assertSame(AssetLoader.getInstance(), assetLoader);
     }
 
+    /**
+     * Verifies that requesting a missing image returns a non-null placeholder
+     * with the expected dimensions.
+     */
     @Test
     void testMissingImageFallback() {
         AssetLoader assetLoader = AssetLoader.getInstance();

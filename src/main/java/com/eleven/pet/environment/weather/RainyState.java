@@ -4,6 +4,11 @@ import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.eleven.pet.vfx.effects.RainParticleEffect;
 import com.google.auto.service.AutoService;
 
+/**
+ * Rainy weather state.
+ * <p>
+ * Slightly decreases the pet's happiness and shows a rain particle effect.
+ */
 @AutoService(WeatherState.class)
 public class RainyState implements WeatherState {
     private static final ParticleEffect RAIN_EFFECT = new RainParticleEffect(300);

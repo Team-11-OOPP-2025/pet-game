@@ -11,11 +11,20 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for the sleep system, ensuring that sleeping, missed sleep penalties
+ * and state transitions behave correctly over simulated in-game time.
+ */
 public class SleepSystemTest {
 
     private PetModel pet;
     private GameClock clock;
 
+    /**
+     * Creates a new {@link PetModel} bound to a {@link GameClock} and
+     * registers the {@link AwakeState} and {@link AsleepState} in the
+     * {@link StateRegistry} for use in tests.
+     */
     @BeforeEach
     void setUp() {
         // Manually register states for testing since AutoService doesn't work in tests
@@ -27,6 +36,12 @@ public class SleepSystemTest {
         pet = PetFactory.createNewPet("TestPet", null, clock);
     }
 
+    /**
+     * Verifies that pressing the sleep button does not immediately restore stats,
+     * but that energy and happiness increase over an in-game hour according to
+     * {@link GameConfig#SLEEP_ENERGY_PER_HOUR} and
+     * {@link GameConfig#SLEEP_HAPPINESS_PER_HOUR}.
+     */
     @Test
     void testSleepButtonRestoresStats() {
         // Set initial low stats
@@ -56,6 +71,11 @@ public class SleepSystemTest {
         assertTrue(pet.isSleptThisNight(), "Pet should be marked as having slept");
     }
 
+    /**
+     * Simulates a full night without sleep crossing the 08:00 threshold and
+     * verifies that the missed sleep penalty is applied to energy and that
+     * happiness decreases.
+     */
     @Test
     void testMissedSleepAppliesPenalty() {
         // Start at 12:00, advance to 20:00 to reset sleep flag
@@ -90,6 +110,11 @@ public class SleepSystemTest {
         assertTrue(happinessAfter < happinessBefore);
     }
 
+    /**
+     * Ensures that when the pet sleeps during the valid window, no penalty is
+     * applied at 08:00; instead the pet wakes up in {@link AwakeState} with
+     * increased energy.
+     */
     @Test
     void testSleepingPreventsNoPenalty() {
         // Advance to sleep window (20:00)

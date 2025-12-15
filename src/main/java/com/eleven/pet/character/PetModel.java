@@ -14,6 +14,7 @@ import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.inventory.ActivePotion;
 import com.eleven.pet.inventory.Inventory;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
@@ -29,6 +30,14 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
 
+
+/**
+ * Core domain model for a single pet instance.
+ *
+ * <p>Tracks stats, state machine, inventory, potions, and reacts to
+ * environment updates such as time and weather. Exposes a public API
+ * used by UI and game logic to interact with the pet.</p>
+ */
 @Data
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
@@ -57,29 +66,16 @@ public class PetModel implements TimeListener, WeatherListener {
     // Thread-safe list to handle concurrent modifications during ticks
     private final List<ActivePotion> activePotions = new CopyOnWriteArrayList<>();
 
-    // --- Inner Class to Track State ---
-    private static class ActivePotion {
-        private final StatPotionDefinition def;
-        private double timeRemaining;
-
-        public ActivePotion(StatPotionDefinition def) {
-            this.def = def;
-            this.timeRemaining = def.effectDuration();
-        }
-
-        void tick(double delta) {
-            timeRemaining -= delta;
-        }
-
-        boolean isExpired() {
-            return timeRemaining <= 0;
-        }
-
-        String getStatType() { return def.statType(); }
-        double getMultiplier() { return def.multiplier(); }
-        String getName() { return def.name(); }
-    }
-
+    /**
+     * Creates a new pet model with default stats, behavior, and definition.
+     *
+     * <p>Subscribes to the provided {@link GameClock} and {@link WeatherSystem}
+     * if they are non-null and initializes daily inventory items.</p>
+     *
+     * @param name          pet name
+     * @param weatherSystem weather system to subscribe to, may be {@code null}
+     * @param clock         game clock to subscribe to, may be {@code null}
+     */
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
@@ -107,6 +103,12 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // --- Potion Logic ---
 
+    /**
+     * Computes the effective multiplier for a given stat based on all active potions.
+     *
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HUNGER})
+     * @return product of all active multipliers affecting that stat, or {@code 1.0} if none
+     */
     public double getStatMultiplier(String statName) {
         double totalMultiplier = 1.0;
         for (ActivePotion potion : activePotions) {
@@ -117,16 +119,27 @@ public class PetModel implements TimeListener, WeatherListener {
         return totalMultiplier;
     }
 
+    /**
+     * Returns the remaining duration of the longest potion affecting a given stat.
+     *
+     * @param statName name of the stat
+     * @return remaining time in game hours of the strongest-duration potion, or {@code 0.0} if none
+     */
     public double getPotionDuration(String statName) {
         double maxDuration = 0.0;
         for (ActivePotion potion : activePotions) {
             if (potion.getStatType().equals(statName)) {
-                maxDuration = Math.max(maxDuration, potion.timeRemaining);
+                maxDuration = Math.max(maxDuration, potion.getTimeRemaining());
             }
         }
         return maxDuration;
     }
 
+    /**
+     * Adds a new active potion effect to the pet.
+     *
+     * @param def definition of the potion; ignored if {@code null}
+     */
     public void addPotion(StatPotionDefinition def) {
         if (def != null) {
             activePotions.add(new ActivePotion(def));
@@ -136,20 +149,40 @@ public class PetModel implements TimeListener, WeatherListener {
 
     // --- Existing Methods ---
 
+    /**
+     * Change the current behavioral state of the pet.
+     *
+     * @param newState new state to switch to; if {@code null}, the call is ignored
+     */
     public void changeState(PetState newState) {
         if (newState == null) return;
         currentState.set(newState);
         System.out.println(name + " changed state to: " + newState.getStateName());
     }
 
+    /**
+     * Get the current behavioral state.
+     *
+     * @return current {@link PetState}, or {@code null} if not initialized
+     */
     public PetState getCurrentState() {
         return currentState.get();
     }
 
+    /**
+     * Returns an observable property for the pet's current state.
+     *
+     * @return read-only object property of {@link PetState}
+     */
     public ReadOnlyObjectProperty<PetState> getStateProperty() {
         return currentState;
     }
 
+    /**
+     * Returns the current in-game time as an hour-of-day value.
+     *
+     * @return hour in range [0, 24), or {@code 0.0} if no clock is attached
+     */
     public double getCurrentGameHour() {
         if (clock == null) return 0.0;
         double gameTime = clock.getGameTime();
@@ -157,22 +190,45 @@ public class PetModel implements TimeListener, WeatherListener {
         return (normalizedTime * 24.0) % 24.0;
     }
 
+    /**
+     * Requests the current state to handle a consume action with the given item.
+     *
+     * @param item item to consume
+     * @return {@code true} if the consume action was performed, {@code false} otherwise
+     */
     public boolean performConsume(Item item) {
         return currentState.get().handleConsume(this, item);
     }
 
+    /**
+     * Requests the current state to handle a sleep interaction.
+     */
     public void requestSleepInteraction() {
         currentState.get().handleSleep(this);
     }
 
+    /**
+     * Requests the current state to handle a cleaning interaction.
+     */
     public void performClean() {
         currentState.get().handleClean(this);
     }
 
+    /**
+     * Indicates whether the pet is allowed to start a minigame.
+     *
+     * @return {@code true} if a minigame can be played, {@code false} otherwise
+     */
     public boolean canPlayMinigame() {
         return true; 
     }
 
+    /**
+     * Runs the given minigame and applies its results to the pet.
+     *
+     * @param minigame minigame instance to play
+     * @return {@link MinigameResult} produced by the game, or {@code null} if game is {@code null}
+     */
     private MinigameResult playMinigame(Minigame minigame) {
         if (minigame == null) return null;
 
@@ -187,6 +243,11 @@ public class PetModel implements TimeListener, WeatherListener {
         return result;
     }
 
+    /**
+     * Selects a random minigame and plays it.
+     *
+     * @return result of the chosen minigame, or {@code null} if none available
+     */
     public MinigameResult playRandomMinigame() {
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
@@ -195,6 +256,11 @@ public class PetModel implements TimeListener, WeatherListener {
         return playMinigame(randomGame);
     }
 
+    /**
+     * Replenishes daily food items into the pet's inventory.
+     *
+     * <p>The amount and type of food are randomized within configured bounds.</p>
+     */
     public void replenishDailyFood() {
         System.out.println("Replenishing Daily Food");
         for (int i = 0; i < random.nextInt(1, 4); i++) {
@@ -204,6 +270,11 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
+    /**
+     * Determines whether the UI should prompt the player to let the pet sleep.
+     *
+     * @return {@code true} if the pet is awake, has not slept this night, and is within the sleep window
+     */
     public boolean shouldPromptSleep() {
         if (clock == null) return false;
         if (currentState.get() instanceof AsleepState || sleptThisNight) return false;
@@ -212,13 +283,19 @@ public class PetModel implements TimeListener, WeatherListener {
         return hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
     }
 
+    /**
+     * Applies stat decay over a given time delta.
+     *
+     * <p>Uses the {@link PetDefinition} rates to reduce hunger, cleanliness, and happiness
+     * over time, with additional penalties when hunger or cleanliness are low.</p>
+     *
+     * @param timeDelta elapsed time in game hours
+     */
     public void applyStatDecay(double timeDelta) {
         // Use definition rates if available, otherwise fallback or config
-        double hungerRate = (definition != null) ? definition.hungerDecayRate() : GameConfig.HUNGER_DECAY_RATE;
-        double cleanRate = (definition != null) ? definition.cleanlinessDecayRate() : GameConfig.CLEANLINESS_DECAY_RATE;
 
-        hungerDecayAccum -= hungerRate * timeDelta;
-        cleanlinessDecayAccum -= cleanRate * timeDelta;
+        hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
+        cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
         
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
@@ -255,6 +332,13 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
+    /**
+     * Called each tick by the {@link GameClock}.
+     *
+     * <p>Updates potion durations, reward cooldown, and delegates to the current state.</p>
+     *
+     * @param timeDelta elapsed in-game time since the last tick, in hours
+     */
     @Override
     public void onTick(double timeDelta) {
         // 1. Update Potions
@@ -282,16 +366,33 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
+    /**
+     * Reacts to weather changes from the {@link WeatherSystem}.
+     *
+     * @param newWeather newly active weather state
+     */
     @Override
     public void onWeatherChange(WeatherState newWeather) {
         System.out.println(name + " notices the weather changed to: " + newWeather.getName());
         // Weather effects are applied continuously through the happiness decay modifier
     }
 
+    /**
+     * Adds the given item and quantity to the pet's inventory.
+     *
+     * @param item     item to add
+     * @param quantity number of units to add
+     */
     public void addToInventory(Item item, int quantity) {
         inventory.add(item, quantity);
     }
     
+    /**
+     * Returns a read-only property for the given stat.
+     *
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
+     * @return read-only integer property, or {@code null} if the stat does not exist
+     */
     public ReadOnlyIntegerProperty getStatProperty(String statName) {
         return stats.getStat(statName);
     }
