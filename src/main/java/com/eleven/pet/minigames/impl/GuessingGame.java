@@ -4,7 +4,6 @@ import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.minigames.ui.MiniGameView;
 
 import java.util.Random;
 
@@ -17,36 +16,27 @@ import java.util.Random;
  */
 public class GuessingGame implements Minigame {
 
-    /**
-     * Minimum value (inclusive) for the randomly chosen secret number.
-     */
     private static final int MIN_NUMBER = 1;
-
-    /**
-     * Maximum value (inclusive) for the randomly chosen secret number.
-     */
     private static final int MAX_NUMBER = 5;
-
-    /**
-     * Happiness gained when the player guesses the correct number.
-     */
     private static final int WIN_HAPPINESS = 20;
-
-    /**
-     * Happiness lost when the player guesses the wrong number.
-     */
     private static final int LOSE_HAPPINESS = -5;
     
     private int secretNumber;
     private final Random random;
     
+    /**
+     * Creates a new {@code GuessingGame} instance and generates
+     * the initial secret number.
+     */
     public GuessingGame() {
         this.random = new Random();
         generateNewNumber();
     }
     
     /**
-     * @return the display name of this mini-game
+     * Returns the display name of this minigame.
+     *
+     * @return the name of the minigame
      */
     @Override
     public String getName() {
@@ -54,33 +44,40 @@ public class GuessingGame implements Minigame {
     }
     
     /**
-     * Starts the guessing game UI for the given pet.
+     * Plays the minigame using automated logic.
      * <p>
-     * The actual game interaction is handled by {@link com.eleven.pet.minigames.ui.MiniGameView}.
+     * In the current implementation this method is primarily a placeholder,
+     * since the game is intended to be driven via the UI/Controller layer.
      *
-     * @param pet the {@link PetModel} currently playing the mini-game
-     * @return currently {@code null}; the result is handled by the UI layer
+     * @param pet the {@link PetModel} whose stats may be affected
+     * @return {@code null} in the current implementation
      */
     @Override
     public MinigameResult play(PetModel pet) {
-        MiniGameView.showMiniGame(pet);
+        // UI invocation is now handled by the Controller/View layer directly
+        // to support both embedded (TV) and potential future standalone modes.
+        // For the "Play" button shortcut, we could return a placeholder result or log.
+        System.out.println("Mini-games should be played via the TV!");
         return null;
     }
     
     /**
-     * Generates a new random secret number in the configured range.
+     * Generates a new random secret number within the configured range.
+     * <p>
+     * This should be called when starting a new round.
      */
     public void generateNewNumber() {
         this.secretNumber = random.nextInt(MAX_NUMBER - MIN_NUMBER + 1) + MIN_NUMBER;
     }
     
     /**
-     * Checks the provided guess against the current secret number and updates
+     * Checks the player's guess against the current secret number and updates
      * the pet's happiness accordingly.
      *
-     * @param guess the number guessed by the player
-     * @param pet   the {@link PetModel} whose stats should be updated; may be {@code null}
-     * @return a {@link MinigameResult} indicating success, happiness delta and a message
+     * @param guess the guessed number
+     * @param pet   the {@link PetModel} to update; may be {@code null}
+     * @return a {@link MinigameResult} describing win/loss, happiness delta,
+     *         and a user-facing message
      */
     public MinigameResult checkGuess(int guess, PetModel pet) {
         boolean won = (guess == secretNumber);
@@ -103,14 +100,18 @@ public class GuessingGame implements Minigame {
     }
     
     /**
-     * @return the minimum possible number that can be guessed
+     * Returns the minimum possible secret number (inclusive).
+     *
+     * @return the minimum number that can be generated
      */
     public int getMinNumber() {
         return MIN_NUMBER;
     }
     
     /**
-     * @return the maximum possible number that can be guessed
+     * Returns the maximum possible secret number (inclusive).
+     *
+     * @return the maximum number that can be generated
      */
     public int getMaxNumber() {
         return MAX_NUMBER;
