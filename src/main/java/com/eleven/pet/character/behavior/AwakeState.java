@@ -1,10 +1,10 @@
+// src/main/java/com/eleven/pet/character/behavior/AwakeState.java
 package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 /**
@@ -35,18 +35,15 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Handle a request to play. If the pet can play a minigame it will start one, otherwise a message
-     * will be printed indicating the pet is unable to play.
+     * Indicates that an awake pet is generally able to play minigames.
      *
-     * @param pet the {@link PetModel} that should play
+     * @param pet the pet model
+     * @return always {@code true}
      */
     @Override
-    public MinigameResult handlePlay(PetModel pet) {
-        if (pet.canPlayMinigame()) {
-            return pet.playRandomMinigame();
-        }
-        System.out.println(pet.getName() + " is too tired or hungry to play right now.");
-        return null;
+    public boolean canPlay(PetModel pet) {
+        // You could add logic here to prevent playing if hunger is too low (e.g. < 10)
+        return true;
     }
 
     /**

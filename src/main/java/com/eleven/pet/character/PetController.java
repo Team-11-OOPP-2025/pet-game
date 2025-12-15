@@ -8,7 +8,6 @@ import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.minigames.MiniGameController;
-import com.eleven.pet.minigames.ui.MiniGameView;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -34,6 +33,8 @@ public class PetController {
     private final GameClock clock;
     private final WeatherSystem weather;
     private final PersistenceService persistence;
+    private final MiniGameController miniGameController; // Delegate for minigame logic
+    
     private final BooleanProperty inventoryOpenProperty = new SimpleBooleanProperty(false);
     private Timeline autosaveTimer;
     private ExecutorService saveExecutor;
@@ -52,6 +53,7 @@ public class PetController {
         this.clock = clock;
         this.weather = weather;
         this.persistence = persistence;
+        this.miniGameController = new MiniGameController();
         initControllerLogic();
     }
 
@@ -121,13 +123,6 @@ public class PetController {
     }
 
     /**
-     * Starts a random minigame for the pet to play.
-     */
-    public void handlePlayAction() {
-        model.playRandomMinigame();
-    }
-
-    /**
      * Performs a cleaning action on the pet or its environment.
      */
     public void handleCleanAction() {
@@ -186,12 +181,6 @@ public class PetController {
 
     /**
      * Initializes periodic autosaving of the game state.
-     * <p>
-     * Creates a background executor and JavaFX {@link Timeline} that saves the
-     * {@link PetModel} at fixed intervals defined by
-     * {@link GameConfig#AUTOSAVE_INTERVAL_SECONDS}.
-     * Does nothing if autosave has already been initialized or persistence is unavailable.
-     * </p>
      */
     public void initAutosave() {
         if (autosaveTimer != null || persistence == null) return;
@@ -214,9 +203,6 @@ public class PetController {
 
     /**
      * Stops the autosave timer if it is running.
-     * <p>
-     * Does not shut down the underlying executor.
-     * </p>
      */
     public void stopAutosave() {
         if (autosaveTimer != null) {
@@ -227,11 +213,8 @@ public class PetController {
 
     /**
      * Perform an asynchronous save operation.
-     *
-     * @param reason Reason for the save (for logging purposes)
      */
     private void performAsyncSave(String reason) {
-        // Submit save to single-threaded executor to serialize saves and prevent race conditions
         saveExecutor.submit(() -> {
             try {
                 persistence.save(model);
@@ -244,10 +227,6 @@ public class PetController {
 
     /**
      * Performs a graceful shutdown sequence for this controller.
-     * <p>
-     * Stops autosave, shuts down the save executor and performs a final
-     * synchronous save via {@link PersistenceService}.
-     * </p>
      */
     public void shutdown() {
         if (isShutdown) return;
@@ -274,16 +253,13 @@ public class PetController {
     /**
      * Returns the Minigame Pane to display inside the TV.
      * <p>
-     * Initializes a {@link MiniGameView} and its controller.
+     * Delegates to the {@link MiniGameController} to start a random game.
      * </p>
      *
      * @param onExit callback to run when the game finishes (zooms out)
-     * @return the root {@link Pane} of the minigame view
+     * @return the root {@link Pane} of the minigame view, or null if no games available
      */
     public Pane getMinigamePane(Runnable onExit) {
-        MiniGameView gameView = new MiniGameView();
-        // The controller binds itself to the view and model and starts the logic
-        new MiniGameController(gameView, model, onExit);
-        return gameView;
+        return miniGameController.startRandomGame(model, onExit);
     }
 }

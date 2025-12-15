@@ -15,18 +15,14 @@ import com.eleven.pet.inventory.Inventory;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
 import com.eleven.pet.inventory.StatPotionDefinition;
-import com.eleven.pet.minigames.Minigame;
-import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.minigames.impl.GuessingGame;
-import com.eleven.pet.minigames.impl.TimingGame;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -38,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Data
 public class PetModel implements TimeListener, WeatherListener {
-    private static final java.util.Random random = new java.util.Random();
+    private static final Random random = new Random();
 
     private final String name;
     private final PetStats stats = new PetStats();
@@ -145,7 +141,7 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
-    // --- Existing Methods ---
+    // --- State & Interaction Methods ---
 
     /**
      * Change the current behavioral state of the pet.
@@ -219,39 +215,6 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public boolean canPlayMinigame() {
         return true; 
-    }
-
-    /**
-     * Runs the given minigame and applies its results to the pet.
-     *
-     * @param minigame minigame instance to play
-     * @return {@link MinigameResult} produced by the game, or {@code null} if game is {@code null}
-     */
-    private MinigameResult playMinigame(Minigame minigame) {
-        if (minigame == null) return null;
-
-        MinigameResult result = minigame.play(this);
-
-        if (result != null) {
-            // Apply happiness delta from the minigame result
-            stats.modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
-            System.out.println(result.message());
-        }
-
-        return result;
-    }
-
-    /**
-     * Selects a random minigame and plays it.
-     *
-     * @return result of the chosen minigame, or {@code null} if none available
-     */
-    public MinigameResult playRandomMinigame() {
-        List<Minigame> availableGames = new ArrayList<>();
-        availableGames.add(new TimingGame());
-        availableGames.add(new GuessingGame());
-        Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
-        return playMinigame(randomGame);
     }
 
     /**
@@ -344,8 +307,7 @@ public class PetModel implements TimeListener, WeatherListener {
         
         // 2. Update Reward Cooldown
         if (clock != null && rewardCooldown > 0) {
-            // FIX: timeDelta is ALREADY scaled by GameClock, so we use it directly.
-            // 1 unit of timeDelta = 1 in-game hour.
+            // timeDelta is scaled by GameClock; 1 unit = 1 in-game hour.
             rewardCooldown -= timeDelta; 
             if (rewardCooldown < 0) {
                 rewardCooldown = 0;
@@ -358,14 +320,9 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
-    /**
-     * Reacts to weather changes from the {@link WeatherSystem}.
-     *
-     * @param newWeather newly active weather state
-     */
     @Override
     public void onWeatherChange(WeatherState newWeather) {
-        // TODO: Implement weather change reaction
+        // Implementation delegated to listeners
     }
 
     /**

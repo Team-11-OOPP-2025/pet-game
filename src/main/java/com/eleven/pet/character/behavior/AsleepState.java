@@ -1,10 +1,10 @@
+// src/main/java/com/eleven/pet/character/behavior/AsleepState.java
 package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 /**
@@ -31,21 +31,20 @@ public class AsleepState implements PetState {
      */
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        // Pet is asleep; ignore eating actions
         System.out.println(pet.getName() + " is asleep and cannot eat right now.");
         return false;
     }
 
     /**
-     * Rejects play requests while the pet is asleep.
+     * Indicates that the pet cannot play while asleep.
      *
      * @param pet the sleeping pet
-     * @return always {@code null}, as no minigame can be started
+     * @return always {@code false}
      */
     @Override
-    public MinigameResult handlePlay(PetModel pet) {
+    public boolean canPlay(PetModel pet) {
         System.out.println(pet.getName() + " is asleep and cannot play right now.");
-        return null;
+        return false;
     }
 
     /**
