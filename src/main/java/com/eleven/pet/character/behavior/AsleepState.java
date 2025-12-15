@@ -155,4 +155,14 @@ public class AsleepState implements PetState {
     public String getStateName() {
         return STATE_NAME;
     }
+
+    @Override
+    public double getTimeScale() {
+        return GameConfig.TIMESCALE_SLEEP; // Returns 2.0
+    }
+
+    @Override
+    public boolean canSleep() {
+        return false; // Cannot start sleeping if already asleep
+    }
 }

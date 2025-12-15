@@ -56,11 +56,8 @@ public class PetController {
 
     private void initControllerLogic() {
         model.getStateProperty().addListener((_, oldState, newState) -> {
-            if (newState instanceof AsleepState) {
-                clock.setTimeScale(GameConfig.TIMESCALE_SLEEP);
-            }
-            else if (oldState instanceof AsleepState) {
-                clock.setTimeScale(GameConfig.TIMESCALE_NORMAL);
+            if (newState != null) {
+                clock.setTimeScale(newState.getTimeScale());
             }
         });
     }

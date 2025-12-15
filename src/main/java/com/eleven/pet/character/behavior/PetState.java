@@ -61,6 +61,21 @@ public interface PetState {
      * @return the identifier for this state
      */
     String getStateName();
+
+    /**
+     * Returns the time scale multiplier active during this state.
+     * Default is normal speed (1.0).
+     */
+    default double getTimeScale() {
+        return 1.0;
+    }
+
+    /**
+     * Determines if the pet is currently awake and eligible to sleep.
+     */
+    default boolean canSleep() {
+        return true; 
+    }
 }
 
 
