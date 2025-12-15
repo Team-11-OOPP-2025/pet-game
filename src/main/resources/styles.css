@@ -1,0 +1,70 @@
+/* Base Pixel Button Style */
+.pixel-btn {
+    -fx-font-family: "Minecraft";
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 4px;
+    -fx-cursor: hand;
+    -fx-padding: 8 20;
+    -fx-alignment: center;
+    /* Hard shadow for elevation (No blur) */
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.4), 0, 4, 0, 4);
+    -fx-transition-duration: 0.1s;
+}
+
+.pixel-btn:hover {
+    -fx-translate-y: -2px; /* Float up */
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.4), 0, 6, 0, 6); /* Shadow grows */
+}
+
+.pixel-btn:pressed {
+    -fx-translate-y: 4px; /* Push down */
+    -fx-effect: none; /* Shadow disappears when pressed flat */
+}
+
+/* Primary Actions (White/Grey) */
+.pixel-btn-primary {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #333333;
+    /* Bevel: Light Top/Left, Dark Bot/Right */
+    -fx-border-color: #ffffff #7f8c8d #7f8c8d #ffffff;
+}
+.pixel-btn-primary:pressed {
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: #7f8c8d #ffffff #ffffff #7f8c8d; /* Inset Bevel */
+}
+
+/* Sleep Action (Blue) */
+.pixel-btn-sleep {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: #5dade2 #2980b9 #2980b9 #5dade2;
+}
+.pixel-btn-sleep:pressed {
+    -fx-background-color: #2980b9;
+    -fx-border-color: #2980b9 #5dade2 #5dade2 #2980b9;
+}
+
+/* Rewards Action (Gold) */
+.pixel-btn-gold {
+    -fx-background-color: #f1c40f;
+    -fx-text-fill: #5c4500;
+    -fx-border-color: #f7dc6f #b7950b #b7950b #f7dc6f;
+}
+.pixel-btn-gold:pressed {
+    -fx-background-color: #d4ac0d;
+    -fx-border-color: #b7950b #f7dc6f #f7dc6f #b7950b;
+}
+
+/* Danger/Close (Red/Brown) */
+.pixel-btn-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-border-color: #ff756b #c0392b #c0392b #ff756b;
+}
+.pixel-btn-danger:pressed {
+    -fx-background-color: #c0392b;
+    -fx-border-color: #c0392b #ff756b #ff756b #c0392b;
+}

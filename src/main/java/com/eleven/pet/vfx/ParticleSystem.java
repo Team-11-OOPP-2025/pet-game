@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Manages and renders a collection of {@link Particle} instances on a
+ * {@link Canvas} using a JavaFX {@link AnimationTimer}.
+ */
 public class ParticleSystem {
     private final List<Particle> particles;
     private final Canvas canvas;
@@ -17,6 +21,13 @@ public class ParticleSystem {
     private int targetParticleCount;
     private long lastUpdate;
 
+    /**
+     * Creates a particle system that renders to an internal {@link Canvas}
+     * with the specified size.
+     *
+     * @param width  width of the canvas in pixels
+     * @param height height of the canvas in pixels
+     */
     public ParticleSystem(double width, double height) {
         this.particles = new ArrayList<>();
         this.canvas = new Canvas(width, height);
@@ -24,6 +35,12 @@ public class ParticleSystem {
         this.lastUpdate = System.nanoTime();
     }
 
+    /**
+     * Starts the animation loop and keeps spawning particles up to the
+     * specified target count.
+     *
+     * @param particleCount desired number of particles to maintain
+     */
     public void startAnimation(int particleCount) {
         this.targetParticleCount = particleCount;
 
@@ -45,6 +62,9 @@ public class ParticleSystem {
         animationLoop.start();
     }
 
+    /**
+     * Stops the animation loop, removes all particles, and clears the canvas.
+     */
     public void stopAnimation() {
         if (animationLoop != null) {
             animationLoop.stop();
@@ -56,6 +76,12 @@ public class ParticleSystem {
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
+    /**
+     * Updates all particles and spawns new ones while the current number
+     * of particles is below the target count.
+     *
+     * @param deltaTime time elapsed since the last update in seconds
+     */
     private void update(double deltaTime) {
         // Create new particles if below target count
         while (particles.size() < targetParticleCount && particleFactory != null) {
@@ -81,6 +107,9 @@ public class ParticleSystem {
         }
     }
 
+    /**
+     * Clears the canvas and renders all active particles.
+     */
     private void render() {
         // Clear canvas
         graphicsContext.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -91,14 +120,30 @@ public class ParticleSystem {
         }
     }
 
+    /**
+     * Returns the current number of active particles.
+     *
+     * @return number of particles managed by this system
+     */
     public int getParticleCount() {
         return particles.size();
     }
 
+    /**
+     * Returns the {@link Canvas} on which the particles are rendered.
+     *
+     * @return the canvas used by this particle system
+     */
     public Canvas getCanvas() {
         return canvas;
     }
 
+    /**
+     * Sets the {@link ParticleFactory} used to create new particles when
+     * the system needs to spawn additional particles.
+     *
+     * @param factory factory responsible for creating new particles
+     */
     public void setParticleFactory(ParticleFactory factory) {
         this.particleFactory = factory;
     }

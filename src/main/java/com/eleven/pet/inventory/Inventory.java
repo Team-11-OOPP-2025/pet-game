@@ -11,15 +11,18 @@ import java.util.Map;
 
 /**
  * Manages the inventory of items owned by the player.
+ * <p>
+ * Quantities are tracked per item ID and exposed via JavaFX properties
+ * for UI binding.
  */
 public class Inventory {
     private final Map<Integer, IntegerProperty> items = FXCollections.observableHashMap();
 
     /**
-     * Add multiple items.
+     * Adds multiple instances of an item to the inventory.
      *
-     * @param item     non-null item
-     * @param quantity number to add (0 = no-op, negative = IllegalArgumentException)
+     * @param item     item to add; ignored if {@code null}
+     * @param quantity number to add; ignored if {@code <= 0}
      */
     public void add(Item item, int quantity) {
         if (item == null || quantity <= 0) return;
@@ -28,9 +31,12 @@ public class Inventory {
     }
 
     /**
-     * Consume one item instance.
+     * Removes multiple instances of an item from the inventory.
      *
-     * @return true if an item was consumed; false if none is consumed (item not found or quantity is zero)
+     * @param item     item to remove; ignored if {@code null}
+     * @param quantity number to remove; must be positive
+     * @return {@code true} if the requested quantity was removed;
+     *         {@code false} if the item is missing or not enough quantity is available
      */
     public boolean remove(Item item, int quantity) {
         if (item == null || quantity <= 0) return false;
@@ -49,10 +55,10 @@ public class Inventory {
     }
 
     /**
-     * Get the quantity of a specific item.
+     * Gets the quantity of a specific item.
      *
-     * @param item non-null item
-     * @return quantity owned (0 if none)
+     * @param item item whose quantity is queried
+     * @return quantity owned, or {@code 0} if none
      */
     public int getQuantity(Item item) {
         IntegerProperty count = items.get(item.id());
@@ -60,19 +66,19 @@ public class Inventory {
     }
 
     /**
-     * Check if the inventory has at least one of the specified item.
+     * Checks whether the inventory contains at least one of the given item.
      *
-     * @param item non-null item
-     * @return true if at least one is owned; false otherwise
+     * @param item item to check
+     * @return {@code true} if at least one instance is present
      */
     public boolean has(Item item) {
         return getQuantity(item) > 0;
     }
 
     /**
-     * Get a map of all owned items and their quantities.
+     * Returns an unmodifiable snapshot of all owned items and their quantities.
      *
-     * @return unmodifiable map of item IDs to quantities
+     * @return map of item IDs to owned quantities (only items with quantity &gt; 0)
      */
     public Map<Integer, Integer> getAllOwnedItems() {
         Map<Integer, Integer> result = new HashMap<>();
@@ -87,15 +93,24 @@ public class Inventory {
     }
 
     /**
-     * Get the IntegerProperty representing the quantity of a specific item.
+     * Gets the JavaFX property representing the quantity of a specific item.
+     * <p>
+     * If the item does not yet exist in the inventory, it will be added with quantity {@code 0}.
      *
-     * @param item non-null item
-     * @return IntegerProperty for the item's quantity
+     * @param item item whose quantity property is requested
+     * @return {@link IntegerProperty} bound to the item's quantity
      */
     public IntegerProperty amountProperty(Item item) {
         return items.computeIfAbsent(item.id(), _ -> new SimpleIntegerProperty(0));
     }
 
+    /**
+     * Returns the observable map backing the inventory.
+     * <p>
+     * Keys are item IDs; values are quantity properties.
+     *
+     * @return observable map of item IDs to quantity properties
+     */
     public ObservableMap<Integer, IntegerProperty> getItems() {
         return (ObservableMap<Integer, IntegerProperty>) items;
     }

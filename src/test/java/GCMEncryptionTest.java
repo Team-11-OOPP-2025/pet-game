@@ -9,8 +9,16 @@ import java.io.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Tests for {@link GcmEncryptionService} round-trip behavior and error handling.
+ */
 public class GCMEncryptionTest {
 
+    /**
+     * Ensures that encrypting and then decrypting data yields the original plaintext.
+     *
+     * @throws Exception if any I/O or crypto error occurs during the round trip
+     */
     @Test
     void roundTripEncryptionProducesOriginalData() throws Exception {
         SecretKey key = KeyLoader.generateDevKey();
@@ -33,6 +41,12 @@ public class GCMEncryptionTest {
         assertEquals(data, decrypted);
     }
 
+    /**
+     * Ensures that encrypting and decrypting an empty stream succeeds
+     * and produces an empty result.
+     *
+     * @throws Exception if any I/O or crypto error occurs during the round trip
+     */
     @Test
     void encryptAndDecryptEmptyInputStream() throws Exception {
         SecretKey key = KeyLoader.generateDevKey();
@@ -53,6 +67,9 @@ public class GCMEncryptionTest {
         assertEquals(0, decryptedOut.toByteArray().length);
     }
 
+    /**
+     * Verifies that attempting to decrypt without an IV results in a {@link GameException}.
+     */
     @Test
     void decryptWithMissingIvThrowsGameException() {
         SecretKey key = KeyLoader.generateDevKey();
@@ -66,6 +83,10 @@ public class GCMEncryptionTest {
         );
     }
 
+    /**
+     * Verifies that decryption fails with an {@link IOException} when the ciphertext
+     * (including authentication tag) is corrupted.
+     */
     @Test
     void decryptWithCorruptedCipherTextThrowsIOException() {
         SecretKey key = KeyLoader.generateDevKey();

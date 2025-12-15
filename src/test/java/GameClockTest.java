@@ -8,7 +8,18 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for {@link GameClock} time progression and day-cycle calculation.
+ */
 public class GameClockTest {
+
+    /**
+     * Verifies that the {@link GameClock} calculates the correct {@link DayCycle}
+     * for various normalized times of day.
+     *
+     * @param normalizedTime normalized time of day in [0,1)
+     * @param expected       expected {@link DayCycle} value
+     */
     @ParameterizedTest
     @CsvSource({
             "0.0, DEEP_NIGHT",
@@ -30,6 +41,9 @@ public class GameClockTest {
         assertEquals(expected, clock.getCycle());
     }
 
+    /**
+     * Ensures that ticking the clock advances the game time.
+     */
     @Test
     void testTickIncrementsTime() {
         GameClock clock = new GameClock();
@@ -39,6 +53,9 @@ public class GameClockTest {
         assertTrue(finalTime > initialTime, "Game time should increase after tick");
     }
 
+    /**
+     * Ensures that when the clock is paused, ticking does not advance game time.
+     */
     @Test
     void testPauseLogic() {
         GameClock clock = new GameClock();

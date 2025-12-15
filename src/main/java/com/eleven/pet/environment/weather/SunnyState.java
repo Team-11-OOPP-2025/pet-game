@@ -4,6 +4,11 @@ import com.eleven.pet.vfx.effects.NoParticleEffect;
 import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.google.auto.service.AutoService;
 
+/**
+ * Sunny weather state.
+ * <p>
+ * Increases the pet's happiness and does not show any particle effects.
+ */
 @AutoService(WeatherState.class)
 public class SunnyState implements WeatherState {
     private static final ParticleEffect NO_PARTICLES = new NoParticleEffect();

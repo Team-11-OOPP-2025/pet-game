@@ -7,10 +7,22 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Integration-style tests for the {@link WeatherSystem} and its {@link WeatherState}s.
+ * <p>
+ * Uses manual registration of weather states instead of {@code ServiceLoader}
+ * to keep tests self-contained and deterministic.
+ */
 public class WeatherSystemTest {
 
     private WeatherSystem weatherSystem;
 
+    /**
+     * Initializes a new {@link WeatherSystem} instance and manually registers
+     * a small set of {@link WeatherState} implementations for use in tests.
+     *
+     * @throws Exception if reflection-based access to the internal state list fails
+     */
     @BeforeEach
     void setUp() throws Exception {
         weatherSystem = new WeatherSystem();
@@ -25,12 +37,20 @@ public class WeatherSystemTest {
         availableStates.add(new CloudyState());
     }
 
+    /**
+     * Verifies that calling {@link WeatherSystem#changeWeather()} always
+     * results in a non-{@code null} current weather state.
+     */
     @Test
     void testChangeWeather() {
         weatherSystem.changeWeather();
         assertNotNull(weatherSystem.getCurrentWeather(), "Current weather should not be null after change");
     }
 
+    /**
+     * Verifies that registered {@link WeatherListener}s are notified whenever
+     * the weather changes and receive the new {@link WeatherState}.
+     */
     @Test
     void testObserverNotification() {
         // Create a simple listener to track if it was called
@@ -49,6 +69,10 @@ public class WeatherSystemTest {
         assertNotNull(receivedState[0], "Listener should receive a WeatherState");
     }
 
+    /**
+     * Verifies the numeric happiness modifier and user-facing name
+     * for the {@link RainyState} weather implementation.
+     */
     @Test
     void testRainyModifier() {
         RainyState rainyState = new RainyState();
@@ -57,6 +81,10 @@ public class WeatherSystemTest {
         assertEquals("Rainy", rainyState.getName(), "State name should be 'Rainy'");
     }
 
+    /**
+     * Verifies the numeric happiness modifier and user-facing name
+     * for the {@link SunnyState} weather implementation.
+     */
     @Test
     void testSunnyModifier() {
         SunnyState sunnyState = new SunnyState();

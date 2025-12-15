@@ -8,7 +8,7 @@ import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 /**
- * Represents the awake behavior/state of a sprites. Handles actions available while the sprites is awake
+ * Represents the awake behavior/state of a pet. Handles actions available while the pet is awake
  * such as consuming items, playing minigames, sleeping, cleaning, and time-based updates.
  *
  * <p>This class is registered via {@link AutoService} as an implementation of {@link PetState}.</p>
@@ -18,7 +18,7 @@ public class AwakeState implements PetState {
     public static final String STATE_NAME = "AWAKE";
 
     /**
-     * Attempt to consume an {@link Item} from the sprites's inventory and apply its effect.
+     * Attempt to consume an {@link Item} from the pet's inventory and apply its effect.
      *
      * @param pet  the {@link PetModel} performing the consumption
      * @param item the {@link Item} to consume
@@ -35,8 +35,8 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Handle a request to play. If the sprites can play a minigame it will start one, otherwise a message
-     * will be printed indicating the sprites is unable to play.
+     * Handle a request to play. If the pet can play a minigame it will start one, otherwise a message
+     * will be printed indicating the pet is unable to play.
      *
      * @param pet the {@link PetModel} that should play
      */
@@ -50,7 +50,7 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Transition the sprites into the sleeping state. Prepares sleep-related flags and resets sleep
+     * Transition the pet into the sleeping state. Prepares sleep-related flags and resets sleep
      * tracking counters if a game clock is present.
      *
      * @param pet the {@link PetModel} that will go to sleep
@@ -76,7 +76,7 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Clean the sprites, providing a fixed cleanliness and small happiness benefit.
+     * Clean the pet, providing a fixed cleanliness and small happiness benefit.
      *
      * @param pet the {@link PetModel} being cleaned
      */

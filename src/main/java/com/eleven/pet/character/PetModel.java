@@ -10,9 +10,11 @@ import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.inventory.ActivePotion;
 import com.eleven.pet.inventory.Inventory;
 import com.eleven.pet.inventory.Item;
 import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.inventory.StatPotionDefinition;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.GuessingGame;
@@ -25,100 +27,58 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Core model representing the virtual sprites, its stats, state, inventory and interactions with
- * environment systems such as clock and weather.
+ * Core domain model for a single pet instance.
  *
- * <p>This class is the central domain object and is responsible for:
- * <ul>
- *   <li>Holding the sprites's {@link PetStats} and {@link Inventory}.</li>
- *   <li>Managing the current {@link PetState} via the {@link StateRegistry}.</li>
- *   <li>Listening to {@link GameClock} ticks and {@link WeatherSystem} changes.</li>
- *   <li>Performing actions such as sleeping, cleaning, consuming items and playing minigames.</li>
- * </ul>
+ * <p>Tracks stats, state machine, inventory, potions, and reacts to
+ * environment updates such as time and weather. Exposes a public API
+ * used by UI and game logic to interact with the pet.</p>
  */
 @Data
 public class PetModel implements TimeListener, WeatherListener {
     private static final java.util.Random random = new java.util.Random();
 
-    /**
-     * The sprites's display name.
-     */
     private final String name;
-
-    /**
-     * Container for numeric stats (hunger, happiness, energy, cleanliness, etc.).
-     */
     private final PetStats stats = new PetStats();
-
-    /**
-     * Property holding the current state of the sprites (awake, asleep, etc.).
-     */
     private final ObjectProperty<PetState> currentState;
-
-    /**
-     * External weather system the sprites listens to for weather changes.
-     */
     private final WeatherSystem weatherSystem;
-
-    /**
-     * External game clock the sprites listens to for time ticks.
-     */
     private final GameClock clock;
-
-    /**
-     * The sprites's inventory.
-     */
     private final Inventory inventory = new Inventory();
 
-    /**
-     * Accumulator used to aggregate fractional hunger decay until a whole point can be applied.
-     */
     private double hungerDecayAccum = 0.0;
-
-    /**
-     * Accumulator used to aggregate fractional cleanliness decay until a whole point can be applied.
-     */
     private double cleanlinessDecayAccum = 0.0;
-
-    /**
-     * Accumulator for happiness decay.
-     */
     private double happinessDecayAccum = 0.0;
 
-    /**
-     * Flag to indicate whether the sprites has already slept during the current night cycle.
-     */
     private boolean sleptThisNight = false;
-
-    /**
-     * Flag to indicate whether the clock has passed 8 AM in the current day cycle.
-     */
     private boolean passedEightAM = false;
-
-    /**
-     * Tracks the duration the sprites has been sleeping during the current sleep session
-     * (in game seconds).
-     */
     private double currentSleepDuration = 0.0;
-
-    /**
-     * Counter used for rewards based on hours slept.
-     */
     private int hoursSleptRewardCount = 0;
+    
+    // Remaining time (in game hours) until the next reward can be claimed
+    private double rewardCooldown = 0.0;
+
+    private PetDefinition definition;
+
+    // Thread-safe list to handle concurrent modifications during ticks
+    private final List<ActivePotion> activePotions = new CopyOnWriteArrayList<>();
 
     /**
-     * Constructs a new PetModel and subscribes it to the provided environment systems.
+     * Creates a new pet model with default stats, behavior, and definition.
      *
-     * @param name          The sprites's name.
-     * @param weatherSystem Weather system to subscribe to; may be {@code null}.
-     * @param clock         Game clock to subscribe to; may be {@code null}.
+     * <p>Subscribes to the provided {@link GameClock} and {@link WeatherSystem}
+     * if they are non-null and initializes daily inventory items.</p>
+     *
+     * @param name          pet name
+     * @param weatherSystem weather system to subscribe to, may be {@code null}
+     * @param clock         game clock to subscribe to, may be {@code null}
      */
     public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
+        this.definition = new PetDefinition("Bear"); // Default definition
 
         // Initialize stats
         stats.registerStat(PetStats.STAT_HUNGER, 50);
@@ -139,10 +99,58 @@ public class PetModel implements TimeListener, WeatherListener {
         replenishDailyFood();
     }
 
+    // --- Potion Logic ---
+
     /**
-     * Change the sprites's current state.
+     * Computes the effective multiplier for a given stat based on all active potions.
      *
-     * @param newState New {@link PetState} to apply; ignored if {@code null}.
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HUNGER})
+     * @return product of all active multipliers affecting that stat, or {@code 1.0} if none
+     */
+    public double getStatMultiplier(String statName) {
+        double totalMultiplier = 1.0;
+        for (ActivePotion potion : activePotions) {
+            if (potion.getStatType().equals(statName)) {
+                totalMultiplier *= potion.getMultiplier();
+            }
+        }
+        return totalMultiplier;
+    }
+
+    /**
+     * Returns the remaining duration of the longest potion affecting a given stat.
+     *
+     * @param statName name of the stat
+     * @return remaining time in game hours of the strongest-duration potion, or {@code 0.0} if none
+     */
+    public double getPotionDuration(String statName) {
+        double maxDuration = 0.0;
+        for (ActivePotion potion : activePotions) {
+            if (potion.getStatType().equals(statName)) {
+                maxDuration = Math.max(maxDuration, potion.getTimeRemaining());
+            }
+        }
+        return maxDuration;
+    }
+
+    /**
+     * Adds a new active potion effect to the pet.
+     *
+     * @param def definition of the potion; ignored if {@code null}
+     */
+    public void addPotion(StatPotionDefinition def) {
+        if (def != null) {
+            activePotions.add(new ActivePotion(def));
+            System.out.println("Effect Applied: " + def.name() + " (x" + def.multiplier() + " to " + def.statType() + ")");
+        }
+    }
+
+    // --- Existing Methods ---
+
+    /**
+     * Change the current behavioral state of the pet.
+     *
+     * @param newState new state to switch to; if {@code null}, the call is ignored
      */
     public void changeState(PetState newState) {
         if (newState == null) return;
@@ -151,27 +159,27 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Returns the current {@link PetState}.
+     * Get the current behavioral state.
      *
-     * @return current state instance, or {@code null} if not set.
+     * @return current {@link PetState}, or {@code null} if not initialized
      */
     public PetState getCurrentState() {
         return currentState.get();
     }
 
     /**
-     * Returns a read-only property for the current {@link PetState} to allow UI bindings.
+     * Returns an observable property for the pet's current state.
      *
-     * @return read-only state property.
+     * @return read-only object property of {@link PetState}
      */
     public ReadOnlyObjectProperty<PetState> getStateProperty() {
         return currentState;
     }
 
     /**
-     * Calculates the current in-game hour (0.0 - &lt;24.0).
+     * Returns the current in-game time as an hour-of-day value.
      *
-     * @return current game hour or {@code 0.0} if clock is not available.
+     * @return hour in range [0, 24), or {@code 0.0} if no clock is attached
      */
     public double getCurrentGameHour() {
         if (clock == null) return 0.0;
@@ -181,44 +189,43 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Attempt to consume the given {@link Item} via the current state handler.
+     * Requests the current state to handle a consume action with the given item.
      *
-     * @param item item to consume.
-     * @return {@code true} if the consume action was accepted/handled; {@code false} otherwise.
+     * @param item item to consume
+     * @return {@code true} if the consume action was performed, {@code false} otherwise
      */
     public boolean performConsume(Item item) {
         return currentState.get().handleConsume(this, item);
     }
 
     /**
-     * Request the sprites to attempt to sleep via the current state's sleep handler.
+     * Requests the current state to handle a sleep interaction.
      */
     public void requestSleepInteraction() {
         currentState.get().handleSleep(this);
     }
 
     /**
-     * Request the sprites to be cleaned via the current state's clean handler.
+     * Requests the current state to handle a cleaning interaction.
      */
     public void performClean() {
         currentState.get().handleClean(this);
     }
 
     /**
-     * Check whether the sprites is eligible to play a minigame.
+     * Indicates whether the pet is allowed to start a minigame.
      *
-     * @return {@code true} if a minigame can be started; {@code false} otherwise.
+     * @return {@code true} if a minigame can be played, {@code false} otherwise
      */
     public boolean canPlayMinigame() {
-        // TODO: Implement minigame eligibility check
-        return true; // For now, always allow minigames
+        return true; 
     }
 
     /**
-     * Play the provided {@link Minigame} and apply its effects to the sprites (e.g. happiness).
+     * Runs the given minigame and applies its results to the pet.
      *
-     * @param minigame minigame to play.
-     * @return the {@link MinigameResult} returned by the minigame, or {@code null} if none.
+     * @param minigame minigame instance to play
+     * @return {@link MinigameResult} produced by the game, or {@code null} if game is {@code null}
      */
     private MinigameResult playMinigame(Minigame minigame) {
         if (minigame == null) return null;
@@ -235,30 +242,24 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Selects and plays a random minigame from a local list of implementations.
+     * Selects a random minigame and plays it.
      *
-     * @return result of the played minigame, or {@code null} if nothing was played.
+     * @return result of the chosen minigame, or {@code null} if none available
      */
     public MinigameResult playRandomMinigame() {
-        // TODO: Delegate this behavior to the PetState
-        // TODO: Use autoservice to populate the minigame list
-
-        // Create list of available minigames
         List<Minigame> availableGames = new ArrayList<>();
         availableGames.add(new TimingGame());
         availableGames.add(new GuessingGame());
-
-        // Pick a random minigame
         Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
-
         return playMinigame(randomGame);
     }
 
     /**
-     * Replenish the sprites's daily food items into its inventory.
+     * Replenishes daily food items into the pet's inventory.
+     *
+     * <p>The amount and type of food are randomized within configured bounds.</p>
      */
     public void replenishDailyFood() {
-        // TODO: Fix this logic to be more dynamic
         System.out.println("Replenishing Daily Food");
         for (int i = 0; i < random.nextInt(1, 4); i++) {
             Item foodItem = ItemRegistry.get(i);
@@ -268,29 +269,32 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Determine whether the sprites should be prompted to sleep based on the current
-     * game hour, state, and flags.
+     * Determines whether the UI should prompt the player to let the pet sleep.
      *
-     * @return {@code true} when the sleep prompt should be shown.
+     * @return {@code true} if the pet is awake, has not slept this night, and is within the sleep window
      */
     public boolean shouldPromptSleep() {
         if (clock == null) return false;
         if (currentState.get() instanceof AsleepState || sleptThisNight) return false;
 
         double hour = getCurrentGameHour();
-
         return hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
     }
 
     /**
-     * Apply stat decay over the given time delta. This method accumulates fractional decay
-     * amounts and applies whole integer deltas to the underlying stats.
+     * Applies stat decay over a given time delta.
      *
-     * @param timeDelta elapsed time in seconds since the last tick.
+     * <p>Uses the {@link PetDefinition} rates to reduce hunger, cleanliness, and happiness
+     * over time, with additional penalties when hunger or cleanliness are low.</p>
+     *
+     * @param timeDelta elapsed time in game hours
      */
     public void applyStatDecay(double timeDelta) {
-        hungerDecayAccum -= GameConfig.HUNGER_DECAY_RATE * timeDelta;
-        cleanlinessDecayAccum -= GameConfig.CLEANLINESS_DECAY_RATE * timeDelta;
+        // Use definition rates if available, otherwise fallback or config
+
+        hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
+        cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
+        
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
             hungerDecayAccum -= hungerDelta;
@@ -303,14 +307,11 @@ public class PetModel implements TimeListener, WeatherListener {
             stats.modifyStat(PetStats.STAT_CLEANLINESS, cleanDelta);
         }
 
-        //stats.calculateDerivedHappiness();
         double currentHunger = stats.getStat(PetStats.STAT_HUNGER).get();
         double currentClean = stats.getStat(PetStats.STAT_CLEANLINESS).get();
 
-        // Base boredom decay
-        double happinessRate = GameConfig.HAPPINESS_DECAY_RATE;
+        double happinessRate = (definition != null) ? definition.happinessDecayRate() : GameConfig.HAPPINESS_DECAY_RATE;
 
-        // Penalty multipliers: If stats are critical (< 30), happiness drops 2x or 3x faster
         if (currentHunger < 30) happinessRate *= 2.0;
         if (currentClean < 30) happinessRate *= 1.5;
 
@@ -324,36 +325,66 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Retrieve a read-only property for the specified stat name.
+     * Called each tick by the {@link GameClock}.
      *
-     * @param statName name of the stat to retrieve.
-     * @return read-only integer property for the stat, or {@code null} if not found.
-     */
-    public ReadOnlyIntegerProperty getStatProperty(String statName) {
-        // Delegate to the internal stats object
-        return stats.getStat(statName);
-    }
-
-    /**
-     * Called each game tick by the {@link GameClock}. Delegates to the current {@link PetState}.
+     * <p>Updates potion durations, reward cooldown, and delegates to the current state.</p>
      *
-     * @param timeDelta elapsed time in seconds since last tick.
+     * @param timeDelta elapsed in-game time since the last tick, in hours
      */
     @Override
     public void onTick(double timeDelta) {
+        // 1. Update Potions
+        for (ActivePotion potion : activePotions) {
+            potion.tick(timeDelta);
+            if (potion.isExpired()) {
+                activePotions.remove(potion);
+                System.out.println("Effect Expired: " + potion.getName());
+            }
+        }
+        
+        // 2. Update Reward Cooldown
+        if (clock != null && rewardCooldown > 0) {
+            // FIX: timeDelta is ALREADY scaled by GameClock, so we use it directly.
+            // 1 unit of timeDelta = 1 in-game hour.
+            rewardCooldown -= timeDelta; 
+            if (rewardCooldown < 0) {
+                rewardCooldown = 0;
+            }
+        }
+
+        // 3. Existing State Logic
         if (currentState.get() != null) {
             currentState.get().onTick(this, timeDelta);
         }
     }
 
     /**
-     * Called when the {@link WeatherSystem} reports a weather change. Intended to allow states
-     * or stats to react (e.g. happiness changes).
+     * Reacts to weather changes from the {@link WeatherSystem}.
      *
-     * @param newWeather new weather state.
+     * @param newWeather newly active weather state
      */
     @Override
     public void onWeatherChange(WeatherState newWeather) {
-        // TODO: Implement weather change reaction (modify happiness based on weather)
+        // TODO: Implement weather change reaction
+    }
+
+    /**
+     * Adds the given item and quantity to the pet's inventory.
+     *
+     * @param item     item to add
+     * @param quantity number of units to add
+     */
+    public void addToInventory(Item item, int quantity) {
+        inventory.add(item, quantity);
+    }
+    
+    /**
+     * Returns a read-only property for the given stat.
+     *
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
+     * @return read-only integer property, or {@code null} if the stat does not exist
+     */
+    public ReadOnlyIntegerProperty getStatProperty(String statName) {
+        return stats.getStat(statName);
     }
 }

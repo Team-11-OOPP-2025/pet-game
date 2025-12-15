@@ -20,9 +20,26 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * A simple timing-based {@link com.eleven.pet.minigames.Minigame} where the player
+ * must stop a filling bar inside a target zone to win happiness for the pet.
+ */
 public class TimingGame implements Minigame {
+
+    /**
+     * Lower bound of the target zone on the progress bar (inclusive), as a fraction of total width.
+     */
     private static final double TARGET_MIN = 0.40; // 40%
+
+    /**
+     * Upper bound of the target zone on the progress bar (inclusive), as a fraction of total width.
+     */
     private static final double TARGET_MAX = 0.60; // 60%
+
+    /**
+     * Amount the progress bar fills per frame.
+     * Expressed as a fraction of the full width per 100 ms.
+     */
     private static final double FILL_SPEED = 0.01; // Progress per frame (1% per 100ms)
     
     @Override
@@ -30,6 +47,14 @@ public class TimingGame implements Minigame {
         return "Timing Challenge";
     }
     
+    /**
+     * Starts the timing mini-game for the given pet and returns the result once the
+     * JavaFX dialog has been closed.
+     *
+     * @param pet the {@link PetModel} participating in the mini-game
+     * @return the {@link MinigameResult} describing whether the player won and the
+     *         corresponding happiness delta
+     */
     @Override
     public MinigameResult play(PetModel pet) {
         // Create a holder for the result
@@ -45,6 +70,14 @@ public class TimingGame implements Minigame {
         return resultHolder[0];
     }
     
+    /**
+     * Creates and displays the modal JavaFX dialog that implements the timing game
+     * logic. This method is expected to run on the JavaFX Application Thread and
+     * blocks until the dialog is closed.
+     *
+     * @param pet the {@link PetModel} for which the game is played
+     * @return the {@link MinigameResult} based on the user's timing performance
+     */
     private MinigameResult showMinigameDialogSync(PetModel pet) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);

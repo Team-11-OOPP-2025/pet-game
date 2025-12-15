@@ -3,6 +3,7 @@ package com.eleven.pet.character;
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
+import com.eleven.pet.daily_reward.Chest;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
@@ -14,6 +15,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -147,6 +150,28 @@ public class PetController {
      */
     public void debugChangeWeather() {
         weather.changeWeather();
+    }
+    
+    // --- Daily Reward Logic ---
+    
+    public boolean isDailyRewardAvailable() {
+        return model.getRewardCooldown() <= 0;
+    }
+    
+    public List<Chest> generateDailyRewardOptions() {
+        List<Chest> chests = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            chests.add(new Chest());
+        }
+        return chests;
+    }
+    
+    public void claimDailyReward(Chest chest) {
+        if (isDailyRewardAvailable()) {
+            chest.open(model);
+            model.setRewardCooldown(GameConfig.DAILY_REWARD_COOLDOWN);
+            System.out.println("Daily reward claimed. Cooldown reset.");
+        }
     }
 
 

@@ -13,14 +13,12 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 
 /**
- * AES-GCM encryption implementation that supports streaming encryption and decryption.
- *
- * <p>The implementation writes a randomly generated IV (12 bytes) at the beginning of the
- * encrypted stream so the recipient can read it and initialize the cipher for decryption.
- * Tag length is {@code GCM_TAG_LENGTH} bits and is passed to {@link GCMParameterSpec}.</p>
- *
- * <p>Note: this class does not close the provided {@link InputStream} or {@link OutputStream};
- * the caller is responsible for closing streams.</p>
+ * AES-GCM based implementation of {@link EncryptionService} that supports
+ * streaming encryption and decryption.
+ * <p>
+ * A fresh random IV is generated for each encryption stream and written as the
+ * first {@value #GCM_IV_LENGTH} bytes of the ciphertext stream. The same IV is
+ * read back when initializing the decryption stream.
  */
 public class GcmEncryptionService implements EncryptionService {
     /**
@@ -44,25 +42,20 @@ public class GcmEncryptionService implements EncryptionService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
-     * Create a new {@code GcmEncryptionService} using the provided AES {@code key}.
+     * Create a new {@code GcmEncryptionService} using the provided AES key.
      *
-     * @param key the AES {@link SecretKey} to use for encryption and decryption
+     * @param key AES {@link SecretKey} used for both encryption and decryption
      */
     public GcmEncryptionService(SecretKey key) {
         this.key = key;
     }
 
     /**
-     * Wraps an {@link OutputStream} with an encryption layer.
+     * {@inheritDoc}
      * <p>
-     * Any data written to the returned stream is encrypted using AES-GCM and then
-     * written to the underlying {@code out} stream. The IV is written immediately
-     * to the underlying stream header.
-     * </p>
-     *
-     * @param out the destination stream for the encrypted data
-     * @return an output stream that encrypts data as it is written
-     * @throws GameException if initialization fails
+     * This implementation writes a random IV to the underlying stream first,
+     * then returns a {@link javax.crypto.CipherOutputStream} that performs
+     * AES/GCM/NoPadding encryption.
      */
     public OutputStream wrapOutputStream(OutputStream out) throws GameException {
         try {
@@ -87,6 +80,13 @@ public class GcmEncryptionService implements EncryptionService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation reads the IV from the first {@value #GCM_IV_LENGTH}
+     * bytes of the provided stream, initializes an AES-GCM cipher, and returns
+     * a {@link CipherInputStream} that decrypts data on the fly.
+     */
     @Override
     public InputStream wrapInputStream(InputStream in) throws GameException {
         try {
