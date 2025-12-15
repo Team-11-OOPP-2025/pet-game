@@ -1,9 +1,5 @@
 package com.eleven.pet.character;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
@@ -14,21 +10,20 @@ import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.inventory.ActivePotion;
-import com.eleven.pet.inventory.Inventory;
-import com.eleven.pet.inventory.Item;
-import com.eleven.pet.inventory.ItemRegistry;
-import com.eleven.pet.inventory.StatPotionDefinition;
+import com.eleven.pet.inventory.*;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.impl.TimingGame;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -47,6 +42,8 @@ public class PetModel implements TimeListener, WeatherListener {
     private final ObjectProperty<PetState> currentState;
     private final WeatherSystem weatherSystem;
     private final GameClock clock;
+    private boolean tutorialCompleted;
+
     private final Inventory inventory = new Inventory();
 
     private double hungerDecayAccum = 0.0;

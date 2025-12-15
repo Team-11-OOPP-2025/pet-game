@@ -12,15 +12,17 @@ import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class PetView {
     private final PetModel model;
@@ -29,15 +31,15 @@ public class PetView {
     private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
 
-    private StackPane worldLayer; 
-    private StackPane uiLayer;   
+    private StackPane worldLayer;
+    private StackPane uiLayer;
 
     private PetAvatarView petAvatarView;
     private InventoryView inventoryView;
     private WorldView worldView;
     private HUDView hudView;
     private DailyRewardView dailyRewardView;
-    
+
 
     // Zoom State
     private boolean isGameMode = false;
@@ -73,9 +75,9 @@ public class PetView {
         StackPane root = new StackPane();
 
         // 1. Create the Layers
-        worldLayer = new StackPane(); 
-        uiLayer = new StackPane(); 
-        uiLayer.setPickOnBounds(false); 
+        worldLayer = new StackPane();
+        uiLayer = new StackPane();
+        uiLayer.setPickOnBounds(false);
 
         // 2. Initialize Components
         worldView = new WorldView(clock, weatherSystem);
@@ -84,7 +86,7 @@ public class PetView {
 
         inventoryView = new InventoryView(model, controller);
         hudView = new HUDView(model, controller, clock);
-        
+
         // Pass controller here
         dailyRewardView = new DailyRewardView(model, controller);
 
@@ -94,13 +96,37 @@ public class PetView {
 
         // 4. Compose UI
         uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
-        
+
         // 5. Setup Daily Rewards Trigger
         setupRewardTrigger(uiLayer);
 
         // 6. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
 
+        if (!model.isTutorialCompleted()) {
+            final TutorialView[] tutorialRef = new TutorialView[1];
+
+            // Define targets matching the steps in TutorialView
+            // 0: Welcome (Null)
+            // 1: Stats (StatsBox)
+            // 2: TV (TvClickArea)
+            // 3: Inventory (Feed Button)
+            // 4: Sleep (Sleep Button)
+            List<Node> targets = Arrays.asList(
+                    null,
+                    hudView.getStatsBox(),
+                    worldView.getTvClickArea(),
+                    hudView.getFeedBtn(),
+                    hudView.getSleepBtn()
+            );
+
+            tutorialRef[0] = new TutorialView(targets, () -> {
+                root.getChildren().remove(tutorialRef[0]);
+                controller.completeTutorial();
+            });
+
+            root.getChildren().add(tutorialRef[0]);
+        }
         return root;
     }
 
@@ -108,7 +134,7 @@ public class PetView {
         // Load the chest image
         Image chestImage = assetLoader.getImage("chest/Chest");
         ImageView chestIcon = new ImageView(chestImage);
-        
+
         // Set viewport to the first frame (150x118) to avoid showing the whole sprite sheet
         chestIcon.setViewport(new Rectangle2D(0, 0, 150, 118));
         chestIcon.setFitWidth(30);
@@ -124,13 +150,13 @@ public class PetView {
 
         // Create Button with Icon
         Button btn = new Button(" REWARDS", chestIcon);
-        btn.setContentDisplay(ContentDisplay.LEFT); 
-        
+        btn.setContentDisplay(ContentDisplay.LEFT);
+
         // Remove inline styles and use CSS classes
         btn.getStyleClass().addAll("pixel-btn", "pixel-btn-gold");
-        
+
         btn.setOnAction(e -> dailyRewardView.toggle(true));
-        
+
         StackPane.setAlignment(btn, Pos.TOP_RIGHT);
         StackPane.setMargin(btn, new Insets(20, 20, 0, 0));
         root.getChildren().add(btn);
@@ -187,7 +213,7 @@ public class PetView {
         isGameMode = false;
 
         StackPane tvClickArea = worldView.getTvClickArea();
-        tvClickArea.getChildren().clear(); 
+        tvClickArea.getChildren().clear();
 
         ParallelTransition pt = new ParallelTransition();
 
@@ -229,7 +255,7 @@ public class PetView {
             Button exitBtn = new Button("X");
             // Also styling exit button
             exitBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
-            exitBtn.setStyle("-fx-font-size: 10px; -fx-padding: 2 6;"); 
+            exitBtn.setStyle("-fx-font-size: 10px; -fx-padding: 2 6;");
 
             exitBtn.setOnAction(_ -> exitMinigameMode());
             StackPane.setAlignment(exitBtn, Pos.TOP_RIGHT);
