@@ -1,6 +1,7 @@
 package com.eleven.pet.minigames;
 
 import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
 import com.eleven.pet.minigames.impl.GuessingGame;
 import com.eleven.pet.minigames.ui.MiniGameView;
 
@@ -63,7 +64,8 @@ public class MiniGameController {
                 return;
             }
 
-            MinigameResult result = game.checkGuess(guess, pet);
+            MinigameResult result = game.checkGuess(guess);
+            pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
             view.displayResult(result.won(), result.message());
 
         } catch (NumberFormatException e) {
