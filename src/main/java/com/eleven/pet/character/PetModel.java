@@ -262,6 +262,12 @@ public class PetModel implements TimeListener, WeatherListener {
 
         if (currentHunger < 30) happinessRate *= 2.0;
         if (currentClean < 30) happinessRate *= 1.5;
+        
+        // Apply weather happiness modifier
+        if (weatherSystem != null && weatherSystem.getCurrentWeather() != null) {
+            double weatherModifier = weatherSystem.getCurrentWeather().getHappinessModifier();
+            happinessRate /= weatherModifier; // Higher modifier = slower decay 
+        }
 
         happinessDecayAccum -= happinessRate * timeDelta;
 
@@ -337,6 +343,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
     @Override
     public void onWeatherChange(WeatherState newWeather) {
-        // Implementation delegated to listeners
+        System.out.println(name + " notices the weather changed to: " + newWeather.getName());
+        // Weather effects are applied continuously through the happiness decay modifier
     }
 }
