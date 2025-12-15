@@ -18,6 +18,7 @@ import java.util.Random;
  * randomly selects which game to start, forwards user input from the view to
  * the game logic, and applies the resulting {@link MinigameResult} to the
  * associated {@link PetModel}.
+ * </p>
  */
 public class MiniGameController {
     private final MiniGameView view;
@@ -83,6 +84,7 @@ public class MiniGameController {
      * Starts one of the available minigames at random.
      * <p>
      * Currently, this randomly chooses between the guessing and timing games.
+     * </p>
      */
     private void startRandomGame() {
         if (random.nextBoolean()) {
@@ -174,6 +176,7 @@ public class MiniGameController {
      * <p>
      * Increases the fill progress, updates the progress bar, and automatically
      * stops the game as a failure if the bar becomes full.
+     * </p>
      */
     private void updateTimingLoop() {
         if (!isTimingRunning) return;

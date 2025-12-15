@@ -27,6 +27,7 @@ import com.eleven.pet.ui.ViewConstants;
  * </ul>
  * The controller is expected to bind game logic to the exposed controls
  * via the provided getters.
+ * </p>
  */
 public class MiniGameView extends StackPane {
 
@@ -64,6 +65,7 @@ public class MiniGameView extends StackPane {
      * <p>
      * Creates the layout, input field, submit button, and result label,
      * and adds the guessing layer to this {@link StackPane}.
+     * </p>
      */
     private void initGuessingLayer() {
         guessingLayer = new VBox(10);
@@ -97,6 +99,7 @@ public class MiniGameView extends StackPane {
      * <p>
      * Creates the progress bar, its container, stop button, and result label,
      * and adds the timing layer to this {@link StackPane}.
+     * </p>
      */
     private void initTimingLayer() {
         timingLayer = new VBox(20);
@@ -137,6 +140,7 @@ public class MiniGameView extends StackPane {
      * <p>
      * Also resets the guessing game UI (clears input, enables controls,
      * clears the result text) and focuses the input field.
+     * </p>
      */
     public void showGuessing() {
         guessingLayer.setVisible(true);
@@ -156,6 +160,7 @@ public class MiniGameView extends StackPane {
      * <p>
      * Also resets the timing bar progress, enables the stop button,
      * and clears the result label.
+     * </p>
      */
     public void showTiming() {
         guessingLayer.setVisible(false);

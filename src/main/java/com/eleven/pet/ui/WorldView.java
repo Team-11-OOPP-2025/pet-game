@@ -24,6 +24,7 @@ import static com.eleven.pet.ui.ViewConstants.*;
  * <p>
  * Renders the room background, window particle effects, TV interaction area,
  * and a background clock synchronized with {@link GameClock} and {@link WeatherSystem}.
+ * </p>
  */
 public class WorldView extends StackPane {
 

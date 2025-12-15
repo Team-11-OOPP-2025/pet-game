@@ -7,6 +7,7 @@ import com.eleven.pet.character.PetModel;
  * <p>
  * Implementations define how an item is displayed and how it affects
  * a {@link PetModel} when used.
+ * </p>
  */
 public interface Item {
 

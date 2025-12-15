@@ -26,6 +26,7 @@ import javafx.util.Duration;
  * This class wires together the world (background, weather, time), the pet
  * avatar, HUD, inventory, and daily rewards UI, and it manages transitions
  * into and out of the TV-based minigame mode.
+ * </p>
  */
 public class PetView {
     private final PetModel model;
@@ -77,6 +78,7 @@ public class PetView {
      *     <li>Sets up the TV click area to enter minigame mode</li>
      *     <li>Adds the daily rewards trigger button</li>
      * </ul>
+     * </p>
      *
      * @return the root {@link Pane} containing all pet game UI elements
      */
@@ -121,6 +123,7 @@ public class PetView {
      * The trigger is rendered as a bouncing chest icon with a "REWARDS" label
      * that, when clicked, toggles the {@link DailyRewardView} to visible.
      * The button is aligned to the top-right corner of the provided root pane.
+     * </p>
      *
      * @param root the UI {@link StackPane} to which the rewards button is added
      */
@@ -156,10 +159,6 @@ public class PetView {
         root.getChildren().add(btn);
     }
 
-    // =============================================================
-    // EXISTING ZOOM LOGIC
-    // =============================================================
-
     /**
      * Enters minigame mode and focuses the camera on the TV.
      * <p>
@@ -172,6 +171,7 @@ public class PetView {
      *     transition finishes</li>
      * </ul>
      * It is a no-op if the view is already in minigame mode.
+     * </p>
      */
     private void enterMinigameMode() {
         if (isGameMode) return;
@@ -226,6 +226,7 @@ public class PetView {
      *     <li>Fades the UI layer back in</li>
      * </ul>
      * It is a no-op if the view is not currently in minigame mode.
+     * </p>
      */
     private void exitMinigameMode() {
         if (!isGameMode) return;
@@ -268,9 +269,12 @@ public class PetView {
      * callback to {@link #exitMinigameMode()} that is invoked when the
      * minigame finishes. If a pane is returned, it is resized to fill the TV
      * area and added as the only child of the TV container.
+     * </p>
+     *
      * <p>
      * If the controller does not provide a minigame pane (returns {@code null}),
      * this method leaves the TV area empty.
+     * </p>
      */
     private void loadGameContent() {
         StackPane tvContentPane = worldView.getTvContentPane();

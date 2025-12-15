@@ -23,6 +23,7 @@ import javafx.scene.layout.StackPane;
  *     <li>Running sprite-sheet based animations</li>
  *     <li>Reacting to {@link PetModel} state and stat changes (e.g. happiness, sleep)</li>
  * </ul>
+ * </p>
  */
 public class PetAvatarView extends StackPane {
 
@@ -142,6 +143,7 @@ public class PetAvatarView extends StackPane {
      *     <li>Initializes animations and the render loop</li>
      *     <li>Binds to model properties to react to state/stat changes</li>
      * </ul>
+     * </p>
      *
      * @param model      pet data model providing stats and state; may not be {@code null}
      * @param controller controller used to calculate emotions from stats; may not be {@code null}
@@ -219,6 +221,7 @@ public class PetAvatarView extends StackPane {
      *     <li>Updates the active animation</li>
      *     <li>Renders the next frame to the {@link ImageView}</li>
      * </ul>
+     * </p>
      */
     private void startRenderLoop() {
         lastFrameTime = System.nanoTime();
@@ -278,6 +281,7 @@ public class PetAvatarView extends StackPane {
      * <p>
      * If the new animation is already active, nothing happens. Otherwise, the
      * previous animation is paused and the new one is reset and played.
+     * </p>
      *
      * @param newAnim the animation to become active; may be {@code null}
      */

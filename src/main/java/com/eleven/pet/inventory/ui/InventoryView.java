@@ -34,6 +34,7 @@ import static com.eleven.pet.ui.ViewConstants.*;
  * interactive slot that can be clicked to trigger consume actions on the
  * {@link PetController}. The view listens to the controller's
  * {@code inventoryOpenProperty} to show and hide itself with a fade animation.
+ * </p>
  */
 public class InventoryView extends StackPane {
     private final PetModel model;

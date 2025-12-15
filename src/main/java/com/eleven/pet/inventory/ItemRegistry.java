@@ -11,6 +11,7 @@ import java.util.Random;
  * <p>
  * Items are registered with an integer ID and can later be looked up
  * by ID or chosen at random.
+ * </p>
  */
 public class ItemRegistry {
     private static final Map<Integer, Item> registry = new HashMap<>();

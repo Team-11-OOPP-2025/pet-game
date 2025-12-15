@@ -29,24 +29,25 @@ import java.util.List;
  * is available and a cooldown timer when it is not.
  * The view talks to {@link PetModel} for state and {@link PetController}
  * for reward generation/claiming.
+ * </p>
  */
 public class DailyRewardView extends StackPane {
     private final PetModel model;
     private final PetController controller;
-    
+
     private Label subTitle;
     private Label timerLabel;
     private HBox chestRow;
     private AnimationTimer timer;
-    
+
     // Flag to track if we need to regenerate chests when the timer hits 0
     private boolean needsRefresh = false;
 
     /**
      * Creates a new daily reward view for the given pet.
      *
-     * @param model       the pet model that exposes reward cooldown state
-     * @param controller  the controller that generates and claims rewards
+     * @param model      the pet model that exposes reward cooldown state
+     * @param controller the controller that generates and claims rewards
      */
     public DailyRewardView(PetModel model, PetController controller) {
         this.model = model;
@@ -88,14 +89,14 @@ public class DailyRewardView extends StackPane {
         // Chest Row Container
         chestRow = new HBox(30);
         chestRow.setAlignment(Pos.CENTER);
-        
+
         // Generate initial chests
         refreshChests();
 
         Button closeBtn = new Button("CLOSE");
         // Apply CSS classes
         closeBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
-        
+
         closeBtn.setOnAction(e -> toggle(false));
 
         panel.getChildren().addAll(title, subTitle, timerLabel, chestRow, closeBtn);
@@ -103,19 +104,20 @@ public class DailyRewardView extends StackPane {
 
         setupTimer();
     }
-    
+
     /**
      * Asks the {@link PetController} for new daily reward chest options
      * and rebuilds the chest row UI based on the returned list.
      * <p>
      * Existing chest nodes are cleared before new ones are created.
+     * </p>
      */
     private void refreshChests() {
         chestRow.getChildren().clear();
-        
+
         // Controller Logic: Get valid chest options
         List<Chest> chests = controller.generateDailyRewardOptions();
-        
+
         for (Chest chestModel : chests) {
             ChestComponent visualChest = new ChestComponent(chestModel);
             // Removed fixed scaling that was conflicting with animation logic
@@ -125,13 +127,13 @@ public class DailyRewardView extends StackPane {
             visualChest.setOnOpen(() -> {
                 // Controller Logic: Check availability
                 if (controller.isDailyRewardAvailable()) {
-                    
+
                     // Controller Logic: Claim logic
                     controller.claimDailyReward(chestModel);
-                    
+
                     // View Logic: Set flags and update UI
-                    needsRefresh = true; 
-                    updateState(); 
+                    needsRefresh = true;
+                    updateState();
                 }
             });
 
@@ -157,7 +159,7 @@ public class DailyRewardView extends StackPane {
      * Shows or hides the daily reward panel with a short animation.
      *
      * @param show {@code true} to show and start the internal timer,
-     * {@code false} to hide and stop the timer
+     *             {@code false} to hide and stop the timer
      */
     public void toggle(boolean show) {
         if (show) {
@@ -165,14 +167,16 @@ public class DailyRewardView extends StackPane {
             timer.start();
             this.setVisible(true);
             this.setOpacity(0);
-            
+
             FadeTransition ft = new FadeTransition(Duration.millis(300), this);
             ft.setToValue(1.0);
-            
+
             if (this.getChildren().size() > 1) {
-                ScaleTransition st = new ScaleTransition(Duration.millis(300), this.getChildren().get(1)); 
-                st.setFromX(0.8); st.setFromY(0.8);
-                st.setToX(1.0); st.setToY(1.0);
+                ScaleTransition st = new ScaleTransition(Duration.millis(300), this.getChildren().get(1));
+                st.setFromX(0.8);
+                st.setFromY(0.8);
+                st.setToX(1.0);
+                st.setToY(1.0);
 
                 ParallelTransition pt = new ParallelTransition(ft, st);
                 pt.play();
@@ -204,7 +208,7 @@ public class DailyRewardView extends StackPane {
             timerLabel.setText("Next reward in: " + formatGameTime(cooldown));
             timerLabel.setVisible(true);
             subTitle.setText("Come back later for more!");
-            
+
             chestRow.setDisable(true);
             chestRow.setOpacity(0.5);
         } else {
@@ -212,10 +216,10 @@ public class DailyRewardView extends StackPane {
                 refreshChests();
                 needsRefresh = false;
             }
-            
+
             timerLabel.setVisible(false);
             subTitle.setText("Select a chest to claim your prize!");
-            
+
             chestRow.setDisable(false);
             chestRow.setOpacity(1.0);
         }

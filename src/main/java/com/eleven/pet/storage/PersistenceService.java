@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
  *     <li>Mapping DTO data back into a live {@link com.eleven.pet.character.PetModel}</li>
  * </ul>
  * The actual crypto operations are delegated to {@link EncryptionService}.
+ * </p>
  */
 public class PersistenceService {
     private final EncryptionService encryptionService;
@@ -60,6 +61,7 @@ public class PersistenceService {
      * <p>
      * Data is first mapped into {@link PetDataDTO}, then written as JSON through
      * an encrypted output stream.
+     * </p>
      *
      * @param model the pet model to save
      * @throws GameException if any I/O, serialization, or encryption error occurs
@@ -99,6 +101,7 @@ public class PersistenceService {
      * If the file does not exist, an empty {@link Optional} is returned. If it does
      * exist, the file is decrypted, deserialized into {@link PetDataDTO}, then
      * mapped into a fresh {@link PetModel} instance created by {@link PetFactory}.
+     * </p>
      *
      * @param weatherSystem the weather system to associate with the loaded pet
      * @param gameClock     the game clock to associate with the loaded pet
@@ -169,6 +172,7 @@ public class PersistenceService {
      * Apply persisted stats to the given {@link PetStats} instance.
      * <p>
      * For each entry, the stat is registered (or overwritten) with the stored value.
+     * </p>
      *
      * @param data  map of stat name to value, may be {@code null}
      * @param stats target stats container, may be {@code null}
@@ -196,6 +200,7 @@ public class PersistenceService {
      * <p>
      * Existing items are cleared and then re-added based on the saved map.
      * Unknown item ids are ignored.
+     * </p>
      *
      * @param data      map of item id to quantity, may be {@code null}
      * @param inventory target inventory, may be {@code null}

@@ -12,7 +12,7 @@ import java.util.Map;
  * AssetLoader is responsible for loading and caching image assets and fonts.
  *
  * <p>Images are loaded from the {@code /images/} classpath location and
- * cached by relative path. Missing images are replaced with a placeholder.
+ * cached by relative path. Missing images are replaced with a placeholder.</p>
  */
 public class AssetLoader {
     private static AssetLoader instance;
@@ -70,7 +70,7 @@ public class AssetLoader {
      * Loads an image from disk, trying multiple file extensions.
      *
      * <p>Extensions are tried in order: {@code .png}, {@code .jpg}, {@code .jpeg}.
-     * If no variant is found, a placeholder image is returned.
+     * If no variant is found, a placeholder image is returned.</p>
      *
      * @param relativePath the path relative to {@code /resources/images/} without extension
      * @return the loaded {@link Image}, or a placeholder if not found

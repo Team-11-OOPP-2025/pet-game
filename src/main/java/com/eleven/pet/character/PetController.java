@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Orchestrates interactions between the {@link PetModel} and external game
  * systems such as the clock, weather, persistence, inventory and minigames.
- * Provides high–level operations that the UI layer can invoke.
+ * Provides high–level operations that the UI layer can invoke.</p>
  */
 public class PetController {
     private final PetModel model;
@@ -80,21 +80,27 @@ public class PetController {
      *
      * @return a {@link BooleanProperty} that is true when the inventory is open
      */
-    public BooleanProperty inventoryOpenProperty() { return inventoryOpenProperty; }
+    public BooleanProperty inventoryOpenProperty() {
+        return inventoryOpenProperty;
+    }
 
     /**
      * Sets whether the inventory UI is currently open.
      *
      * @param isOpen {@code true} to mark the inventory as open, {@code false} otherwise
      */
-    public void setInventoryOpen(boolean isOpen) { inventoryOpenProperty.set(isOpen); }
+    public void setInventoryOpen(boolean isOpen) {
+        inventoryOpenProperty.set(isOpen);
+    }
 
     /**
      * Checks whether the pet is allowed to sleep and the user should be prompted.
      *
      * @return {@code true} if a sleep interaction should be offered, {@code false} otherwise
      */
-    public boolean isSleepAllowed() { return model.shouldPromptSleep(); }
+    public boolean isSleepAllowed() {
+        return model.shouldPromptSleep();
+    }
 
     /**
      * Handles consumption of an item by the pet.
@@ -109,34 +115,46 @@ public class PetController {
     /**
      * Triggers a sleep interaction request for the pet.
      */
-    public void handleSleepAction() { model.requestSleepInteraction(); }
+    public void handleSleepAction() {
+        model.requestSleepInteraction();
+    }
 
     /**
      * Starts a random minigame for the pet to play.
      */
-    public void handlePlayAction() { model.playRandomMinigame(); }
+    public void handlePlayAction() {
+        model.playRandomMinigame();
+    }
 
     /**
      * Performs a cleaning action on the pet or its environment.
      */
-    public void handleCleanAction() { model.performClean(); }
+    public void handleCleanAction() {
+        model.performClean();
+    }
 
     /**
      * Toggles the paused state of the game clock.
      */
-    public void togglePause() { clock.setPaused(!clock.isPaused()); }
+    public void togglePause() {
+        clock.setPaused(!clock.isPaused());
+    }
 
     /**
      * Cycles the in-game weather to a different state (debug functionality).
      */
-    public void debugChangeWeather() { weather.changeWeather(); }
-    
+    public void debugChangeWeather() {
+        weather.changeWeather();
+    }
+
     /**
      * Checks if the daily reward is currently available to be claimed.
      *
      * @return {@code true} if the reward cooldown has elapsed, {@code false} otherwise
      */
-    public boolean isDailyRewardAvailable() { return model.getRewardCooldown() <= 0; }
+    public boolean isDailyRewardAvailable() {
+        return model.getRewardCooldown() <= 0;
+    }
 
     /**
      * Generates a list of daily reward chest options for the player to choose from.
@@ -153,6 +171,7 @@ public class PetController {
      * Claims the specified daily reward chest if it is available.
      * <p>
      * Opens the chest, applies its rewards to the model and resets the cooldown.
+     * </p>
      *
      * @param chest the {@link Chest} selected by the player
      */
@@ -171,6 +190,7 @@ public class PetController {
      * {@link PetModel} at fixed intervals defined by
      * {@link GameConfig#AUTOSAVE_INTERVAL_SECONDS}.
      * Does nothing if autosave has already been initialized or persistence is unavailable.
+     * </p>
      */
     public void initAutosave() {
         if (autosaveTimer != null || persistence == null) return;
@@ -195,6 +215,7 @@ public class PetController {
      * Stops the autosave timer if it is running.
      * <p>
      * Does not shut down the underlying executor.
+     * </p>
      */
     public void stopAutosave() {
         if (autosaveTimer != null) {
@@ -219,6 +240,7 @@ public class PetController {
      * <p>
      * Stops autosave, shuts down the save executor and performs a final
      * synchronous save via {@link PersistenceService}.
+     * </p>
      */
     public void shutdown() {
         if (isShutdown) return;
@@ -246,6 +268,7 @@ public class PetController {
      * Returns the Minigame Pane to display inside the TV.
      * <p>
      * Initializes a {@link MiniGameView} and its controller.
+     * </p>
      *
      * @param onExit callback to run when the game finishes (zooms out)
      * @return the root {@link Pane} of the minigame view

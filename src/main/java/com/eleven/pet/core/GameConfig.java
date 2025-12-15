@@ -7,7 +7,7 @@ import java.nio.file.Paths;
  * Central configuration values for the game.
  *
  * <p>This class contains only constants and is not meant to be instantiated.
- * Values control window settings, gameplay tuning, persistence, and timing.
+ * Values control window settings, gameplay tuning, persistence, and timing.</p>
  */
 public final class GameConfig {
 
@@ -58,8 +58,7 @@ public final class GameConfig {
 
     /** Interval between autosaves, in seconds of real time. */
     public static final double AUTOSAVE_INTERVAL_SECONDS = 30.0;
-    /** Timeout when shutting down the save executor, in seconds. */
-    public static final int SAVE_EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5;
+
     /** Path of the main savegame file. */
     public static final Path SAVE_PATH = Paths.get("savegame.dat");
 
@@ -69,7 +68,7 @@ public final class GameConfig {
     /** Interval between weather changes, in seconds of real time. */
     public static final int WEATHER_CHANGE_INTERVAL = 30;
 
-    /** Cooldown between daily rewards, in in‑game hours. */
+    /** Cooldown between daily rewards, in‑game hours. */
     public static final double DAILY_REWARD_COOLDOWN = 24.0;
 
 }

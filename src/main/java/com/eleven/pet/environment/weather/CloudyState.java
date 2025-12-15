@@ -8,6 +8,7 @@ import com.google.auto.service.AutoService;
  * Cloudy weather state.
  * <p>
  * Has a neutral effect on happiness and no particle effects.
+ * </p>
  */
 @AutoService(WeatherState.class)
 public class CloudyState implements WeatherState {

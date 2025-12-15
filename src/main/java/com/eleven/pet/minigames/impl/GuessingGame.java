@@ -13,6 +13,7 @@ import java.util.Random;
  * The game picks a random secret number in a fixed range. The player attempts
  * to guess the number; on success the pet gains happiness, otherwise it loses
  * a small amount.
+ * </p>
  */
 public class GuessingGame implements Minigame {
 
@@ -48,6 +49,7 @@ public class GuessingGame implements Minigame {
      * <p>
      * In the current implementation this method is primarily a placeholder,
      * since the game is intended to be driven via the UI/Controller layer.
+     * </p>
      *
      * @param pet the {@link PetModel} whose stats may be affected
      * @return {@code null} in the current implementation
@@ -65,6 +67,7 @@ public class GuessingGame implements Minigame {
      * Generates a new random secret number within the configured range.
      * <p>
      * This should be called when starting a new round.
+     * </p>
      */
     public void generateNewNumber() {
         this.secretNumber = random.nextInt(MAX_NUMBER - MIN_NUMBER + 1) + MIN_NUMBER;

@@ -5,6 +5,7 @@ package com.eleven.pet.core;
  *
  * <p>This indirection avoids JavaFX launcher limitations and allows
  * tools to run the game from a standard {@code public static void main}.
+ * </p>
  */
 public class Launcher {
 

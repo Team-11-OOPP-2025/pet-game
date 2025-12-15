@@ -13,6 +13,7 @@ import java.util.Base64;
  * In production, a Base64-encoded key is expected to be provided via a system
  * property. For local development a deterministic device-specific key can be
  * generated instead.
+ * </p>
  */
 public class KeyLoader {
     private final static String ENV_KEY_NAME = "ENCRYPTION.KEY";
@@ -22,6 +23,7 @@ public class KeyLoader {
      * <p>
      * The key must be Base64-encoded and stored under the property name
      * {@value ENV_KEY_NAME}.
+     * </p>
      *
      * @return a {@link SecretKey} suitable for AES encryption
      * @throws GameException if the property is missing or cannot be decoded
@@ -48,6 +50,7 @@ public class KeyLoader {
      * The same environment will always produce the same key, but different
      * devices should produce different keys. This is intended only for local
      * development where a real secret-management solution is not available.
+     * </p>
      *
      * @return a pseudo-random {@link SecretKey} derived from local machine data
      * @throws RuntimeException if key derivation fails for any reason

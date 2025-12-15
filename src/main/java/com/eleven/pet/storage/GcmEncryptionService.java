@@ -19,6 +19,7 @@ import java.security.SecureRandom;
  * A fresh random IV is generated for each encryption stream and written as the
  * first {@value #GCM_IV_LENGTH} bytes of the ciphertext stream. The same IV is
  * read back when initializing the decryption stream.
+ * </p>
  */
 public class GcmEncryptionService implements EncryptionService {
     /**
@@ -56,6 +57,7 @@ public class GcmEncryptionService implements EncryptionService {
      * This implementation writes a random IV to the underlying stream first,
      * then returns a {@link javax.crypto.CipherOutputStream} that performs
      * AES/GCM/NoPadding encryption.
+     * </p>
      */
     public OutputStream wrapOutputStream(OutputStream out) throws GameException {
         try {
@@ -86,6 +88,7 @@ public class GcmEncryptionService implements EncryptionService {
      * This implementation reads the IV from the first {@value #GCM_IV_LENGTH}
      * bytes of the provided stream, initializes an AES-GCM cipher, and returns
      * a {@link CipherInputStream} that decrypts data on the fly.
+     * </p>
      */
     @Override
     public InputStream wrapInputStream(InputStream in) throws GameException {

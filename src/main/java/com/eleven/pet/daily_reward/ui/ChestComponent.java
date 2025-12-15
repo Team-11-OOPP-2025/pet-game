@@ -32,6 +32,7 @@ import java.util.Random;
  * It is responsible for playing the open animation, spawning particles,
  * and briefly displaying the rewarded item when opened. Game logic
  * callbacks are delegated via {@link #setOnOpen(Runnable)}.
+ * </p>
  */
 public class ChestComponent extends StackPane {
 
@@ -179,6 +180,7 @@ public class ChestComponent extends StackPane {
      * Plays the chest animation, spawns particles, invokes the
      * on-open callback, and shows the rewarded item.
      * This method is a no-op if the model is already opened.
+     * </p>
      */
     private void performOpen() {
         if (chestModel != null && !chestModel.isOpened()) {
@@ -202,6 +204,7 @@ public class ChestComponent extends StackPane {
      * short float-up, scale, and fade animation.
      * <p>
      * If the underlying chest has no item, nothing is shown.
+     * </p>
      */
     private void showItemReward() {
         Item item = chestModel.getItem();

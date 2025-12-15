@@ -11,6 +11,7 @@ import java.util.Random;
  * <p>
  * A chest randomly selects an {@link Item} and quantity upon creation
  * and can be opened once to grant the reward to a {@link PetModel}.
+ * </p>
  */
 public class Chest {
     private static final Random random = new Random();
@@ -41,6 +42,7 @@ public class Chest {
      * <p>
      * This method has no effect if the chest is already opened or
      * if no item was generated.
+     * </p>
      *
      * @param pet the pet model whose inventory will receive the reward
      */

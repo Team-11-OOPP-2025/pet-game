@@ -26,6 +26,7 @@ import static com.eleven.pet.ui.ViewConstants.*;
  * <p>
  * Shows pet stats (happiness, hunger, energy, cleanliness), the main clock,
  * and action buttons (feed, clean, sleep, play) bound to {@link PetController}.
+ * </p>
  */
 public class HUDView extends StackPane {
 
@@ -121,9 +122,6 @@ public class HUDView extends StackPane {
         sleepBtn = createActionButton("SLEEP", PIXEL_BUTTON_SLEEP, PIXEL_BUTTON_WIDTH, controller::handleSleepAction);
         sleepBtn.setVisible(false);
         addToLayout(sleepBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_SLEEP);
-
-        Button playBtn = createActionButton("PLAY", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handlePlayAction);
-        addToLayout(playBtn, Pos.BOTTOM_RIGHT, MARGIN_BTN_PLAY);
     }
 
     /**

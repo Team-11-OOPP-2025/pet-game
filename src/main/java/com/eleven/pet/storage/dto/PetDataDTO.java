@@ -27,7 +27,7 @@ public class PetDataDTO {
     private String petName;
 
     /**
-     * Name of the current state of the pet (e.g. "IDLE", "SLEEPING").
+     * Name of the current state of the pet (e.g. "AWAKE", "ASLEEP").
      */
     private String currentStateName;
 
