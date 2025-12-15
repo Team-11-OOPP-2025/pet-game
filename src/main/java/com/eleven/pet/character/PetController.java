@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Orchestrates interactions between the {@link PetModel} and external game
  * systems such as the clock, weather, persistence, inventory and minigames.
  * Provides high–level operations that the UI layer can invoke.
+ * </p>
  */
 public class PetController {
     private final PetModel model;
@@ -203,7 +204,13 @@ public class PetController {
         }
     }
 
+    /**
+     * Perform an asynchronous save operation.
+     *
+     * @param reason Reason for the save (for logging purposes)
+     */
     private void performAsyncSave(String reason) {
+        // Submit save to single-threaded executor to serialize saves and prevent race conditions
         saveExecutor.submit(() -> {
             try {
                 persistence.save(model);
