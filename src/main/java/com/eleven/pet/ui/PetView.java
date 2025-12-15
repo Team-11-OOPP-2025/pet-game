@@ -34,15 +34,15 @@ public class PetView {
     private final WeatherSystem weatherSystem;
     private final AssetLoader assetLoader;
 
-    private StackPane worldLayer; 
-    private StackPane uiLayer;   
+    private StackPane worldLayer;
+    private StackPane uiLayer;
 
     private PetAvatarView petAvatarView;
     private InventoryView inventoryView;
     private WorldView worldView;
     private HUDView hudView;
     private DailyRewardView dailyRewardView;
-    
+
 
     // Zoom State
     private boolean isGameMode = false;
@@ -84,9 +84,9 @@ public class PetView {
         StackPane root = new StackPane();
 
         // 1. Create the Layers
-        worldLayer = new StackPane(); 
-        uiLayer = new StackPane(); 
-        uiLayer.setPickOnBounds(false); 
+        worldLayer = new StackPane();
+        uiLayer = new StackPane();
+        uiLayer.setPickOnBounds(false);
 
         // 2. Initialize Components
         worldView = new WorldView(clock, weatherSystem);
@@ -95,7 +95,7 @@ public class PetView {
 
         inventoryView = new InventoryView(model, controller);
         hudView = new HUDView(model, controller, clock);
-        
+
         // Pass controller here
         dailyRewardView = new DailyRewardView(model, controller);
 
@@ -105,7 +105,7 @@ public class PetView {
 
         // 4. Compose UI
         uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
-        
+
         // 5. Setup Daily Rewards Trigger
         setupRewardTrigger(uiLayer);
 
@@ -128,7 +128,7 @@ public class PetView {
         // Load the chest image
         Image chestImage = assetLoader.getImage("chest/Chest");
         ImageView chestIcon = new ImageView(chestImage);
-        
+
         // Set viewport to the first frame (150x118) to avoid showing the whole sprite sheet
         chestIcon.setViewport(new Rectangle2D(0, 0, 150, 118));
         chestIcon.setFitWidth(30);
@@ -144,13 +144,13 @@ public class PetView {
 
         // Create Button with Icon
         Button btn = new Button(" REWARDS", chestIcon);
-        btn.setContentDisplay(ContentDisplay.LEFT); 
-        
+        btn.setContentDisplay(ContentDisplay.LEFT);
+
         // Remove inline styles and use CSS classes
         btn.getStyleClass().addAll("pixel-btn", "pixel-btn-gold");
-        
+
         btn.setOnAction(e -> dailyRewardView.toggle(true));
-        
+
         StackPane.setAlignment(btn, Pos.TOP_RIGHT);
         StackPane.setMargin(btn, new Insets(20, 20, 0, 0));
         root.getChildren().add(btn);
@@ -231,8 +231,8 @@ public class PetView {
         if (!isGameMode) return;
         isGameMode = false;
 
-        StackPane tvClickArea = worldView.getTvClickArea();
-        tvClickArea.getChildren().clear(); 
+        StackPane tvContentPane = worldView.getTvContentPane();
+        tvContentPane.getChildren().clear();
 
         ParallelTransition pt = new ParallelTransition();
 
@@ -273,18 +273,18 @@ public class PetView {
      * this method leaves the TV area empty.
      */
     private void loadGameContent() {
-        StackPane tvClickArea = worldView.getTvClickArea();
-        tvClickArea.getChildren().clear();
+        StackPane tvContentPane = worldView.getTvContentPane();
+        tvContentPane.getChildren().clear();
 
         // Pass the exit callback here; the controller will trigger it when the game finishes
         Pane gamePane = controller.getMinigamePane(this::exitMinigameMode);
 
         if (gamePane != null) {
-            gamePane.prefWidthProperty().bind(tvClickArea.widthProperty());
-            gamePane.prefHeightProperty().bind(tvClickArea.heightProperty());
+            gamePane.prefWidthProperty().bind(tvContentPane.widthProperty());
+            gamePane.prefHeightProperty().bind(tvContentPane.heightProperty());
 
             // Added the game pane without any exit button
-            tvClickArea.getChildren().add(gamePane);
+            tvContentPane.getChildren().add(gamePane);
         }
     }
 }

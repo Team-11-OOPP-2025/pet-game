@@ -84,6 +84,11 @@ public class WorldView extends StackPane {
     private StackPane tvClickArea;
 
     /**
+     * Pane inside the TV area used exclusively for dynamic content (minigames).
+     */
+    private StackPane tvContentPane;
+
+    /**
      * Default daytime background image, used as a fallback when no clock is present.
      */
     private Image backgroundDay;
@@ -164,7 +169,7 @@ public class WorldView extends StackPane {
 
     /**
      * Creates the invisible TV interaction overlay and binds its position and size
-     * to the reference TV area. The caller can obtain the overlay via {@link #getTvClickArea()}.
+     * to the reference TV area. The caller can obtain the overlay via {@link #getTvContentPane()}.
      */
     private void setupTVLayer() {
         Pane tvOverlay = new Pane();
@@ -178,6 +183,22 @@ public class WorldView extends StackPane {
         tvClickArea.layoutYProperty().bind(heightProperty().multiply(TV_Y / REF_HEIGHT));
         tvClickArea.prefWidthProperty().bind(widthProperty().multiply(TV_WIDTH / REF_WIDTH));
         tvClickArea.prefHeightProperty().bind(heightProperty().multiply(TV_HEIGHT / REF_HEIGHT));
+
+        // Centered decorative image inside the TV area (clicks still go to the overlay)
+        Image tvCenterImage = assetLoader.getImage("ui/game-controller");
+        if (tvCenterImage != null) {
+            ImageView tvImageView = new ImageView(tvCenterImage);
+            tvImageView.setPreserveRatio(true);
+            tvImageView.setFitWidth(200);
+            tvImageView.setMouseTransparent(true);
+            tvClickArea.getChildren().add(tvImageView);
+        }
+
+        tvContentPane = new StackPane();
+        tvContentPane.setPickOnBounds(false);
+        tvContentPane.maxWidthProperty().bind(tvClickArea.widthProperty());
+        tvContentPane.maxHeightProperty().bind(tvClickArea.heightProperty());
+        tvClickArea.getChildren().add(tvContentPane);
 
         tvOverlay.getChildren().add(tvClickArea);
         getChildren().add(tvOverlay);
@@ -303,5 +324,12 @@ public class WorldView extends StackPane {
      */
     public StackPane getTvClickArea() {
         return tvClickArea;
+    }
+
+    /**
+     * Returns the pane used for dynamic TV content (minigames).
+     */
+    public StackPane getTvContentPane() {
+        return tvContentPane;
     }
 }
