@@ -19,19 +19,18 @@ public class ItemRegistry {
     // Static block to register default items
     static {
         // Food Items
-        /*ItemRegistry.register(new FoodItem(0, "Apple", "apple", 10));
+        ItemRegistry.register(new FoodItem(0, "Apple", "apple", 10));
         ItemRegistry.register(new FoodItem(1, "Banana", "banana", 15));
         ItemRegistry.register(new FoodItem(2, "Pear", "pear", 5));
         ItemRegistry.register(new FoodItem(3, "Grape", "grape", -15));
-        */
+        
         // Potion Items
-        StatPotionDefinition sleepBoostDef = new StatPotionDefinition(
-            "EnergyPotion", 
-            "ENERGY", 
+        ItemRegistry.register(new StatPotion(0, new StatPotionDefinition(
+            "EnergyPotion",
+            "ENERGY",
             10,  // 10 sec duration
-            3.0   // 10x multiplier
-        );
-        ItemRegistry.register(new StatPotion(0, sleepBoostDef));
+            3.0   // 3x multiplier
+        )));
     }
 
     /**

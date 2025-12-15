@@ -1,7 +1,8 @@
-package com.eleven.pet.daily_reward;
+package com.eleven.pet.daily_reward.ui;
 
 import com.eleven.pet.character.SpriteSheetAnimation;
 import com.eleven.pet.core.AssetLoader;
+import com.eleven.pet.daily_reward.Chest;
 import com.eleven.pet.inventory.Item;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
@@ -95,7 +96,7 @@ public class ChestComponent extends StackPane {
         this.getChildren().addAll(spriteView, particleLayer);
 
         // 7. Start Animation Loop
-        startGameLoop();
+        startAnimationLoop();
         
         // 8. Setup Mouse Interactions
         setupInteractions();
@@ -116,7 +117,7 @@ public class ChestComponent extends StackPane {
      * Starts the internal {@link AnimationTimer} that advances the
      * spritesheet animation and updates the chest's viewport each frame.
      */
-    private void startGameLoop() {
+    private void startAnimationLoop() {
         gameLoop = new AnimationTimer() {
             private long lastTime = 0;
 

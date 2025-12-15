@@ -4,7 +4,7 @@ import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.ui.PetAvatarView;
 import com.eleven.pet.core.AssetLoader;
-import com.eleven.pet.daily_reward.DailyRewardView;
+import com.eleven.pet.daily_reward.ui.DailyRewardView;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ui.InventoryView;

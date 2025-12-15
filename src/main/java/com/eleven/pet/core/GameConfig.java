@@ -72,7 +72,4 @@ public final class GameConfig {
     /** Cooldown between daily rewards, in in‑game hours. */
     public static final double DAILY_REWARD_COOLDOWN = 24.0;
 
-    private GameConfig() {
-        // Prevent instantiation
-    }
 }

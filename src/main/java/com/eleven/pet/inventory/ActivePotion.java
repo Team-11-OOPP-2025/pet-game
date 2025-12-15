@@ -1,6 +1,7 @@
-package com.eleven.pet.character;
+package com.eleven.pet.inventory;
 
-import com.eleven.pet.inventory.StatPotionDefinition;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
 
 /**
  * Runtime representation of an active stat-modifying potion effect.
@@ -27,7 +28,7 @@ public class ActivePotion {
      *
      * @param delta elapsed time in game hours since the last tick
      */
-    void tick(double delta) {
+    public void tick(double delta) {
         timeRemaining -= delta;
     }
 
@@ -36,7 +37,7 @@ public class ActivePotion {
      *
      * @return {@code true} if no time is remaining, {@code false} otherwise
      */
-    boolean isExpired() {
+    public boolean isExpired() {
         return timeRemaining <= 0;
     }
 
@@ -45,7 +46,7 @@ public class ActivePotion {
      *
      * @return remaining time in game hours
      */
-    double getTimeRemaining() {
+    public double getTimeRemaining() {
         return timeRemaining;
     }
 
@@ -54,7 +55,7 @@ public class ActivePotion {
      *
      * @return stat key (e.g. {@link PetStats#STAT_HAPPINESS})
      */
-    String getStatType() {
+    public String getStatType() {
         return def.statType();
     }
 
@@ -63,7 +64,7 @@ public class ActivePotion {
      *
      * @return multiplicative factor
      */
-    double getMultiplier() {
+    public double getMultiplier() {
         return def.multiplier();
     }
 
@@ -72,7 +73,7 @@ public class ActivePotion {
      *
      * @return human-readable name
      */
-    String getName() {
+    public String getName() {
         return def.name();
     }
 }

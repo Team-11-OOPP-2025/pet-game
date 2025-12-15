@@ -15,41 +15,136 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
 /**
- * Visual representation of the pet avatar.
+ * Visual representation of the pet character.
  * <p>
- * Renders the pet using sprite-sheet based animations and reacts to changes
- * in the {@link PetModel} (state and happiness) via bound listeners.
+ * This view is responsible for:
+ * <ul>
+ *     <li>Loading and managing pet sprite sheets</li>
+ *     <li>Running sprite-sheet based animations</li>
+ *     <li>Reacting to {@link PetModel} state and stat changes (e.g. happiness, sleep)</li>
+ * </ul>
  */
 public class PetAvatarView extends StackPane {
+
+    /**
+     * Backing model providing current stats and state of the pet.
+     */
     private final PetModel model;
+
+    /**
+     * Controller used to derive higher-level emotional state from raw stats.
+     */
     private final PetController controller;
+
+    /**
+     * Global asset loader for obtaining sprite sheet images.
+     */
     private final AssetLoader assetLoader;
 
+    /**
+     * Image node used to render the current frame of the active animation.
+     */
     private ImageView petImageView;
 
+    /**
+     * Width in pixels of each sprite frame in the sprite sheets.
+     */
     private static final int SHEET_WIDTH = 309;
+
+    /**
+     * Height in pixels of each sprite frame in the sprite sheets.
+     */
     private static final int SHEET_HEIGHT = 460;
+
+    /**
+     * Number of columns of frames in each sprite sheet.
+     */
     private static final int GRID_COLS = 2;
 
     // Animations
+    /**
+     * Default/idle (neutral) animation.
+     */
     private SpriteSheetAnimation animNeutral;
+
+    /**
+     * Animation used when the pet is very happy.
+     */
     private SpriteSheetAnimation animHappy;
+
+    /**
+     * Animation used when the pet is sad.
+     */
     private SpriteSheetAnimation animSad;
+
+    /**
+     * Animation used when the pet is very sad (crying).
+     */
     private SpriteSheetAnimation animCrying;
+
+    /**
+     * Animation used while the pet is asleep.
+     */
     private SpriteSheetAnimation animSleeping;
 
+    /**
+     * Currently active animation being rendered.
+     */
     private SpriteSheetAnimation activeAnimation;
+
+    /**
+     * Currently active sprite sheet image backing {@link #activeAnimation}.
+     */
     private Image activeSpriteSheet;
+
+    /**
+     * JavaFX timer driving the animation update/render loop.
+     */
     private AnimationTimer renderLoop;
+
+    /**
+     * Timestamp of the last rendered frame in nanoseconds, used to compute delta time.
+     */
     private long lastFrameTime;
 
-    private Image sheetNeutral, sheetSad, sheetSleeping, sheetCrying, sheetHappy;
+    /**
+     * Loaded sprite sheet used for neutral emotion.
+     */
+    private Image sheetNeutral;
+
+    /**
+     * Loaded sprite sheet used for sad emotion.
+     */
+    private Image sheetSad;
+
+    /**
+     * Loaded sprite sheet used for sleeping state.
+     */
+    private Image sheetSleeping;
+
+    /**
+     * Loaded sprite sheet used for crying emotion.
+     */
+    private Image sheetCrying;
+
+    /**
+     * Loaded sprite sheet used for happy emotion.
+     */
+    private Image sheetHappy;
 
     /**
      * Creates a new {@code PetAvatarView} bound to the given model and controller.
+     * <p>
+     * The constructor:
+     * <ul>
+     *     <li>Sets up the image layer</li>
+     *     <li>Loads all sprite assets</li>
+     *     <li>Initializes animations and the render loop</li>
+     *     <li>Binds to model properties to react to state/stat changes</li>
+     * </ul>
      *
-     * @param model      pet model providing state and stats
-     * @param controller controller used to derive emotion from stats
+     * @param model      pet data model providing stats and state; may not be {@code null}
+     * @param controller controller used to calculate emotions from stats; may not be {@code null}
      */
     public PetAvatarView(PetModel model, PetController controller) {
         this.model = model;
@@ -65,7 +160,8 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Creates and configures the {@link ImageView} used to render the pet.
+     * Initializes and configures the {@link ImageView} used to display
+     * the pet sprite, and adds it to this {@link StackPane}.
      */
     private void setupPetLayer() {
         petImageView = new ImageView();
@@ -81,7 +177,9 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Loads sprite-sheet images for the different pet emotions and states.
+     * Loads all required sprite sheet images via the {@link AssetLoader}.
+     * <p>
+     * Images are cached in dedicated fields and reused by animations.
      */
     private void loadAssets() {
         sheetHappy = assetLoader.getImage("sprites/happy/SpriteSheetHappy");
@@ -92,7 +190,8 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Initializes sprite-sheet animations for the supported emotions and states.
+     * Creates and configures all {@link SpriteSheetAnimation} instances
+     * for the different emotional and sleep states.
      */
     private void initializeAnimations() {
         animNeutral = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 3, 1.0f);
@@ -112,8 +211,14 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Starts the JavaFX {@link AnimationTimer} render loop that advances the
-     * active animation and updates the viewport.
+     * Starts the main render loop using a {@link AnimationTimer}.
+     * <p>
+     * The loop:
+     * <ul>
+     *     <li>Computes frame delta time</li>
+     *     <li>Updates the active animation</li>
+     *     <li>Renders the next frame to the {@link ImageView}</li>
+     * </ul>
      */
     private void startRenderLoop() {
         lastFrameTime = System.nanoTime();
@@ -133,8 +238,9 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Renders the current frame of the active animation by updating the
-     * {@link ImageView}'s viewport and sprite-sheet image when needed.
+     * Renders the current frame of the {@link #activeAnimation} to the
+     * {@link #petImageView}, updating both the viewport and backing image
+     * if necessary.
      */
     private void renderFrame() {
         if (petImageView == null || activeAnimation == null) return;
@@ -154,10 +260,10 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Resolves the correct sprite-sheet image for the given animation instance.
+     * Resolves which sprite sheet image should be used for the given animation.
      *
-     * @param anim animation instance
-     * @return matching sprite-sheet image, never {@code null} for known animations
+     * @param anim the animation whose backing sprite sheet should be determined
+     * @return the corresponding {@link Image}, or {@code null} if none is found
      */
     private Image resolveSheetForAnimation(SpriteSheetAnimation anim) {
         if (anim == animSleeping) return sheetSleeping;
@@ -168,10 +274,12 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Switches the active animation to the given one, resetting it and starting
-     * playback if it is different from the current animation.
+     * Switches the currently active animation to the specified one.
+     * <p>
+     * If the new animation is already active, nothing happens. Otherwise, the
+     * previous animation is paused and the new one is reset and played.
      *
-     * @param newAnim animation to activate
+     * @param newAnim the animation to become active; may be {@code null}
      */
     private void changeAnimation(SpriteSheetAnimation newAnim) {
         if (activeAnimation == newAnim) return;
@@ -183,8 +291,9 @@ public class PetAvatarView extends StackPane {
     }
 
     /**
-     * Binds listeners to the model's state and happiness properties so the view
-     * can react and update the displayed animation automatically.
+     * Binds listeners to the {@link PetModel}'s properties so that changes
+     * in state (e.g. asleep/awake) and happiness automatically update the
+     * visual representation.
      */
     private void bindData() {
         if (model == null) return;

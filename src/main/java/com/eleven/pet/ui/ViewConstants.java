@@ -13,6 +13,7 @@ public class ViewConstants {
     public static final double REF_WIDTH = 624.0;
     public static final double REF_HEIGHT = 351.0;
 
+
     // Fonts
     public static final String FONT_FAMILY = "Minecraft";
 
@@ -27,6 +28,10 @@ public class ViewConstants {
     public static final Color COLOR_BTN_TEXT_DARK = Color.BLACK;
     public static final Color COLOR_BTN_TEXT_LIGHT = Color.WHITE;
 
+    public static final String PIXEL_BUTTON_PRIMARY = "pixel-btn-primary";
+    public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
+    public static final Integer PIXEL_BUTTON_WIDTH = 120;
+    
     // Styling
     public static final String STYLE_INVENTORY_PANEL =
             "-fx-background-color: #fdf5e6; " +
@@ -49,4 +54,6 @@ public class ViewConstants {
 
     // Layout Spacing
     public static final double STATS_BOX_SPACING = 20.0;
+
+    public static final String PIXEL_BUTTON_STYLE_CLASS = "pixel-btn";
 }
