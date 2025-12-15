@@ -1,12 +1,9 @@
-// src/main/java/com/eleven/pet/minigames/MinigameRegistry.java
 package com.eleven.pet.minigames;
-
-import com.eleven.pet.minigames.impl.GuessingGame;
-import com.eleven.pet.minigames.impl.TimingGame;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.ServiceLoader;
 
 /**
  * Registry for available minigames.
@@ -17,13 +14,15 @@ import java.util.Random;
  */
 public class MinigameRegistry {
     private static MinigameRegistry instance;
-    private final List<Class<? extends Minigame>> games = new ArrayList<>();
+    private final List<Minigame> games = new ArrayList<>();
     private final Random random = new Random();
 
     private MinigameRegistry() {
-        // Register default games
-        registerGame(GuessingGame.class);
-        registerGame(TimingGame.class);
+        ServiceLoader<Minigame> loader = ServiceLoader.load(Minigame.class);
+        for (Minigame game : loader) {
+            registerGame(game);
+            System.out.println("Registered minigame: " + game.getName());
+        }
     }
 
     public static MinigameRegistry getInstance() {
@@ -33,18 +32,12 @@ public class MinigameRegistry {
         return instance;
     }
 
-    public void registerGame(Class<? extends Minigame> gameClass) {
-        games.add(gameClass);
+    public void registerGame(Minigame game) {
+        games.add(game);
     }
 
     public Minigame getRandomGame() {
         if (games.isEmpty()) return null;
-        try {
-            Class<? extends Minigame> gameClass = games.get(random.nextInt(games.size()));
-            return gameClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            System.err.println("Failed to instantiate minigame: " + e.getMessage());
-            return null;
-        }
+        return games.get(random.nextInt(games.size()));
     }
 }

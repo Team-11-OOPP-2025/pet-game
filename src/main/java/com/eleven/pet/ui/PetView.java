@@ -174,6 +174,7 @@ public class PetView {
      * </p>
      */
     private void enterMinigameMode() {
+        if (!controller.canPlayMinigame()) return;
         if (isGameMode) return;
         isGameMode = true;
 
@@ -280,14 +281,12 @@ public class PetView {
         StackPane tvContentPane = worldView.getTvContentPane();
         tvContentPane.getChildren().clear();
 
-        // Pass the exit callback here; the controller will trigger it when the game finishes
         Pane gamePane = controller.getMinigamePane(this::exitMinigameMode);
 
         if (gamePane != null) {
             gamePane.prefWidthProperty().bind(tvContentPane.widthProperty());
             gamePane.prefHeightProperty().bind(tvContentPane.heightProperty());
 
-            // Added the game pane without any exit button
             tvContentPane.getChildren().add(gamePane);
         }
     }

@@ -1,13 +1,15 @@
 package com.eleven.pet.character;
 
-import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.daily_reward.Chest;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.Item;
+import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.MiniGameController;
+import com.eleven.pet.minigames.Minigame;
+import com.eleven.pet.minigames.ui.MiniGameView;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -33,8 +35,7 @@ public class PetController {
     private final GameClock clock;
     private final WeatherSystem weather;
     private final PersistenceService persistence;
-    private final MiniGameController miniGameController; // Delegate for minigame logic
-    
+
     private final BooleanProperty inventoryOpenProperty = new SimpleBooleanProperty(false);
     private Timeline autosaveTimer;
     private ExecutorService saveExecutor;
@@ -53,7 +54,6 @@ public class PetController {
         this.clock = clock;
         this.weather = weather;
         this.persistence = persistence;
-        this.miniGameController = new MiniGameController();
         initControllerLogic();
     }
 
@@ -179,6 +179,10 @@ public class PetController {
         }
     }
 
+    public boolean canPlayMinigame() {
+        return model.canPlayMinigame();
+    }
+
     /**
      * Initializes periodic autosaving of the game state.
      */
@@ -252,14 +256,24 @@ public class PetController {
 
     /**
      * Returns the Minigame Pane to display inside the TV.
-     * <p>
-     * Delegates to the {@link MiniGameController} to start a random game.
-     * </p>
      *
-     * @param onExit callback to run when the game finishes (zooms out)
      * @return the root {@link Pane} of the minigame view, or null if no games available
      */
-    public Pane getMinigamePane(Runnable onExit) {
-        return miniGameController.startRandomGame(model, onExit);
+    public Pane getMinigamePane(Runnable onUIExit) {
+        Minigame gameFactory = new MiniGameController().startRandomGame();
+        if (gameFactory == null) {
+            System.out.println("No minigames available.");
+            onUIExit.run();
+            return null;
+        }
+
+        GameSession session = gameFactory.createSession();
+
+        session.start(result -> {
+            model.applyMinigameResult(result);
+            if (onUIExit != null) onUIExit.run();
+        });
+
+        return new MiniGameView(session.getView());
     }
 }

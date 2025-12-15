@@ -1,4 +1,3 @@
-// src/main/java/com/eleven/pet/character/behavior/AwakeState.java
 package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
@@ -42,8 +41,7 @@ public class AwakeState implements PetState {
      */
     @Override
     public boolean canPlay(PetModel pet) {
-        // You could add logic here to prevent playing if hunger is too low (e.g. < 10)
-        return true;
+        return pet.getStats().getStat(PetStats.STAT_ENERGY).get() >= 10;
     }
 
     /**

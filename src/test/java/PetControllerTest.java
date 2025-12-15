@@ -6,6 +6,8 @@ import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.storage.EncryptionService;
 import com.eleven.pet.storage.PersistenceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,9 +88,9 @@ public class PetControllerTest {
         }
     }
 
-    private PetModel model;
-    private GameClock clock;
     private MockPersistenceService persistence;
+    private PetController controller;
+    private WeatherSystem weatherSystem;
 
     @TempDir
     Path tempDir;
@@ -104,9 +106,11 @@ public class PetControllerTest {
         registry.registerState(new AwakeState());
         registry.registerState(new AsleepState());
 
-        clock = new GameClock();
-        model = PetFactory.createNewPet("TestPet", null, clock);
+        GameClock clock = new GameClock();
+        PetModel model = PetFactory.createNewPet("TestPet", null, clock);
         persistence = new MockPersistenceService(tempDir.resolve("test-save.dat"));
+        weatherSystem = new WeatherSystem();
+        controller = new PetController(model, clock, weatherSystem, persistence);
     }
 
     /**
@@ -116,7 +120,6 @@ public class PetControllerTest {
     @Test
     void testStopAutosaveWhenTimerNotInitialized() {
         // Stopping autosave before initialization should not throw
-        PetController controller = new PetController(model, clock, null, persistence);
         assertDoesNotThrow(controller::stopAutosave);
     }
 
@@ -125,8 +128,6 @@ public class PetControllerTest {
      */
     @Test
     void testShutdownPerformsSave() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         // Shutdown should save the game
         controller.shutdown();
 
@@ -139,7 +140,6 @@ public class PetControllerTest {
      */
     @Test
     void testShutdownHandlesSaveError() {
-        PetController controller = new PetController(model, clock, null, persistence);
         persistence.setThrowOnSave(true);
 
         // Shutdown with save error should not throw
@@ -152,8 +152,6 @@ public class PetControllerTest {
      */
     @Test
     void testMultipleShutdownCallsAreIdempotent() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         controller.shutdown();
         controller.shutdown();
 
@@ -167,8 +165,6 @@ public class PetControllerTest {
      */
     @Test
     void testControllerCreationWithNullComponents() {
-        // Controller should be able to handle null weather and clock
-        PetController controller = new PetController(model, null, null, persistence);
         assertNotNull(controller);
     }
 
@@ -178,8 +174,6 @@ public class PetControllerTest {
      */
     @Test
     void testShutdownStopsAutosaveAndSaves() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         // Shutdown should stop autosave (if running) and save
         controller.shutdown();
 
@@ -188,5 +182,12 @@ public class PetControllerTest {
 
         // Stopping autosave again should work without error
         assertDoesNotThrow(controller::stopAutosave);
+    }
+
+    @Test
+    void changeWeather() {
+        WeatherState weater = weatherSystem.getCurrentWeather();
+        controller.debugChangeWeather();
+        assertNotEquals(weater, weatherSystem.getCurrentWeather());
     }
 }

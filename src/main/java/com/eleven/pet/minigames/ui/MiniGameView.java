@@ -1,8 +1,8 @@
-// src/main/java/com/eleven/pet/minigames/ui/MiniGameView.java
 package com.eleven.pet.minigames.ui;
 
 import com.eleven.pet.minigames.Minigame;
 import javafx.geometry.Insets;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 /**
@@ -10,7 +10,7 @@ import javafx.scene.layout.StackPane;
  * <p>
  * This view acts as a host for any {@link Minigame}. It provides the
  * shared background styling (the TV screen look) and renders the
- * game-specific content by calling {@link Minigame#getView()}.
+ * game-specific UI inside it.
  * </p>
  */
 public class MiniGameView extends StackPane {
@@ -18,16 +18,16 @@ public class MiniGameView extends StackPane {
     /**
      * Creates a new view that displays the given game.
      *
-     * @param game the initialized minigame to display
+     * @param gamePane the initialized minigame to display
      */
-    public MiniGameView(Minigame game) {
+    public MiniGameView(Pane gamePane) {
         // TV Screen styling
         setStyle("-fx-background-color: #222; -fx-background-radius: 4;");
         setPadding(new Insets(10));
 
-        if (game != null) {
+        if (gamePane != null) {
             // MVC: The View asks the Controller (Game) for its specific UI
-            getChildren().add(game.getView());
+            getChildren().add(gamePane);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.eleven.pet.character;
 
-import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
@@ -10,11 +9,8 @@ import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.inventory.ActivePotion;
-import com.eleven.pet.inventory.Inventory;
-import com.eleven.pet.inventory.Item;
-import com.eleven.pet.inventory.ItemRegistry;
-import com.eleven.pet.inventory.StatPotionDefinition;
+import com.eleven.pet.inventory.*;
+import com.eleven.pet.minigames.MinigameResult;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -51,7 +47,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private boolean passedEightAM = false;
     private double currentSleepDuration = 0.0;
     private int hoursSleptRewardCount = 0;
-    
+
     // Remaining time (in game hours) until the next reward can be claimed
     private double rewardCooldown = 0.0;
 
@@ -94,8 +90,6 @@ public class PetModel implements TimeListener, WeatherListener {
         // Set up daily inventory items
         replenishDailyFood();
     }
-
-    // --- Potion Logic ---
 
     /**
      * Computes the effective multiplier for a given stat based on all active potions.
@@ -140,8 +134,6 @@ public class PetModel implements TimeListener, WeatherListener {
             System.out.println("Effect Applied: " + def.name() + " (x" + def.multiplier() + " to " + def.statType() + ")");
         }
     }
-
-    // --- State & Interaction Methods ---
 
     /**
      * Change the current behavioral state of the pet.
@@ -208,13 +200,8 @@ public class PetModel implements TimeListener, WeatherListener {
         currentState.get().handleClean(this);
     }
 
-    /**
-     * Indicates whether the pet is allowed to start a minigame.
-     *
-     * @return {@code true} if a minigame can be played, {@code false} otherwise
-     */
     public boolean canPlayMinigame() {
-        return true; 
+        return currentState.get().canPlay(this);
     }
 
     /**
@@ -238,7 +225,7 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public boolean shouldPromptSleep() {
         if (clock == null) return false;
-        if (currentState.get() instanceof AsleepState || sleptThisNight) return false;
+        if (!currentState.get().canSleep()) return false;
 
         double hour = getCurrentGameHour();
         return hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
@@ -253,11 +240,9 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param timeDelta elapsed time in game hours
      */
     public void applyStatDecay(double timeDelta) {
-        // Use definition rates if available, otherwise fallback or config
-
         hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
         cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
-        
+
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
             hungerDecayAccum -= hungerDelta;
@@ -288,6 +273,36 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
+     * Applies the result of a minigame to the pet's stats.
+     *
+     * @param result result of the minigame played
+     */
+    public void applyMinigameResult(MinigameResult result) {
+        if (result == null) return;
+        stats.modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
+    }
+
+    /**
+     * Adds the given item and quantity to the pet's inventory.
+     *
+     * @param item     item to add
+     * @param quantity number of units to add
+     */
+    public void addToInventory(Item item, int quantity) {
+        inventory.add(item, quantity);
+    }
+
+    /**
+     * Returns a read-only property for the given stat.
+     *
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
+     * @return read-only integer property, or {@code null} if the stat does not exist
+     */
+    public ReadOnlyIntegerProperty getStatProperty(String statName) {
+        return stats.getStat(statName);
+    }
+
+    /**
      * Called each tick by the {@link GameClock}.
      *
      * <p>Updates potion durations, reward cooldown, and delegates to the current state.</p>
@@ -304,11 +319,11 @@ public class PetModel implements TimeListener, WeatherListener {
                 System.out.println("Effect Expired: " + potion.getName());
             }
         }
-        
+
         // 2. Update Reward Cooldown
         if (clock != null && rewardCooldown > 0) {
             // timeDelta is scaled by GameClock; 1 unit = 1 in-game hour.
-            rewardCooldown -= timeDelta; 
+            rewardCooldown -= timeDelta;
             if (rewardCooldown < 0) {
                 rewardCooldown = 0;
             }
@@ -323,25 +338,5 @@ public class PetModel implements TimeListener, WeatherListener {
     @Override
     public void onWeatherChange(WeatherState newWeather) {
         // Implementation delegated to listeners
-    }
-
-    /**
-     * Adds the given item and quantity to the pet's inventory.
-     *
-     * @param item     item to add
-     * @param quantity number of units to add
-     */
-    public void addToInventory(Item item, int quantity) {
-        inventory.add(item, quantity);
-    }
-    
-    /**
-     * Returns a read-only property for the given stat.
-     *
-     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
-     * @return read-only integer property, or {@code null} if the stat does not exist
-     */
-    public ReadOnlyIntegerProperty getStatProperty(String statName) {
-        return stats.getStat(statName);
     }
 }

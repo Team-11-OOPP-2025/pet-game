@@ -3,7 +3,6 @@ package com.eleven.pet.daily_reward.ui;
 import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.daily_reward.Chest;
-
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;

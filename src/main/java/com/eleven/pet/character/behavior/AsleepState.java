@@ -1,4 +1,3 @@
-// src/main/java/com/eleven/pet/character/behavior/AsleepState.java
 package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
@@ -38,12 +37,10 @@ public class AsleepState implements PetState {
     /**
      * Indicates that the pet cannot play while asleep.
      *
-     * @param pet the sleeping pet
      * @return always {@code false}
      */
     @Override
     public boolean canPlay(PetModel pet) {
-        System.out.println(pet.getName() + " is asleep and cannot play right now.");
         return false;
     }
 
@@ -116,8 +113,8 @@ public class AsleepState implements PetState {
 
             pet.setHoursSleptRewardCount(pet.getHoursSleptRewardCount() + hoursToReward);
 
-            System.out.println("Sleep (" + hoursToReward + "h): Energy +" + finalEnergyGain 
-                    + " (x" + energyMult + "), Happiness +" + finalHappyGain 
+            System.out.println("Sleep (" + hoursToReward + "h): Energy +" + finalEnergyGain
+                    + " (x" + energyMult + "), Happiness +" + finalHappyGain
                     + " (x" + happyMult + ")");
         }
 

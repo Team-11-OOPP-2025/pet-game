@@ -1,4 +1,3 @@
-// src/main/java/com/eleven/pet/character/behavior/PetState.java
 package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;

@@ -66,7 +66,7 @@ public final class GameConfig {
     public static final String SAVE_FILE_VERSION = "0.0.3";
 
     /** Interval between weather changes, in seconds of real time. */
-    public static final int WEATHER_CHANGE_INTERVAL = 30;
+    public static final int WEATHER_CHANGE_INTERVAL = (int) (DAY_LENGTH_SECONDS / 3); // Every 8-ish in-game hours
 
     /** Cooldown between daily rewards, in‑game hours. */
     public static final double DAILY_REWARD_COOLDOWN = 24.0;
