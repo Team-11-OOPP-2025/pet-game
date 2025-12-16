@@ -30,8 +30,10 @@ public class TutorialView extends StackPane {
             "Welcome to Björni!\n\nThis is your new virtual pet companion.",
             "Check Stats!\n\nKeep an eye on Hunger, Happiness,\nEnergy, and Cleanliness here.",
             "Play Minigames!\n\nClick the TV to play games\nand earn happiness points.",
+            "Daily Rewards!\n\nClick the REWARDS button to claim\nyour daily rewards.",
             "Inventory!\n\nClick FEED to open your Inventory\nand give your pet treats.",
-            "Sleep!\n\nWhen Energy is low at night,\nthis button lets Björni sleep."
+            "Clean Björni!\n\nClick CLEAN to clean\nand keep your pet healthy.",
+            "Sleep!\n\nWhen it's time to sleep,\nthis button lets Björni sleep."
     };
 
     private Label textLabel;
@@ -56,14 +58,14 @@ public class TutorialView extends StackPane {
         // Content Box (The text dialog)
         contentBox = new VBox(20);
         contentBox.setAlignment(Pos.CENTER);
-        contentBox.setMaxSize(400, 300);
+        contentBox.setMaxSize(700, 400);
         contentBox.setPadding(new Insets(30));
         contentBox.setStyle(
                 ViewConstants.STYLE_CONTENT_BOX
         );
 
         textLabel = new Label();
-        textLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 16));
+        textLabel.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 24));
         textLabel.setTextFill(Color.web("#8b4513"));
         textLabel.setWrapText(true);
         textLabel.setTextAlignment(TextAlignment.CENTER);
@@ -96,7 +98,7 @@ public class TutorialView extends StackPane {
         textLabel.setText(steps[stepIndex]);
         if (stepIndex == steps.length - 1) {
             nextBtn.setText("LET'S PLAY!");
-            nextBtn.getStyleClass().add(ViewConstants.PIXEL_BUTTON_NEXT);
+            nextBtn.getStyleClass().add(ViewConstants.PIXEL_BUTTON_GOLD);
         }
 
         // Draw Spotlight
@@ -139,7 +141,6 @@ public class TutorialView extends StackPane {
         contentBox.toFront();
     }
 
-    // Ensure the spotlight redraws if window resizes
     @Override
     protected void layoutChildren() {
         super.layoutChildren();

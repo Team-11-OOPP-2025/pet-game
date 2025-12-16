@@ -301,5 +301,15 @@ public class PetController {
         } catch (Exception e) {
             System.err.println("Failed to save tutorial status: " + e.getMessage());
         }
+
+        // Unpause the game after tutorial finishes and move forward half a day
+        togglePause();
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+    }
+
+    public void initTutorialLogic() {
+        // Advance time by half a day to test tutorial steps that depend on time (Sleep prompt)
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+        togglePause();
     }
 }

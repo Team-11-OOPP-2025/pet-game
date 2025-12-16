@@ -30,7 +30,7 @@ public class ViewConstants {
 
     public static final String PIXEL_BUTTON_PRIMARY = "pixel-btn-primary";
     public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
-    public static final String PIXEL_BUTTON_NEXT = "pixel-btn-gold";
+    public static final String PIXEL_BUTTON_GOLD = "pixel-btn-gold";
     public static final Integer PIXEL_BUTTON_WIDTH = 120;
     
     // Styling

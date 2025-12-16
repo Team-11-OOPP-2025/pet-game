@@ -63,6 +63,8 @@ public class HUDView extends StackPane {
     private Button feedBtn;
     @Getter
     private Button sleepBtn;
+    @Getter
+    private Button cleanBtn;
 
     /**
      * Creates a new HUD view for the given pet and clock.
@@ -123,7 +125,7 @@ public class HUDView extends StackPane {
         feedBtn = createActionButton("FEED", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
         addToLayout(feedBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
 
-        Button cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
+        cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
         addToLayout(cleanBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
 
         sleepBtn = createActionButton("SLEEP", PIXEL_BUTTON_SLEEP, PIXEL_BUTTON_WIDTH, controller::handleSleepAction);

@@ -40,6 +40,8 @@ public class PetView {
     private HUDView hudView;
     private DailyRewardView dailyRewardView;
 
+    private Button rewardBtn;
+
 
     // Zoom State
     private boolean isGameMode = false;
@@ -104,19 +106,24 @@ public class PetView {
         root.getChildren().addAll(worldLayer, uiLayer);
 
         if (!model.isTutorialCompleted()) {
+            controller.initTutorialLogic();
             final TutorialView[] tutorialRef = new TutorialView[1];
 
             // Define targets matching the steps in TutorialView
             // 0: Welcome (Null)
             // 1: Stats (StatsBox)
             // 2: TV (TvClickArea)
-            // 3: Inventory (Feed Button)
-            // 4: Sleep (Sleep Button)
+            // 3: Daily Rewards
+            // 4: Inventory (Feed Button)
+            // 5: Clean (Clean Button)
+            // 6: Sleep (Sleep Button)
             List<Node> targets = Arrays.asList(
                     null,
                     hudView.getStatsBox(),
                     worldView.getTvClickArea(),
+                    rewardBtn,
                     hudView.getFeedBtn(),
+                    hudView.getCleanBtn(),
                     hudView.getSleepBtn()
             );
 
@@ -143,23 +150,23 @@ public class PetView {
 
         // Create Bounce Animation
         TranslateTransition bounce = new TranslateTransition(Duration.millis(600), chestIcon);
-        bounce.setByY(-2); // Reduced bounce height for subtlety
+        bounce.setByY(-2);
         bounce.setCycleCount(Animation.INDEFINITE);
         bounce.setAutoReverse(true);
         bounce.play();
 
         // Create Button with Icon
-        Button btn = new Button(" REWARDS", chestIcon);
-        btn.setContentDisplay(ContentDisplay.LEFT);
+        rewardBtn = new Button(" REWARDS", chestIcon);
+        rewardBtn.setContentDisplay(ContentDisplay.LEFT);
 
         // Remove inline styles and use CSS classes
-        btn.getStyleClass().addAll("pixel-btn", "pixel-btn-gold");
+        rewardBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_GOLD);
 
-        btn.setOnAction(e -> dailyRewardView.toggle(true));
+        rewardBtn.setOnAction(_ -> dailyRewardView.toggle(true));
 
-        StackPane.setAlignment(btn, Pos.TOP_RIGHT);
-        StackPane.setMargin(btn, new Insets(20, 20, 0, 0));
-        root.getChildren().add(btn);
+        StackPane.setAlignment(rewardBtn, Pos.TOP_RIGHT);
+        StackPane.setMargin(rewardBtn, new Insets(20, 20, 0, 0));
+        root.getChildren().add(rewardBtn);
     }
 
     // =============================================================
