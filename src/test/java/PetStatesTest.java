@@ -1,3 +1,4 @@
+import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
@@ -19,9 +20,10 @@ public class PetStatesTest {
      */
     @Test
     void testAwakeState() {
+        PetModel pet = PetFactory.createNewPet("TestPet", null, null);
         AwakeState awakeState = new AwakeState();
         assertEquals(AwakeState.STATE_NAME, awakeState.getStateName());
-        assertTrue(awakeState.canPlay(null), "Awake pet should be able to play");
+        assertTrue(awakeState.canPlay(pet), "Awake pet should be able to play");
     }
 
     /**
