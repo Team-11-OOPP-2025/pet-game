@@ -2,6 +2,7 @@ package com.eleven.pet.network;
 
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.shared.LeaderboardEntry;
+import com.eleven.pet.shared.Signature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
@@ -15,10 +16,12 @@ public class LeaderboardClient implements LeaderboardService {
 
     private final HttpClient httpClient;
     private final ObjectMapper jsonMapper;
+    private final Signature signatureGenerator;
 
     public LeaderboardClient() {
         this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         this.jsonMapper = new ObjectMapper();
+        this.signatureGenerator = new Signature();
     }
 
     /**
@@ -43,9 +46,13 @@ public class LeaderboardClient implements LeaderboardService {
 
             String jsonBody = jsonMapper.writeValueAsString(entry);
 
+            // TODO: Change to inject shared secret on build or default to hardcoded during developemnt env.
+            String signature = signatureGenerator.calculateHMAC(jsonBody, "SHARED_KEY");
+
             // Build the HTTP request
             HttpRequest request = HttpRequest.newBuilder(URI.create(API_URL))
                     .header("Content-Type", "application/json")
+                    .header("X-HMAC-Signature", signature)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
