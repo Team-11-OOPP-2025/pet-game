@@ -5,7 +5,9 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,12 +49,40 @@ public class AssetLoader {
     }
 
     /**
+     * Loads a set of standard icon sizes based on a base path.
+     * Expects files named: basePath_16.png, basePath_32.png, etc.
+     */
+    public List<Image> getIcons(String basePath) {
+        List<Image> images = new ArrayList<>();
+
+        // The standard sizes you listed
+        int[] sizes = {16, 32, 48, 64, 128, 256};
+
+        for (int size : sizes) {
+            // Construct the path: "icons/bjorni_16"
+            String fullPath = basePath + "_" + size;
+
+            // if one specific size is missing
+            try {
+                Image img = getImage(fullPath);
+                if (img != null && !img.isError()) {
+                    images.add(img);
+                }
+            } catch (Exception e) {
+                System.err.println("Could not load icon size: " + size);
+            }
+        }
+
+        return images;
+    }
+
+    /**
      * Loads a font from disk and registers it with JavaFX.
      *
      * @param fontName the font file name (e.g., {@code "Minecraft.ttf"})
      * @param size     the font size in points
      */
-    public void loadFont(String fontName, double size) {
+    private void loadFont(String fontName, double size) {
         String fontPath = FONT_ROOT + fontName;
         try (InputStream stream = getClass().getResourceAsStream(fontPath)) {
             if (stream != null) {
@@ -95,6 +125,7 @@ public class AssetLoader {
         return createPlaceholderImage();
     }
 
+
     /**
      * Creates a simple placeholder image (magenta square).
      *
@@ -128,11 +159,11 @@ public class AssetLoader {
                 "backgrounds/EARLY_NIGHT",
                 "backgrounds/DEEP_NIGHT",
 
-                "sprites/idle/SpriteSheetNeutral",
-                "sprites/happy/SpriteSheetHappy",
-                "sprites/sleeping/SpriteSheetSleeping",
-                "sprites/sad/SpriteSheetSad",
-                "sprites/sad/SpriteSheetCrying"
+                "sprites/SpriteSheetNeutral",
+                "sprites/SpriteSheetHappy",
+                "sprites/SpriteSheetSleeping",
+                "sprites/SpriteSheetSad",
+                "sprites/SpriteSheetCrying"
         };
 
         for (String asset : assets) {

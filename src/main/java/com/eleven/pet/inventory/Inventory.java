@@ -1,13 +1,13 @@
 package com.eleven.pet.inventory;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Manages the inventory of items owned by the player.
@@ -36,23 +36,31 @@ public class Inventory {
      *
      * @param item     item to remove; ignored if {@code null}
      * @param quantity number to remove; must be positive
-     * @return {@code true} if the requested quantity was removed;
-     *         {@code false} if the item is missing or not enough quantity is available
      */
-    public boolean remove(Item item, int quantity) {
-        if (item == null || quantity <= 0) return false;
+    public void remove(Item item, int quantity) {
+        if (item == null || quantity <= 0) return;
         IntegerProperty count = items.get(item.id());
-        if (count == null || count.get() < quantity) return false;
+        if (count == null || count.get() < quantity) return;
 
         int newCount = count.get() - quantity;
         count.set(newCount);
-
-        // Don't keep zero-quantity items in the inventory
         if (newCount == 0) {
             items.remove(item.id());
         }
+    }
 
-        return true;
+    /**
+     * Check if the inventory has enough of an item to remove.
+     *
+     * @param item     item to check
+     * @param quantity number to check for
+     * @return {@code true} if the requested quantity can be removed,
+     *         {@code false} if the item is missing or insufficient quantity is available
+     */
+    public boolean canRemove(Item item, int quantity) {
+        if (item == null || quantity <= 0) return false;
+        IntegerProperty count = items.get(item.id());
+        return count != null && count.get() >= quantity;
     }
 
     /**

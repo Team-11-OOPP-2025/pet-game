@@ -1,11 +1,12 @@
 package com.eleven.pet.character;
 
-import com.eleven.pet.core.GameConfig;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.eleven.pet.core.GameConfig;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 /**
  * Manages pet stats such as hunger, happiness, energy, and cleanliness.
@@ -69,16 +70,23 @@ public class PetStats {
      *
      * @param name  name of the stat
      * @param delta amount to modify the stat by (can be negative)
-     * @return {@code true} if the stat was modified, {@code false} if the stat does not exist
      */
-    public boolean modifyStat(String name, int delta) {
+    public void modifyStat(String name, int delta) {
         IntegerProperty stat = getStat(name);
         if (stat != null) {
             int newVal = validate(stat.get() + delta);
             stat.set(newVal);
-            return true;
         }
-        return false;
+    }
+
+    /**
+     * Check if a stat exists.
+     *
+     * @param name name of the stat
+     * @return {@code true} if the stat exists, {@code false} otherwise
+     */
+    public boolean hasStat(String name) {
+        return stats.containsKey(name);
     }
 
     /**

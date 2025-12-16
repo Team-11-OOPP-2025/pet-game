@@ -119,6 +119,7 @@ public class MainApp extends Application {
         }
 
         stage.setTitle(GameConfig.APP_TITLE);
+        stage.getIcons().setAll(AssetLoader.getInstance().getIcons("icons/bjorni"));
         stage.setScene(scene);
         stage.setResizable(false);
 

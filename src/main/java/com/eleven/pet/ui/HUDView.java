@@ -18,6 +18,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import lombok.Getter;
 
 import static com.eleven.pet.ui.ViewConstants.*;
 
@@ -55,7 +56,16 @@ public class HUDView extends StackPane {
     private Rectangle energyFill;
     private Rectangle cleanFill;
     private Rectangle happinessFill;
-    private Button sleepBtn; // Changed to Button
+
+    // Get these for the Tutorials
+    @Getter
+    private VBox statsBox;
+    @Getter
+    private Button feedBtn;
+    @Getter
+    private Button sleepBtn;
+    @Getter
+    private Button cleanBtn;
 
     /**
      * Creates a new HUD view for the given pet and clock.
@@ -96,7 +106,7 @@ public class HUDView extends StackPane {
         cleanFill = (Rectangle) cleanBar.getChildren().get(1);
 
         // Stack them vertically using VBox
-        VBox statsBox = new VBox(STATS_BOX_SPACING); // Use consistent spacing (20px)
+        statsBox = new VBox(STATS_BOX_SPACING); // Use consistent spacing (20px)
         statsBox.getChildren().addAll(happyBar, hungerBar, energyBar, cleanBar);
         statsBox.setMaxSize(BAR_WIDTH_LARGE, VBox.USE_PREF_SIZE); // Clamp size to content
 
@@ -113,10 +123,10 @@ public class HUDView extends StackPane {
      * and binds them to the {@link PetController}.
      */
     private void setupControlLayer() {
-        Button feedBtn = createActionButton("FEED", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
+        feedBtn = createActionButton("FEED", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
         addToLayout(feedBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
 
-        Button cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
+        cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
         addToLayout(cleanBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
 
         sleepBtn = createActionButton("SLEEP", PIXEL_BUTTON_SLEEP, PIXEL_BUTTON_WIDTH, controller::handleSleepAction);
@@ -244,9 +254,9 @@ public class HUDView extends StackPane {
     /**
      * Binds a numeric stat property (0–100) to a bar rectangle width.
      *
-     * @param stat   observable stat value
-     * @param fill   rectangle representing the bar fill
-     * @param maxW   maximum width when stat is 100
+     * @param stat observable stat value
+     * @param fill rectangle representing the bar fill
+     * @param maxW maximum width when stat is 100
      */
     private void bindBar(javafx.beans.value.ObservableValue<Number> stat, Rectangle fill, double maxW) {
         if (stat != null) {
@@ -258,9 +268,9 @@ public class HUDView extends StackPane {
     /**
      * Updates the width of a stat bar based on a percentage value.
      *
-     * @param rect      bar rectangle
-     * @param value     stat value in range 0–100
-     * @param maxWidth  width corresponding to value 100
+     * @param rect     bar rectangle
+     * @param value    stat value in range 0–100
+     * @param maxWidth width corresponding to value 100
      */
     private void updateFill(Rectangle rect, int value, double maxWidth) {
         rect.setWidth(maxWidth * (value / 100.0));

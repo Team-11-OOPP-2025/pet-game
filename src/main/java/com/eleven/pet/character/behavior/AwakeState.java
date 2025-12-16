@@ -25,7 +25,8 @@ public class AwakeState implements PetState {
      */
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        if (pet.getInventory().remove(item, 1)) {
+        if (pet.getInventory().canRemove(item, 1)) {  // QUERY 
+            pet.getInventory().remove(item, 1);        //  COMMAND
             System.out.println(pet.getName() + " is consuming " + item.name() + ".");
             return item.use(pet);
         }

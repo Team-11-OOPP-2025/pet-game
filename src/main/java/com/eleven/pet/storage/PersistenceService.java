@@ -71,6 +71,7 @@ public class PersistenceService {
             PetDataDTO dto = new PetDataDTO(GameConfig.SAVE_FILE_VERSION);
 
             dto.setPetName(model.getName());
+            dto.setTutorialCompleted(model.isTutorialCompleted());
             dto.setCurrentStateName(model.getCurrentState().getStateName());
             dto.setLastSaveTimestamp(System.currentTimeMillis());
 
@@ -79,7 +80,7 @@ public class PersistenceService {
 
             dto.setSleepStartTime(model.getCurrentSleepDuration());
             dto.setSleptThisNight(model.isSleptThisNight());
-            
+
             // Save reward cooldown
             dto.setRewardCooldown(model.getRewardCooldown());
 
@@ -136,9 +137,10 @@ public class PersistenceService {
             applyStats(dto.getStatsData(), model.getStats());
             applyInventory(dto.getInventoryData(), model.getInventory());
 
+            model.setTutorialCompleted(dto.isTutorialCompleted());
             model.setCurrentSleepDuration(dto.getSleepStartTime());
             model.setSleptThisNight(dto.isSleptThisNight());
-            
+
             // Load reward cooldown
             model.setRewardCooldown(dto.getRewardCooldown());
 

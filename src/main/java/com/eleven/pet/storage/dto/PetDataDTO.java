@@ -27,6 +27,11 @@ public class PetDataDTO {
     private String petName;
 
     /**
+     * Flag indicating whether the player has completed the tutorial.
+     */
+    private boolean tutorialCompleted;
+
+    /**
      * Name of the current state of the pet (e.g. "AWAKE", "ASLEEP").
      */
     private String currentStateName;

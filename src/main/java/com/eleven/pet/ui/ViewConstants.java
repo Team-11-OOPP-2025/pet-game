@@ -25,6 +25,7 @@ public class ViewConstants {
 
     public static final String PIXEL_BUTTON_PRIMARY = "pixel-btn-primary";
     public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
+    public static final String PIXEL_BUTTON_GOLD = "pixel-btn-gold";
     public static final Integer PIXEL_BUTTON_WIDTH = 120;
     
     // Styling
@@ -43,6 +44,14 @@ public class ViewConstants {
                     "-fx-border-width: 2; " +
                     "-fx-border-radius: 5; " +
                     "-fx-background-radius: 5;";
+
+    public static final String STYLE_CONTENT_BOX =
+            "-fx-background-color: #fdf5e6;" +
+                    "-fx-border-color: #8b4513;" +
+                    "-fx-border-width: 4;" +
+                    "-fx-background-radius: 10;" +
+                    "-fx-border-radius: 10;" +
+                    "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);";
 
     // Layout Spacing
     public static final double STATS_BOX_SPACING = 20.0;
