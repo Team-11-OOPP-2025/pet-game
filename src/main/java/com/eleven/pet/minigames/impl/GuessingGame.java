@@ -1,7 +1,6 @@
 package com.eleven.pet.minigames.impl;
 
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.character.PetStats;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.ui.MiniGameView;
@@ -75,28 +74,20 @@ public class GuessingGame implements Minigame {
     }
     
     /**
-     * Checks the provided guess against the current secret number and updates
-     * the pet's happiness accordingly.
+     * Checks the provided guess against the current secret number.
      *
      * @param guess the number guessed by the player
-     * @param pet   the {@link PetModel} whose stats should be updated; may be {@code null}
      * @return a {@link MinigameResult} indicating success, happiness delta and a message
      */
-    public MinigameResult checkGuess(int guess, PetModel pet) {
+    public MinigameResult checkGuess(int guess) {
         boolean won = (guess == secretNumber);
         int happinessDelta = won ? WIN_HAPPINESS : LOSE_HAPPINESS;
         String message;
         
         if (won) {
-            message = String.format("Correct! The number was %d. Happiness +%d", secretNumber, WIN_HAPPINESS);
-            if (pet != null && pet.getStats() != null) {
-                pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, WIN_HAPPINESS);
-            }
+            message = String.format("Correct! The number was %d.", secretNumber);
         } else {
-            message = String.format("Wrong! The number was %d. Happiness %d", secretNumber, LOSE_HAPPINESS);
-            if (pet != null && pet.getStats() != null) {
-                pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, LOSE_HAPPINESS);
-            }
+            message = String.format("Wrong! The number was %d.", secretNumber);
         }
         
         return new MinigameResult(won, happinessDelta, message);

@@ -1,4 +1,5 @@
 import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.minigames.impl.GuessingGame;
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,9 @@ public class GuessingGameTest {
         game.generateNewNumber();
         MinigameResult result = null;
         for (int guess = game.getMinNumber(); guess <= game.getMaxNumber(); guess++) {
-            result = game.checkGuess(guess, pet);
+            result = game.checkGuess(guess);
             if (result.won()) {
+                pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
                 break;
             }
         }
