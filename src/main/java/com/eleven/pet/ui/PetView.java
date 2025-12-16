@@ -1,0 +1,327 @@
+package com.eleven.pet.ui;
+
+import com.eleven.pet.character.PetController;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.ui.PetAvatarView;
+import com.eleven.pet.core.AssetLoader;
+import com.eleven.pet.daily_reward.ui.DailyRewardView;
+import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.inventory.ui.InventoryView;
+import javafx.animation.*;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Main view composition for the pet game screen.
+ * <p>
+ * This class wires together the world (background, weather, time), the pet
+ * avatar, HUD, inventory, and daily rewards UI, and it manages transitions
+ * into and out of the TV-based minigame mode.
+ * </p>
+ */
+public class PetView {
+    private final PetModel model;
+    private final PetController controller;
+    private final GameClock clock;
+    private final WeatherSystem weatherSystem;
+    private final AssetLoader assetLoader;
+
+    private StackPane worldLayer;
+    private StackPane uiLayer;
+
+    private PetAvatarView petAvatarView;
+    private InventoryView inventoryView;
+    private WorldView worldView;
+    private HUDView hudView;
+    private DailyRewardView dailyRewardView;
+
+    private Button rewardBtn;
+
+    // Zoom State
+    private boolean isGameMode = false;
+    private static final double ZOOM_FACTOR = 3.0;
+    private static final double VIEW_OFFSET_X = 100.0;
+    private static final double TRANSITION_DURATION_MS = 800.0;
+
+    /**
+     * Creates a new {@code PetView} bound to the given game components.
+     *
+     * @param model         the pet model providing state for the pet avatar and UI
+     * @param controller    controller handling user actions and minigame lifecycle
+     * @param clock         the game clock driving time-related visuals
+     * @param weatherSystem the weather system used by the {@link WorldView}
+     */
+    public PetView(PetModel model, PetController controller, GameClock clock, WeatherSystem weatherSystem) {
+        this.model = model;
+        this.controller = controller;
+        this.clock = clock;
+        this.weatherSystem = weatherSystem;
+        this.assetLoader = AssetLoader.getInstance();
+    }
+
+    /**
+     * Builds and initializes the complete pet game UI tree.
+     * <p>
+     * This method:
+     * <ul>
+     *     <li>Creates world and UI layers</li>
+     *     <li>Initializes {@link WorldView}, {@link PetAvatarView},
+     *     {@link InventoryView}, {@link HUDView}, and {@link DailyRewardView}</li>
+     *     <li>Sets up the TV click area to enter minigame mode</li>
+     *     <li>Adds the daily rewards trigger button</li>
+     * </ul>
+     * </p>
+     *
+     * @return the root {@link Pane} containing all pet game UI elements
+     */
+    public Pane initializeUI() {
+        StackPane root = new StackPane();
+
+        // 1. Create the Layers
+        worldLayer = new StackPane();
+        uiLayer = new StackPane();
+        uiLayer.setPickOnBounds(false);
+
+        // 2. Initialize Components
+        worldView = new WorldView(clock, weatherSystem);
+        petAvatarView = new PetAvatarView(model, controller);
+        petAvatarView.setPickOnBounds(false);
+
+        inventoryView = new InventoryView(model, controller);
+        hudView = new HUDView(model, controller, clock);
+
+        // Pass controller here
+        dailyRewardView = new DailyRewardView(model, controller);
+
+        // 3. Compose World
+        worldView.getTvClickArea().setOnMouseClicked(_ -> enterMinigameMode());
+        worldLayer.getChildren().addAll(worldView, petAvatarView);
+
+        // 4. Compose UI
+        uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
+
+        // 5. Setup Daily Rewards Trigger
+        setupRewardTrigger(uiLayer);
+
+        // 6. Add to Root
+        root.getChildren().addAll(worldLayer, uiLayer);
+
+        if (!model.isTutorialCompleted()) {
+            controller.initTutorialLogic();
+            final TutorialView[] tutorialRef = new TutorialView[1];
+
+            // Define targets matching the steps in TutorialView
+            // 0: Welcome (Null)
+            // 1: Stats (StatsBox)
+            // 2: TV (TvClickArea)
+            // 3: Daily Rewards
+            // 4: Inventory (Feed Button)
+            // 5: Clean (Clean Button)
+            // 6: Sleep (Sleep Button)
+            List<Node> targets = Arrays.asList(
+                    null,
+                    hudView.getStatsBox(),
+                    worldView.getTvClickArea(),
+                    rewardBtn,
+                    hudView.getFeedBtn(),
+                    hudView.getCleanBtn(),
+                    hudView.getSleepBtn()
+            );
+
+            tutorialRef[0] = new TutorialView(targets, () -> {
+                root.getChildren().remove(tutorialRef[0]);
+                controller.completeTutorial();
+            });
+
+            root.getChildren().add(tutorialRef[0]);
+        }
+        return root;
+    }
+
+    /**
+     * Creates and attaches the daily rewards trigger button to the given UI layer.
+     * <p>
+     * The trigger is rendered as a bouncing chest icon with a "REWARDS" label
+     * that, when clicked, toggles the {@link DailyRewardView} to visible.
+     * The button is aligned to the top-right corner of the provided root pane.
+     * </p>
+     *
+     * @param root the UI {@link StackPane} to which the rewards button is added
+     */
+    private void setupRewardTrigger(StackPane root) {
+        // Load the chest image
+        Image chestImage = assetLoader.getImage("chest/Chest");
+        ImageView chestIcon = new ImageView(chestImage);
+
+        // Set viewport to the first frame (150x118) to avoid showing the whole sprite sheet
+        chestIcon.setViewport(new Rectangle2D(0, 0, 150, 118));
+        chestIcon.setFitWidth(30);
+        chestIcon.setFitHeight(24);
+        chestIcon.setPreserveRatio(true);
+
+        // Create Bounce Animation
+        TranslateTransition bounce = new TranslateTransition(Duration.millis(600), chestIcon);
+        bounce.setByY(-2);
+        bounce.setCycleCount(Animation.INDEFINITE);
+        bounce.setAutoReverse(true);
+        bounce.play();
+
+        // Create Button with Icon
+        rewardBtn = new Button(" REWARDS", chestIcon);
+        rewardBtn.setContentDisplay(ContentDisplay.LEFT);
+
+        // Remove inline styles and use CSS classes
+        rewardBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_GOLD);
+
+        rewardBtn.setOnAction(_ -> dailyRewardView.toggle(true));
+
+        StackPane.setAlignment(rewardBtn, Pos.TOP_RIGHT);
+        StackPane.setMargin(rewardBtn, new Insets(20, 20, 0, 0));
+        root.getChildren().add(rewardBtn);
+    }
+
+    /**
+     * Enters minigame mode and focuses the camera on the TV.
+     * <p>
+     * This method:
+     * <ul>
+     *     <li>Zooms and pans the world layer so that the TV is centered</li>
+     *     <li>Repositions and scales the pet avatar near the TV</li>
+     *     <li>Fades out the main UI layer</li>
+     *     <li>Loads the minigame content into the TV click area when the
+     *     transition finishes</li>
+     * </ul>
+     * It is a no-op if the view is already in minigame mode.
+     * </p>
+     */
+    private void enterMinigameMode() {
+        if (!controller.canPlayMinigame()) return;
+        if (isGameMode) return;
+        isGameMode = true;
+
+        StackPane tvClickArea = worldView.getTvClickArea();
+
+        double sceneW = worldLayer.getWidth();
+        double sceneH = worldLayer.getHeight();
+
+        double tvCenterX = tvClickArea.getLayoutX() + (tvClickArea.getWidth() / 2);
+        double tvCenterY = tvClickArea.getLayoutY() + (tvClickArea.getHeight() / 2);
+
+        double transX = ((sceneW / 2) - tvCenterX + VIEW_OFFSET_X) * ZOOM_FACTOR;
+        double transY = ((sceneH / 2) - tvCenterY) * ZOOM_FACTOR;
+
+        ParallelTransition pt = new ParallelTransition();
+
+        Timeline zoom = new Timeline(
+                new KeyFrame(Duration.millis(TRANSITION_DURATION_MS),
+                        new KeyValue(worldLayer.scaleXProperty(), ZOOM_FACTOR, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.scaleYProperty(), ZOOM_FACTOR, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateXProperty(), transX, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateYProperty(), transY, Interpolator.EASE_BOTH)
+                )
+        );
+
+        TranslateTransition movePet = new TranslateTransition(Duration.millis(TRANSITION_DURATION_MS), petAvatarView);
+        movePet.setToX(300);
+        movePet.setToY(-75);
+
+        ScaleTransition scalePet = new ScaleTransition(Duration.millis(TRANSITION_DURATION_MS), petAvatarView);
+        scalePet.setToX(0.5);
+        scalePet.setToY(0.5);
+
+        FadeTransition fadeUI = new FadeTransition(Duration.millis(300), uiLayer);
+        fadeUI.setToValue(0);
+
+        pt.getChildren().addAll(zoom, movePet, scalePet, fadeUI);
+        pt.setOnFinished(_ -> loadGameContent());
+        pt.play();
+    }
+
+    /**
+     * Exits minigame mode and restores the normal world view.
+     * <p>
+     * This method:
+     * <ul>
+     *     <li>Clears any minigame content from the TV click area</li>
+     *     <li>Animates the world layer back to its original scale and position</li>
+     *     <li>Returns the pet avatar to its default position and scale</li>
+     *     <li>Fades the UI layer back in</li>
+     * </ul>
+     * It is a no-op if the view is not currently in minigame mode.
+     * </p>
+     */
+    private void exitMinigameMode() {
+        if (!isGameMode) return;
+        isGameMode = false;
+
+        StackPane tvContentPane = worldView.getTvContentPane();
+        tvContentPane.getChildren().clear();
+
+        ParallelTransition pt = new ParallelTransition();
+
+        Timeline zoomOut = new Timeline(
+                new KeyFrame(Duration.millis(TRANSITION_DURATION_MS),
+                        new KeyValue(worldLayer.scaleXProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.scaleYProperty(), 1.0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateXProperty(), 0, Interpolator.EASE_BOTH),
+                        new KeyValue(worldLayer.translateYProperty(), 0, Interpolator.EASE_BOTH)
+                )
+        );
+
+        TranslateTransition movePet = new TranslateTransition(Duration.millis(TRANSITION_DURATION_MS), petAvatarView);
+        movePet.setToX(0);
+        movePet.setToY(0);
+
+        ScaleTransition scalePet = new ScaleTransition(Duration.millis(TRANSITION_DURATION_MS), petAvatarView);
+        scalePet.setToX(1);
+        scalePet.setToY(1);
+
+        FadeTransition fadeUI = new FadeTransition(Duration.millis(500), uiLayer);
+        fadeUI.setToValue(1.0);
+        fadeUI.setDelay(Duration.millis(300));
+
+        pt.getChildren().addAll(zoomOut, movePet, scalePet, fadeUI);
+        pt.play();
+    }
+
+    /**
+     * Loads the active minigame UI into the TV click area.
+     * <p>
+     * The minigame pane is obtained from the {@link PetController}, with a
+     * callback to {@link #exitMinigameMode()} that is invoked when the
+     * minigame finishes. If a pane is returned, it is resized to fill the TV
+     * area and added as the only child of the TV container.
+     * </p>
+     *
+     * <p>
+     * If the controller does not provide a minigame pane (returns {@code null}),
+     * this method leaves the TV area empty.
+     * </p>
+     */
+    private void loadGameContent() {
+        StackPane tvContentPane = worldView.getTvContentPane();
+        tvContentPane.getChildren().clear();
+
+        Pane gamePane = controller.getMinigamePane(this::exitMinigameMode);
+
+        if (gamePane != null) {
+            gamePane.prefWidthProperty().bind(tvContentPane.widthProperty());
+            gamePane.prefHeightProperty().bind(tvContentPane.heightProperty());
+
+            tvContentPane.getChildren().add(gamePane);
+        }
+    }
+}

@@ -1,10 +1,10 @@
 package com.eleven.pet.character;
 
 /**
- * Represents the emotional animation states a sprites can have.
+ * Represents the emotional animation states a pet can have.
  *
- * <p>Used to drive UI animations and select appropriate visual/sound feedback
- * based on the sprites's current mood.</p>
+ * <p>Used to drive UI animations and select appropriate visual or sound feedback
+ * based on the pet's current mood.</p>
  */
 public enum AnimationState {
     /**

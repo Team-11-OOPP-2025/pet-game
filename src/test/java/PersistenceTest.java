@@ -15,9 +15,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for {@link com.eleven.pet.storage.PersistenceService} to ensure
+ * pet models can be saved and loaded correctly.
+ */
 class PersistenceTest {
 
     /**
@@ -42,6 +45,10 @@ class PersistenceTest {
     @TempDir
     Path tempDir;
 
+    /**
+     * Verifies that saving and then loading a {@link PetModel} restores
+     * all persistent state while resetting transient state such as behavior.
+     */
     @Test
     void saveAndLoadRoundTripRestoresModelState() {
         Path savePath = tempDir.resolve("roundtrip.dat");
@@ -74,9 +81,15 @@ class PersistenceTest {
         assertTrue(loaded.isSleptThisNight());
         assertTrue(Math.abs(inventory.getAllOwnedItems().size() - loaded.getInventory().getAllOwnedItems().size()) <= 3,
                 "Owned items count should be within a range of 3");
-        assertEquals(original.getCurrentState(), loaded.getCurrentState());
+
+        // State should not be AsleepState as it is transient and should reset on load
+        assertNotEquals(original.getCurrentState(), loaded.getCurrentState());
     }
 
+    /**
+     * Verifies that loading from a non‑existent save file returns an empty
+     * {@link java.util.Optional} instead of throwing.
+     */
     @Test
     void loadWhenFileMissingReturnsNull() {
         Path missingPath = tempDir.resolve("missing.dat");

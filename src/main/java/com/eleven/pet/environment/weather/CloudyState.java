@@ -4,6 +4,12 @@ import com.eleven.pet.vfx.effects.NoParticleEffect;
 import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.google.auto.service.AutoService;
 
+/**
+ * Cloudy weather state.
+ * <p>
+ * Has a neutral effect on happiness and no particle effects.
+ * </p>
+ */
 @AutoService(WeatherState.class)
 public class CloudyState implements WeatherState {
     private static final ParticleEffect NO_PARTICLES = new NoParticleEffect();
@@ -11,11 +17,6 @@ public class CloudyState implements WeatherState {
     @Override
     public String getName() {
         return "Cloudy";
-    }
-
-    @Override
-    public double getOverlayOpacity() {
-        return 0;
     }
 
     @Override

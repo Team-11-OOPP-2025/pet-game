@@ -3,12 +3,12 @@ package com.eleven.pet.core;
 import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.character.PetView;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.storage.GcmEncryptionService;
 import com.eleven.pet.storage.KeyLoader;
 import com.eleven.pet.storage.PersistenceService;
+import com.eleven.pet.ui.PetView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import javax.crypto.SecretKey;
+import java.net.URL;
 
 /**
  * Main application class for the virtual sprites game "Björni".
@@ -32,6 +33,8 @@ public class MainApp extends Application {
 
     /**
      * Application entry point.
+     *
+     * <p>This method is invoked by the JavaFX runtime after initialization.</p>
      *
      * @param primaryStage the primary stage for this application
      */
@@ -56,6 +59,11 @@ public class MainApp extends Application {
     /**
      * Initializes the persistence service with encryption.
      * Falls back to disabling persistence if initialization fails.
+     *
+     * <p>
+     * If persistence cannot be initialized, {@code persistenceService}
+     * is set to {@code null} and the game runs without saving.
+     * </p>
      */
     private void initializePersistence() {
         try {
@@ -76,7 +84,8 @@ public class MainApp extends Application {
     /**
      * Loads the sprites from persistence or creates a new one if loading fails.
      *
-     * @return the loaded or newly created PetModel
+     * @return the loaded {@link PetModel} or a newly created instance if
+     * no save is available or loading fails
      */
     private PetModel loadOrCreatePet() {
         if (persistenceService != null) {
@@ -100,7 +109,17 @@ public class MainApp extends Application {
      */
     private void configureStage(Stage stage, Pane root) {
         Scene scene = new Scene(root, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
+
+        // Load CSS
+        URL cssUrl = getClass().getResource("/styles.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        } else {
+            System.err.println("Warning: styles.css not found!");
+        }
+
         stage.setTitle(GameConfig.APP_TITLE);
+        stage.getIcons().setAll(AssetLoader.getInstance().getIcons("icons/bjorni"));
         stage.setScene(scene);
         stage.setResizable(false);
 
@@ -114,7 +133,10 @@ public class MainApp extends Application {
     }
 
     /**
-     * Clean shutdown sequence
+     * Performs a clean shutdown of the application.
+     *
+     * <p>Stops the game engine, triggers a final save via the controller
+     * if possible, and then exits the JavaFX platform and JVM.</p>
      */
     private void shutdown() {
         System.out.println("Shutting down...");
@@ -133,6 +155,14 @@ public class MainApp extends Application {
         System.exit(0);
     }
 
+    /**
+     * Static entry point used by the {@link Launcher} class.
+     *
+     * <p>Delegates to {@link Application#launch(String...)} to start
+     * the JavaFX application lifecycle.
+     *
+     * @param args command-line arguments passed to the application
+     */
     public static void initializeApplication(String[] args) {
         launch(args);
     }

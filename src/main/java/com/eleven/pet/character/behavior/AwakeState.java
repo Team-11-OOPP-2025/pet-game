@@ -4,11 +4,10 @@ import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 /**
- * Represents the awake behavior/state of a sprites. Handles actions available while the sprites is awake
+ * Represents the awake behavior/state of a pet. Handles actions available while the pet is awake
  * such as consuming items, playing minigames, sleeping, cleaning, and time-based updates.
  *
  * <p>This class is registered via {@link AutoService} as an implementation of {@link PetState}.</p>
@@ -18,7 +17,7 @@ public class AwakeState implements PetState {
     public static final String STATE_NAME = "AWAKE";
 
     /**
-     * Attempt to consume an {@link Item} from the sprites's inventory and apply its effect.
+     * Attempt to consume an {@link Item} from the pet's inventory and apply its effect.
      *
      * @param pet  the {@link PetModel} performing the consumption
      * @param item the {@link Item} to consume
@@ -26,7 +25,8 @@ public class AwakeState implements PetState {
      */
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        if (pet.getInventory().remove(item, 1)) {
+        if (pet.getInventory().canRemove(item, 1)) {  // QUERY 
+            pet.getInventory().remove(item, 1);        //  COMMAND
             System.out.println(pet.getName() + " is consuming " + item.name() + ".");
             return item.use(pet);
         }
@@ -35,22 +35,18 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Handle a request to play. If the sprites can play a minigame it will start one, otherwise a message
-     * will be printed indicating the sprites is unable to play.
+     * Indicates that an awake pet is generally able to play minigames.
      *
-     * @param pet the {@link PetModel} that should play
+     * @param pet the pet model
+     * @return always {@code true}
      */
     @Override
-    public MinigameResult handlePlay(PetModel pet) {
-        if (pet.canPlayMinigame()) {
-            return pet.playRandomMinigame();
-        }
-        System.out.println(pet.getName() + " is too tired or hungry to play right now.");
-        return null;
+    public boolean canPlay(PetModel pet) {
+        return pet.getStats().getStat(PetStats.STAT_ENERGY).get() >= 10;
     }
 
     /**
-     * Transition the sprites into the sleeping state. Prepares sleep-related flags and resets sleep
+     * Transition the pet into the sleeping state. Prepares sleep-related flags and resets sleep
      * tracking counters if a game clock is present.
      *
      * @param pet the {@link PetModel} that will go to sleep
@@ -76,7 +72,7 @@ public class AwakeState implements PetState {
     }
 
     /**
-     * Clean the sprites, providing a fixed cleanliness and small happiness benefit.
+     * Clean the pet, providing a fixed cleanliness and small happiness benefit.
      *
      * @param pet the {@link PetModel} being cleaned
      */

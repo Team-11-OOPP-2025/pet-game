@@ -1,23 +1,45 @@
+import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
-
+/**
+ * Tests for pet behavior states and the {@link StateRegistry}.
+ */
 public class PetStatesTest {
 
+    /**
+     * Ensures that {@link AwakeState} exposes the correct state name constant
+     * and allows playing minigames.
+     */
     @Test
-    void testStateNames() {
+    void testAwakeState() {
+        PetModel pet = PetFactory.createNewPet("TestPet", null, null);
         AwakeState awakeState = new AwakeState();
         assertEquals(AwakeState.STATE_NAME, awakeState.getStateName());
+        assertTrue(awakeState.canPlay(pet), "Awake pet should be able to play");
     }
 
+    /**
+     * Ensures that {@link AsleepState} exposes the correct state name constant
+     * and prevents playing minigames.
+     */
+    @Test
+    void testAsleepState() {
+        AsleepState asleepState = new AsleepState();
+        assertEquals(AsleepState.STATE_NAME, asleepState.getStateName());
+        assertFalse(asleepState.canPlay(null), "Asleep pet should not be able to play");
+    }
+
+    /**
+     * Verifies that {@link StateRegistry} follows the singleton pattern.
+     */
     @Test
     void testRegistrySingleton() {
         StateRegistry instance1 = StateRegistry.getInstance();
@@ -26,6 +48,9 @@ public class PetStatesTest {
         assertSame(instance1, instance2, "getInstance() should return the same instance");
     }
 
+    /**
+     * Verifies that states registered in {@link StateRegistry} can be retrieved by name.
+     */
     @Test
     void testRegistryRetrieval() {
         StateRegistry registry = StateRegistry.getInstance();
@@ -38,8 +63,8 @@ public class PetStatesTest {
             }
 
             @Override
-            public MinigameResult handlePlay(PetModel pet) {
-                return null;
+            public boolean canPlay(PetModel pet) {
+                return true;
             }
 
             @Override

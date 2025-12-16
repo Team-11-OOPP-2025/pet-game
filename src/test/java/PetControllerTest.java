@@ -6,6 +6,8 @@ import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.environment.time.GameClock;
+import com.eleven.pet.environment.weather.WeatherState;
+import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.storage.EncryptionService;
 import com.eleven.pet.storage.PersistenceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests for PetController's autosave functionality.
+ * Tests for {@link PetController}, focusing on autosave, shutdown behavior,
+ * and interaction with {@link PersistenceService}.
  */
 public class PetControllerTest {
 
@@ -44,7 +47,8 @@ public class PetControllerTest {
     }
 
     /**
-     * Mock persistence service that tracks save calls.
+     * Mock persistence service that tracks how many times {@link #save(PetModel)} is called
+     * and can optionally throw to simulate save failures.
      */
     private static class MockPersistenceService extends PersistenceService {
         private final AtomicInteger saveCallCount = new AtomicInteger(0);
@@ -54,6 +58,10 @@ public class PetControllerTest {
             super(new NoOpEncryptionService(), savePath);
         }
 
+        /**
+         * Increments the save call counter and optionally throws a {@link GameException}
+         * to simulate a persistence error before delegating to the real implementation.
+         */
         @Override
         public void save(PetModel model) throws GameException {
             saveCallCount.incrementAndGet();
@@ -63,22 +71,34 @@ public class PetControllerTest {
             super.save(model);
         }
 
+        /**
+         * @return the number of times {@link #save(PetModel)} has been invoked.
+         */
         public int getSaveCallCount() {
             return saveCallCount.get();
         }
 
+        /**
+         * Enables or disables throwing a {@link GameException} during save.
+         *
+         * @param throwOnSave whether saves should fail with an exception
+         */
         public void setThrowOnSave(boolean throwOnSave) {
             this.throwOnSave = throwOnSave;
         }
     }
 
-    private PetModel model;
-    private GameClock clock;
     private MockPersistenceService persistence;
+    private PetController controller;
+    private WeatherSystem weatherSystem;
 
     @TempDir
     Path tempDir;
 
+    /**
+     * Sets up a fresh {@link PetModel}, {@link GameClock}, and mock persistence
+     * before each test, and registers the basic pet states.
+     */
     @BeforeEach
     void setUp() {
         // Manually register states for testing
@@ -86,41 +106,52 @@ public class PetControllerTest {
         registry.registerState(new AwakeState());
         registry.registerState(new AsleepState());
 
-        clock = new GameClock();
-        model = PetFactory.createNewPet("TestPet", null, clock);
+        GameClock clock = new GameClock();
+        PetModel model = PetFactory.createNewPet("TestPet", null, clock);
         persistence = new MockPersistenceService(tempDir.resolve("test-save.dat"));
+        weatherSystem = new WeatherSystem();
+        controller = new PetController(model, clock, weatherSystem, persistence);
     }
 
+    /**
+     * Ensures that calling {@link PetController#stopAutosave()} before autosave
+     * has been initialized does not throw an exception.
+     */
     @Test
     void testStopAutosaveWhenTimerNotInitialized() {
         // Stopping autosave before initialization should not throw
-        PetController controller = new PetController(model, clock, null, persistence);
         assertDoesNotThrow(controller::stopAutosave);
     }
 
+    /**
+     * Verifies that {@link PetController#shutdown()} triggers a single save operation.
+     */
     @Test
     void testShutdownPerformsSave() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         // Shutdown should save the game
         controller.shutdown();
 
         assertEquals(1, persistence.getSaveCallCount(), "Shutdown should trigger one save");
     }
 
+    /**
+     * Verifies that {@link PetController#shutdown()} swallows save errors and
+     * does not propagate {@link GameException} thrown by persistence.
+     */
     @Test
     void testShutdownHandlesSaveError() {
-        PetController controller = new PetController(model, clock, null, persistence);
         persistence.setThrowOnSave(true);
 
         // Shutdown with save error should not throw
         assertDoesNotThrow(controller::shutdown);
     }
 
+    /**
+     * Ensures that multiple calls to {@link PetController#shutdown()} are idempotent
+     * and only cause a single save.
+     */
     @Test
     void testMultipleShutdownCallsAreIdempotent() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         controller.shutdown();
         controller.shutdown();
 
@@ -128,17 +159,21 @@ public class PetControllerTest {
         assertEquals(1, persistence.getSaveCallCount(), "Multiple shutdowns should only save once");
     }
 
+    /**
+     * Verifies that {@link PetController} can be created with {@code null} weather
+     * and clock dependencies without failing.
+     */
     @Test
     void testControllerCreationWithNullComponents() {
-        // Controller should be able to handle null weather and clock
-        PetController controller = new PetController(model, null, null, persistence);
         assertNotNull(controller);
     }
 
+    /**
+     * Ensures that shutdown both stops autosave (if running) and performs a save,
+     * and that stopping autosave afterwards is safe.
+     */
     @Test
     void testShutdownStopsAutosaveAndSaves() {
-        PetController controller = new PetController(model, clock, null, persistence);
-
         // Shutdown should stop autosave (if running) and save
         controller.shutdown();
 
@@ -147,5 +182,12 @@ public class PetControllerTest {
 
         // Stopping autosave again should work without error
         assertDoesNotThrow(controller::stopAutosave);
+    }
+
+    @Test
+    void changeWeather() {
+        WeatherState weater = weatherSystem.getCurrentWeather();
+        controller.debugChangeWeather();
+        assertNotEquals(weater, weatherSystem.getCurrentWeather());
     }
 }

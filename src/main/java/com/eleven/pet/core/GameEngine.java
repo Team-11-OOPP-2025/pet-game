@@ -9,7 +9,11 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 
 /**
- * Main game engine responsible for updating the game state, including the game clock and weather system.
+ * Main game engine responsible for updating the game state, including
+ * the game clock and weather system.
+ *
+ * <p>This class owns the main animation loop and schedules periodic
+ * weather changes.</p>
  */
 public class GameEngine {
     private final PetModel model;
@@ -22,11 +26,12 @@ public class GameEngine {
     private boolean isRunning = false;
 
     /**
-     * Constructs a GameEngine with the specified sprites model, game clock, and weather system.
+     * Constructs a {@code GameEngine} with the specified sprites model,
+     * game clock, and weather system.
      *
-     * @param model         The sprites model to manage
-     * @param clock         The game clock for time management
-     * @param weatherSystem The weather system for environmental effects
+     * @param model         the sprites model to manage
+     * @param clock         the game clock for time management
+     * @param weatherSystem the weather system for environmental effects
      */
     public GameEngine(PetModel model, GameClock clock, WeatherSystem weatherSystem) {
         this.model = model;
@@ -36,6 +41,8 @@ public class GameEngine {
 
     /**
      * Starts the game engine, including the main game loop and weather updates.
+     *
+     * <p>If the engine is already running, this method is a no-op.</p>
      */
     public void start() {
         if (isRunning) return;
@@ -57,6 +64,9 @@ public class GameEngine {
 
     /**
      * Stops the game engine, including the main game loop and weather updates.
+     *
+     * <p>After calling this method, {@link #start()} can be invoked again
+     * to resume execution.</p>
      */
     public void stop() {
         if (gameLoop != null) gameLoop.stop();
@@ -67,7 +77,11 @@ public class GameEngine {
     /**
      * Updates the game state based on the elapsed time since the last frame.
      *
-     * @param now The current time in nanoseconds
+     * <p>The delta time is computed from {@code now} and used to advance the
+     * {@link GameClock}. When a new in‑game day starts, the pet's daily food
+     * is replenished.</p>
+     *
+     * @param now the current time in nanoseconds, provided by {@link AnimationTimer}
      */
     private void update(long now) {
         // Calculate delta time (in seconds)
@@ -82,8 +96,14 @@ public class GameEngine {
 
     /**
      * Initializes and starts the weather change timer.
+     *
+     * <p>Applies an initial weather change immediately, then schedules
+     * recurring changes based on {@link GameConfig#WEATHER_CHANGE_INTERVAL}.</p>
      */
     private void startWeatherTimer() {
+        // Set initial weather immediately
+        weatherSystem.changeWeather();
+        
         weatherTimer = new Timeline(new KeyFrame(
                 Duration.seconds(GameConfig.WEATHER_CHANGE_INTERVAL),
                 _ -> weatherSystem.changeWeather()

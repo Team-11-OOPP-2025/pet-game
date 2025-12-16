@@ -1,25 +1,11 @@
 package com.eleven.pet.minigames;
 
-public class MinigameResult {
-    private final boolean won;
-    private final int happinessDelta;
-    private final String message;
-    
-    public MinigameResult(boolean won, int happinessDelta, String message) {
-        this.won = won;
-        this.happinessDelta = happinessDelta;
-        this.message = message;
-    }
-    
-    public boolean isWon() {
-        return won;
-    }
-    
-    public int getHappinessDelta() {
-        return happinessDelta;
-    }
-    
-    public String getMessage() {
-        return message;
-    }
+/**
+ * Represents the outcome of a minigame.
+ *
+ * @param won             whether the minigame was won
+ * @param happinessDelta  the change to the pet's happiness as a result of the game
+ * @param message         a user-facing message describing the result
+ */
+public record MinigameResult(boolean won, int happinessDelta, String message) {
 }
