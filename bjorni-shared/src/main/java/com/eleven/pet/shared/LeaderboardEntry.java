@@ -1,4 +1,4 @@
 package com.eleven.pet.shared;
 
-public class LeaderboardEntry {
+public record LeaderboardEntry(String playerName, boolean won, String gameName, long timeStamp) {
 }
