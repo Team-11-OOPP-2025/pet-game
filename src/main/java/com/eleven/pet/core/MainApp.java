@@ -107,7 +107,7 @@ public class MainApp extends Application {
      */
     private void configureStage(Stage stage, Pane root) {
         Scene scene = new Scene(root, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
-        
+
         // Load CSS
         URL cssUrl = getClass().getResource("/styles.css");
         if (cssUrl != null) {
@@ -117,6 +117,7 @@ public class MainApp extends Application {
         }
 
         stage.setTitle(GameConfig.APP_TITLE);
+        stage.getIcons().setAll(AssetLoader.getInstance().getIcons("icons/bjorni"));
         stage.setScene(scene);
         stage.setResizable(false);
 

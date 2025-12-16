@@ -16,7 +16,6 @@ import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 /**
@@ -214,11 +213,11 @@ public class PetAvatarView extends StackPane {
      * Images are cached in dedicated fields and reused by animations.
      */
     private void loadAssets() {
-        sheetHappy = assetLoader.getImage("sprites/happy/SpriteSheetHappy");
-        sheetNeutral = assetLoader.getImage("sprites/idle/SpriteSheetNeutral");
-        sheetSad = assetLoader.getImage("sprites/sad/SpriteSheetSad");
-        sheetCrying = assetLoader.getImage("sprites/sad/SpriteSheetCrying");
-        sheetSleeping = assetLoader.getImage("sprites/sleeping/SpriteSheetSleeping");
+        sheetHappy = assetLoader.getImage("sprites/SpriteSheetHappy");
+        sheetNeutral = assetLoader.getImage("sprites/SpriteSheetNeutral");
+        sheetSad = assetLoader.getImage("sprites/SpriteSheetSad");
+        sheetCrying = assetLoader.getImage("sprites/SpriteSheetCrying");
+        sheetSleeping = assetLoader.getImage("sprites/SpriteSheetSleeping");
     }
 
     /**

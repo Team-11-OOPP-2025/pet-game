@@ -151,13 +151,13 @@ public class PetController {
     public void debugChangeWeather() {
         weather.changeWeather();
     }
-    
+
     // --- Daily Reward Logic ---
-    
+
     public boolean isDailyRewardAvailable() {
         return model.getRewardCooldown() <= 0;
     }
-    
+
     public List<Chest> generateDailyRewardOptions() {
         List<Chest> chests = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
@@ -165,7 +165,7 @@ public class PetController {
         }
         return chests;
     }
-    
+
     public void claimDailyReward(Chest chest) {
         if (isDailyRewardAvailable()) {
             chest.open(model);
@@ -289,5 +289,27 @@ public class PetController {
 
         placeholder.getChildren().add(label);
         return placeholder;
+    }
+
+    public void completeTutorial() {
+        model.setTutorialCompleted(true);
+        // Force a save immediately
+        try {
+            if (persistence != null) {
+                persistence.save(model);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to save tutorial status: " + e.getMessage());
+        }
+
+        // Unpause the game after tutorial finishes and move forward half a day
+        togglePause();
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+    }
+
+    public void initTutorialLogic() {
+        // Advance time by half a day to test tutorial steps that depend on time (Sleep prompt)
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+        togglePause();
     }
 }
