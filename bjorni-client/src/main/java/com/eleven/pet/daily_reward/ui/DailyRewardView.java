@@ -3,6 +3,7 @@ package com.eleven.pet.daily_reward.ui;
 import com.eleven.pet.character.PetController;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.daily_reward.Chest;
+import com.eleven.pet.ui.ViewConstants;
 import javafx.animation.AnimationTimer;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -70,18 +71,18 @@ public class DailyRewardView extends StackPane {
         VBox panel = new VBox(15);
         panel.setAlignment(Pos.CENTER);
         panel.setMaxSize(800, 450);
-        panel.setStyle("-fx-background-color: #fdf5e6; -fx-background-radius: 20; -fx-border-color: #8b4513; -fx-border-width: 5; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);");
+        panel.setStyle(ViewConstants.STYLE_CONTENT_PANEL);
 
         Label title = new Label("DAILY REWARDS");
-        title.setFont(Font.font("Arial", FontWeight.BOLD, 28));
+
         title.setTextFill(Color.web("#8b4513"));
 
         subTitle = new Label("Select a chest to claim your prize!");
-        subTitle.setFont(Font.font("Arial", 16));
+        subTitle.setFont(Font.font(ViewConstants.FONT_FAMILY, 16));
         subTitle.setTextFill(Color.web("#555"));
 
         timerLabel = new Label();
-        timerLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 20));
+        timerLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.BOLD, 20));
         timerLabel.setTextFill(Color.RED);
         timerLabel.setVisible(false);
 
@@ -94,7 +95,7 @@ public class DailyRewardView extends StackPane {
 
         Button closeBtn = new Button("CLOSE");
         // Apply CSS classes
-        closeBtn.getStyleClass().addAll("pixel-btn", "pixel-btn-danger");
+        closeBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_DANGER);
 
         closeBtn.setOnAction(e -> toggle(false));
 

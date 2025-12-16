@@ -10,7 +10,7 @@ import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.MiniGameController;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
-import com.eleven.pet.network.LeaderboardService;
+import com.eleven.pet.network.leaderboard.LeaderboardService;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -310,5 +310,14 @@ public class PetController {
         // Advance time by half a day to test tutorial steps that depend on time (Sleep prompt)
         clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
         togglePause();
+    }
+
+    /**
+     * Exposes the leaderboard service for UI components.
+     *
+     * @return the active leaderboard service
+     */
+    public LeaderboardService getLeaderboardService() {
+        return leaderboard;
     }
 }

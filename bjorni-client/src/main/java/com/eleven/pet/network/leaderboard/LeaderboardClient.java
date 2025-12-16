@@ -1,4 +1,4 @@
-package com.eleven.pet.network;
+package com.eleven.pet.network.leaderboard;
 
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.shared.LeaderboardEntry;
@@ -10,6 +10,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class LeaderboardClient implements LeaderboardService {
     private static final String API_URL = "http://localhost:8080/api/v1/leaderboard";
@@ -74,12 +76,13 @@ public class LeaderboardClient implements LeaderboardService {
         }
     }
 
+    /**
+     * Fetches the top scores asynchronously.
+     *
+     * @return A Future containing the list of scores.
+     */
     @Override
-    public LeaderboardEntry getTopScores(int limit) {
-        // if this method is empty then hugo dorrich has failed us
-        // may god save the queen
-        // from us...
-        // thanks
+    public CompletableFuture<List<LeaderboardEntry>> getTopScores(int limit) {
         return null;
     }
 }

@@ -45,7 +45,6 @@ public class HUDView extends StackPane {
     private static final Insets MARGIN_BTN_FEED = new Insets(0, 0, 90, 20);
     private static final Insets MARGIN_BTN_CLEAN = new Insets(0, 0, 90, 150);
     private static final Insets MARGIN_BTN_SLEEP = new Insets(0, 0, 150, 20);
-    private static final Insets MARGIN_BTN_PLAY = new Insets(0, 20, 90, 0);
 
     private final PetModel model;
     private final PetController controller;

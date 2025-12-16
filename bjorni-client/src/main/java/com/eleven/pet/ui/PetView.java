@@ -8,6 +8,8 @@ import com.eleven.pet.daily_reward.ui.DailyRewardView;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ui.InventoryView;
+import com.eleven.pet.network.leaderboard.LeaderboardService;
+import com.eleven.pet.network.leaderboard.ui.LeaderboardView;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -47,6 +49,7 @@ public class PetView {
     private WorldView worldView;
     private HUDView hudView;
     private DailyRewardView dailyRewardView;
+    private LeaderboardView leaderboardView;
 
     private Button rewardBtn;
 
@@ -106,15 +109,26 @@ public class PetView {
         // Pass controller here
         dailyRewardView = new DailyRewardView(model, controller);
 
+        // Initialize Leaderboard View
+        LeaderboardService service = controller.getLeaderboardService();
+        leaderboardView = new LeaderboardView(service);
+
+
         // 3. Compose World
         worldView.getTvClickArea().setOnMouseClicked(_ -> enterMinigameMode());
         worldLayer.getChildren().addAll(worldView, petAvatarView);
 
         // 4. Compose UI
-        uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
-
+        if (leaderboardView != null) {
+            uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView, leaderboardView);
+        } else {
+            // Fallback if leaderboard is disabled/null
+            uiLayer.getChildren().addAll(hudView, inventoryView, dailyRewardView);
+        }
         // 5. Setup Daily Rewards Trigger
         setupRewardTrigger(uiLayer);
+        setupLeaderboardTrigger(uiLayer);
+
 
         // 6. Add to Root
         root.getChildren().addAll(worldLayer, uiLayer);
@@ -323,5 +337,30 @@ public class PetView {
 
             tvContentPane.getChildren().add(gamePane);
         }
+    }
+
+    /**
+     * Creates and attaches the leaderboard trigger button (Top-Left).
+     */
+    private void setupLeaderboardTrigger(StackPane root) {
+        if (leaderboardView == null) return;
+
+        // Create Button
+        Button scoreBtn = new Button(" SCORES");
+        // You can add a trophy icon here later like: new Button(" SCORES", new ImageView(trophyImg))
+
+        scoreBtn.setContentDisplay(ContentDisplay.LEFT);
+
+        // Use the same pixel style as other buttons
+        scoreBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_GOLD);
+
+        // Action: Open the leaderboard popup
+        scoreBtn.setOnAction(_ -> leaderboardView.toggle(true));
+
+        // Alignment: Top Left (Opposite to Rewards)
+        StackPane.setAlignment(scoreBtn, Pos.TOP_LEFT);
+        StackPane.setMargin(scoreBtn, new Insets(20, 0, 0, 20));
+
+        root.getChildren().add(scoreBtn);
     }
 }
