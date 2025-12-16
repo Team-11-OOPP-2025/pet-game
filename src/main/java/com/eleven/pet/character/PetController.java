@@ -46,10 +46,10 @@ public class PetController {
     /**
      * Creates a new {@code PetController}.
      *
-     * @param model             the underlying {@link PetModel} representing the pet state
-     * @param clock             the {@link GameClock} used for time scaling and pausing
-     * @param weather           the {@link WeatherSystem} used to change in-game weather
-     * @param persistence       the {@link PersistenceService} used for saving the game state
+     * @param model              the underlying {@link PetModel} representing the pet state
+     * @param clock              the {@link GameClock} used for time scaling and pausing
+     * @param weather            the {@link WeatherSystem} used to change in-game weather
+     * @param persistence        the {@link PersistenceService} used for saving the game state
      * @param leaderboardService the {@link LeaderboardService} used for submitting scores
      */
     public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence, LeaderboardService leaderboardService) {
@@ -63,7 +63,7 @@ public class PetController {
     }
 
     private void initControllerLogic() {
-        model.getStateProperty().addListener((_, oldState, newState) -> {
+        model.getStateProperty().addListener((_, _, newState) -> {
             if (newState != null) {
                 clock.setTimeScale(newState.getTimeScale());
             }
@@ -276,7 +276,8 @@ public class PetController {
 
         session.start(result -> {
             model.applyMinigameResult(result);
-            leaderboard.submitScore(model.getName(), result);
+            if (leaderboard != null)
+                leaderboard.submitScore(model.getName(), result);
             if (onUIExit != null) onUIExit.run();
         });
 
