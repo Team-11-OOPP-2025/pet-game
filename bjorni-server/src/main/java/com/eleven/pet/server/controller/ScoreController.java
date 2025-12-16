@@ -1,10 +1,7 @@
 package com.eleven.pet.server.controller;
 
 import com.eleven.pet.shared.LeaderboardEntry;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,5 +24,10 @@ public class ScoreController {
         System.out.println(" Received Score: " + entry);
         // TODO: Store based on a foreign key which is the game identifier
         scores.add(entry);
+    }
+
+    @GetMapping
+    public List<LeaderboardEntry> getScores() {
+        return scores;
     }
 }

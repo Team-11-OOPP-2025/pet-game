@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public class LeaderboardClient implements LeaderboardService {
-    private static final String API_URL = "http://localhost:8000/api/v1/leaderboard/";
+    private static final String API_URL = "http://localhost:8080/api/v1/leaderboard";
 
     private final HttpClient httpClient;
     private final ObjectMapper jsonMapper;
@@ -37,8 +37,7 @@ public class LeaderboardClient implements LeaderboardService {
             LeaderboardEntry entry = new LeaderboardEntry(
                     playerName,
                     true,
-                    // result.gameName() // TODO: Update MiniGame Record to include gamename.
-                    "a game",
+                    result.gameName(),
                     System.currentTimeMillis()
             );
 

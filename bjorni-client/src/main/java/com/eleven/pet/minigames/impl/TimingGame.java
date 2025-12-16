@@ -178,7 +178,7 @@ public class TimingGame implements Minigame {
                 PauseTransition delay = new PauseTransition(Duration.seconds(1.5));
                 delay.setOnFinished(_ -> {
                     int happiness = won ? WIN_HAPPINESS : LOSE_HAPPINESS;
-                    onFinish.accept(new MinigameResult(won, happiness, msg));
+                    onFinish.accept(new MinigameResult("TimingGame", won, happiness, msg));
                 });
                 delay.play();
             }
