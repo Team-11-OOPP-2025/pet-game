@@ -17,6 +17,7 @@ import java.util.List;
  * real elapsed time and a configurable time scale, and notifies registered
  * {@link TimeListener}s on each tick. It also exposes a derived
  * {@link DayCycle} based on the current in‑game time.
+ * </p>
  */
 @Data
 public class GameClock {
@@ -57,6 +58,7 @@ public class GameClock {
      * scale, added to the internal game time and wrapped at
      * {@link GameConfig#DAY_LENGTH_SECONDS}. All registered listeners are
      * notified with the scaled delta.
+     * </p>
      *
      * @param realTimeElapsed elapsed real time since the last tick, in seconds
      * @return {@code true} if the call caused the in‑game time to wrap around
@@ -80,6 +82,7 @@ public class GameClock {
      * Sets the time scale used to convert real-time into game time.
      * <p>
      * The value is clamped to the range {@code [0.1, 10.0]}.
+     * </p>
      *
      * @param scale the desired time scale factor
      */

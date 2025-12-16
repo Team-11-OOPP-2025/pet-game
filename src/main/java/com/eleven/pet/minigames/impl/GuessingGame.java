@@ -1,109 +1,145 @@
 package com.eleven.pet.minigames.impl;
 
-import com.eleven.pet.character.PetModel;
+import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.minigames.ui.MiniGameView;
+import com.eleven.pet.ui.ViewConstants;
+import com.google.auto.service.AutoService;
+import javafx.animation.PauseTransition;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 import java.util.Random;
+import java.util.function.Consumer;
 
-/**
- * A simple number guessing {@link com.eleven.pet.minigames.Minigame}.
- * <p>
- * The game picks a random secret number in a fixed range. The player attempts
- * to guess the number; on success the pet gains happiness, otherwise it loses
- * a small amount.
- */
+@AutoService(Minigame.class)
 public class GuessingGame implements Minigame {
-
     /**
-     * Minimum value (inclusive) for the randomly chosen secret number.
-     */
-    private static final int MIN_NUMBER = 1;
-
-    /**
-     * Maximum value (inclusive) for the randomly chosen secret number.
-     */
-    private static final int MAX_NUMBER = 5;
-
-    /**
-     * Happiness gained when the player guesses the correct number.
-     */
-    private static final int WIN_HAPPINESS = 20;
-
-    /**
-     * Happiness lost when the player guesses the wrong number.
-     */
-    private static final int LOSE_HAPPINESS = -5;
-    
-    private int secretNumber;
-    private final Random random;
-    
-    public GuessingGame() {
-        this.random = new Random();
-        generateNewNumber();
-    }
-    
-    /**
-     * @return the display name of this mini-game
+     * @return the name of the minigame
      */
     @Override
     public String getName() {
         return "Guessing Game";
     }
-    
+
     /**
-     * Starts the guessing game UI for the given pet.
-     * <p>
-     * The actual game interaction is handled by {@link com.eleven.pet.minigames.ui.MiniGameView}.
-     *
-     * @param pet the {@link PetModel} currently playing the mini-game
-     * @return currently {@code null}; the result is handled by the UI layer
+     * @return a new instance of the guessing game session
      */
     @Override
-    public MinigameResult play(PetModel pet) {
-        MiniGameView.showMiniGame(pet);
-        return null;
+    public GameSession createSession() {
+        return new Session();
     }
-    
-    /**
-     * Generates a new random secret number in the configured range.
-     */
-    public void generateNewNumber() {
-        this.secretNumber = random.nextInt(MAX_NUMBER - MIN_NUMBER + 1) + MIN_NUMBER;
-    }
-    
-    /**
-     * Checks the provided guess against the current secret number.
-     *
-     * @param guess the number guessed by the player
-     * @return a {@link MinigameResult} indicating success, happiness delta and a message
-     */
-    public MinigameResult checkGuess(int guess) {
-        boolean won = (guess == secretNumber);
-        int happinessDelta = won ? WIN_HAPPINESS : LOSE_HAPPINESS;
-        String message;
-        
-        if (won) {
-            message = String.format("Correct! The number was %d.", secretNumber);
-        } else {
-            message = String.format("Wrong! The number was %d.", secretNumber);
+
+    private static class Session implements GameSession {
+        private Consumer<MinigameResult> onFinish;
+
+        private static final int MIN_NUMBER = 1;
+        private static final int MAX_NUMBER = 5;
+        private static final int WIN_HAPPINESS = 20;
+        private static final int LOSE_HAPPINESS = -5;
+
+        private int secretNumber;
+        private final Random random = new Random();
+
+        private VBox viewLayout;
+        private TextField guessField;
+        private Label resultLabel;
+        private Button submitBtn;
+
+        /**
+         * Returns the view for the guessing game session.
+         */
+        @Override
+        public Pane getView() {
+            if (viewLayout == null) {
+                createView();
+            }
+            return viewLayout;
         }
-        
-        return new MinigameResult(won, happinessDelta, message);
-    }
-    
-    /**
-     * @return the minimum possible number that can be guessed
-     */
-    public int getMinNumber() {
-        return MIN_NUMBER;
-    }
-    
-    /**
-     * @return the maximum possible number that can be guessed
-     */
-    public int getMaxNumber() {
-        return MAX_NUMBER;
+
+        /**
+         * Starts the guessing game session.
+         */
+        @Override
+        public void start(java.util.function.Consumer<com.eleven.pet.minigames.MinigameResult> onFinish) {
+            this.onFinish = onFinish;
+            generateNewNumber();
+        }
+
+        public void generateNewNumber() {
+            this.secretNumber = random.nextInt(MAX_NUMBER - MIN_NUMBER + 1) + MIN_NUMBER;
+        }
+
+        private void createView() {
+            viewLayout = new VBox(15);
+            viewLayout.setAlignment(Pos.CENTER);
+            viewLayout.setStyle("-fx-background-color: #fdf5e6; -fx-padding: 20; -fx-background-radius: 5;");
+
+            Label title = new Label("Guess (1-5)");
+            title.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.BOLD, 16));
+            title.setTextFill(Color.web("#8b4513"));
+
+            guessField = new TextField();
+            guessField.setPromptText("#");
+            guessField.setMaxWidth(60);
+            guessField.setAlignment(Pos.CENTER);
+            guessField.setStyle("-fx-font-family: '" + ViewConstants.FONT_FAMILY + "'; -fx-font-size: 14px;");
+
+            // Handle Enter key
+            guessField.setOnAction(e -> processGuess());
+
+            submitBtn = new Button("Submit");
+            submitBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_PRIMARY);
+            submitBtn.setOnAction(e -> processGuess());
+
+            resultLabel = new Label();
+            resultLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, 12));
+            resultLabel.setWrapText(true);
+            resultLabel.setAlignment(Pos.CENTER);
+
+            viewLayout.getChildren().addAll(title, guessField, submitBtn, resultLabel);
+        }
+
+        private void processGuess() {
+            try {
+                String txt = guessField.getText();
+                if (txt.isEmpty()) return;
+
+                int val = Integer.parseInt(txt);
+                boolean won = (val == secretNumber);
+
+                // View Update
+                String msg = won
+                        ? String.format("Correct! It was %d. (+%d Happy)", secretNumber, WIN_HAPPINESS)
+                        : String.format("Wrong! It was %d. (%d Happy)", secretNumber, LOSE_HAPPINESS);
+
+                resultLabel.setText(msg);
+                resultLabel.setTextFill(won ? Color.GREEN : Color.RED);
+
+                submitBtn.setDisable(true);
+                guessField.setDisable(true);
+
+                if (onFinish != null) {
+                    // Delay slightly so the user sees "Correct!" before the window closes
+                    PauseTransition delay = new PauseTransition(Duration.seconds(1.5));
+                    delay.setOnFinished(_ -> {
+                        int happiness = won ? WIN_HAPPINESS : LOSE_HAPPINESS;
+                        onFinish.accept(new MinigameResult(won, happiness, msg));
+                    });
+                    delay.play();
+                }
+
+            } catch (NumberFormatException ex) {
+                resultLabel.setText("Enter a number!");
+            }
+        }
     }
 }

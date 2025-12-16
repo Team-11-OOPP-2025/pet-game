@@ -1,16 +1,13 @@
 package com.eleven.pet.inventory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Global registry for all items available in the game.
  * <p>
  * Items are registered with an integer ID and can later be looked up
  * by ID or chosen at random.
+ * </p>
  */
 public class ItemRegistry {
     private static final Map<Integer, Item> registry = new HashMap<>();

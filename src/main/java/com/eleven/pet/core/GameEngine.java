@@ -13,7 +13,7 @@ import javafx.util.Duration;
  * the game clock and weather system.
  *
  * <p>This class owns the main animation loop and schedules periodic
- * weather changes.
+ * weather changes.</p>
  */
 public class GameEngine {
     private final PetModel model;
@@ -42,7 +42,7 @@ public class GameEngine {
     /**
      * Starts the game engine, including the main game loop and weather updates.
      *
-     * <p>If the engine is already running, this method is a no-op.
+     * <p>If the engine is already running, this method is a no-op.</p>
      */
     public void start() {
         if (isRunning) return;
@@ -66,7 +66,7 @@ public class GameEngine {
      * Stops the game engine, including the main game loop and weather updates.
      *
      * <p>After calling this method, {@link #start()} can be invoked again
-     * to resume execution.
+     * to resume execution.</p>
      */
     public void stop() {
         if (gameLoop != null) gameLoop.stop();
@@ -79,7 +79,7 @@ public class GameEngine {
      *
      * <p>The delta time is computed from {@code now} and used to advance the
      * {@link GameClock}. When a new in‑game day starts, the pet's daily food
-     * is replenished.
+     * is replenished.</p>
      *
      * @param now the current time in nanoseconds, provided by {@link AnimationTimer}
      */
@@ -98,7 +98,7 @@ public class GameEngine {
      * Initializes and starts the weather change timer.
      *
      * <p>Applies an initial weather change immediately, then schedules
-     * recurring changes based on {@link GameConfig#WEATHER_CHANGE_INTERVAL}.
+     * recurring changes based on {@link GameConfig#WEATHER_CHANGE_INTERVAL}.</p>
      */
     private void startWeatherTimer() {
         // Set initial weather immediately

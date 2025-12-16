@@ -5,6 +5,7 @@ package com.eleven.pet.environment.time;
  * <p>
  * These values are derived from the current game time in {@link GameClock}
  * and can be used to drive lighting, ambiance, and behavior changes.
+ * </p>
  */
 public enum DayCycle {
     /** Early morning transition from night to day. */

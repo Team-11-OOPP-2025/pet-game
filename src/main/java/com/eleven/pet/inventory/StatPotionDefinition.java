@@ -5,6 +5,7 @@ package com.eleven.pet.inventory;
  * <p>
  * A {@code StatPotionDefinition} describes which stat is affected,
  * for how long, and by what multiplier.
+ * </p>
  */
 public record StatPotionDefinition(
         /**

@@ -4,11 +4,7 @@ import com.eleven.pet.character.SpriteSheetAnimation;
 import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.daily_reward.Chest;
 import com.eleven.pet.inventory.Item;
-import javafx.animation.AnimationTimer;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
@@ -24,6 +20,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+
 import java.util.Random;
 
 /**
@@ -32,6 +29,7 @@ import java.util.Random;
  * It is responsible for playing the open animation, spawning particles,
  * and briefly displaying the rewarded item when opened. Game logic
  * callbacks are delegated via {@link #setOnOpen(Runnable)}.
+ * </p>
  */
 public class ChestComponent extends StackPane {
 
@@ -179,6 +177,7 @@ public class ChestComponent extends StackPane {
      * Plays the chest animation, spawns particles, invokes the
      * on-open callback, and shows the rewarded item.
      * This method is a no-op if the model is already opened.
+     * </p>
      */
     private void performOpen() {
         if (chestModel != null && !chestModel.isOpened()) {
@@ -202,6 +201,7 @@ public class ChestComponent extends StackPane {
      * short float-up, scale, and fade animation.
      * <p>
      * If the underlying chest has no item, nothing is shown.
+     * </p>
      */
     private void showItemReward() {
         Item item = chestModel.getItem();

@@ -7,6 +7,7 @@ import com.eleven.pet.character.PetModel;
  * <p>
  * When used, the potion applies the effect described by its
  * {@link StatPotionDefinition} to the given {@link PetModel}.
+ * </p>
  */
 public class StatPotion implements Item {
     private final int id;

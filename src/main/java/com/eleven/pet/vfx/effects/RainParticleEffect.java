@@ -8,6 +8,7 @@ import com.eleven.pet.vfx.RainParticleFactory;
  * <p>
  * The {@code intensity} controls how many rain particles are spawned
  * when the animation is started.
+ * </p>
  */
 public record RainParticleEffect(int intensity) implements ParticleEffect {
 
@@ -15,16 +16,6 @@ public record RainParticleEffect(int intensity) implements ParticleEffect {
      * Shared particle factory used to create rain particles.
      */
     private static final RainParticleFactory RAIN_FACTORY = new RainParticleFactory();
-
-    /**
-     * Creates a new rain particle effect.
-     *
-     * @param intensity the desired rain intensity; typically interpreted by
-     *                  {@link ParticleSystem#startAnimation(int)} as the
-     *                  number of particles or emission strength
-     */
-    // record component docs are attached to this canonical constructor:
-    // public RainParticleEffect { ... }
 
     @Override
     public void start(ParticleSystem system) {

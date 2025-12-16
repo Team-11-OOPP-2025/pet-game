@@ -11,6 +11,7 @@ import java.io.OutputStream;
  * Implementations wrap raw {@link java.io.InputStream} and
  * {@link java.io.OutputStream} instances with cipher streams that apply
  * encryption or decryption transparently as data is read or written.
+ * </p>
  */
 public interface EncryptionService {
     /**

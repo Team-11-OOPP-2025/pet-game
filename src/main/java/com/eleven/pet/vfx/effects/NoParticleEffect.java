@@ -7,6 +7,9 @@ import com.eleven.pet.vfx.ParticleSystem;
  * any particle animation.
  * <p>
  * When started, it ensures that the {@link ParticleSystem} is not animating.
+ * When stopped, it also ensures that the system is not animating.
+ * </p>
+ *
  */
 public class NoParticleEffect implements ParticleEffect {
 
@@ -14,6 +17,7 @@ public class NoParticleEffect implements ParticleEffect {
      * Ensures that no particle animation is running on the given system.
      * <p>
      * If the system is {@code null}, this method does nothing.
+     * </p>
      *
      * @param system the particle system to stop, if non-null
      */
@@ -29,6 +33,7 @@ public class NoParticleEffect implements ParticleEffect {
      * Stops any particle animation on the given system.
      * <p>
      * If the system is {@code null}, this method does nothing.
+     * </p>
      *
      * @param system the particle system to stop, if non-null
      */

@@ -5,6 +5,7 @@ package com.eleven.pet.core;
  *
  * <p>Use this to wrap errors that are meaningful at the game domain level
  * (configuration issues, data loading failures, etc.).
+ * </p>
  */
 public class GameException extends RuntimeException {
 
@@ -32,6 +33,7 @@ public class GameException extends RuntimeException {
      * Returns the detail message string of this throwable.
      *
      * <p>Currently delegates directly to {@link RuntimeException#getMessage()}.
+     * </p>
      *
      * @return the detail message string
      */

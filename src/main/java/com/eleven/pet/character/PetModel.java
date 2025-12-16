@@ -1,6 +1,5 @@
 package com.eleven.pet.character;
 
-import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
@@ -11,20 +10,16 @@ import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.*;
-import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.minigames.impl.GuessingGame;
-import com.eleven.pet.minigames.impl.TimingGame;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 
 /**
  * Core domain model for a single pet instance.
@@ -35,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Data
 public class PetModel implements TimeListener, WeatherListener {
-    private static final java.util.Random random = new java.util.Random();
+    private static final Random random = new Random();
 
     private final String name;
     private final PetStats stats = new PetStats();
@@ -54,7 +49,7 @@ public class PetModel implements TimeListener, WeatherListener {
     private boolean passedEightAM = false;
     private double currentSleepDuration = 0.0;
     private int hoursSleptRewardCount = 0;
-    
+
     // Remaining time (in game hours) until the next reward can be claimed
     private double rewardCooldown = 0.0;
 
@@ -97,8 +92,6 @@ public class PetModel implements TimeListener, WeatherListener {
         // Set up daily inventory items
         replenishDailyFood();
     }
-
-    // --- Potion Logic ---
 
     /**
      * Computes the effective multiplier for a given stat based on all active potions.
@@ -143,8 +136,6 @@ public class PetModel implements TimeListener, WeatherListener {
             System.out.println("Effect Applied: " + def.name() + " (x" + def.multiplier() + " to " + def.statType() + ")");
         }
     }
-
-    // --- Existing Methods ---
 
     /**
      * Change the current behavioral state of the pet.
@@ -211,46 +202,8 @@ public class PetModel implements TimeListener, WeatherListener {
         currentState.get().handleClean(this);
     }
 
-    /**
-     * Indicates whether the pet is allowed to start a minigame.
-     *
-     * @return {@code true} if a minigame can be played, {@code false} otherwise
-     */
     public boolean canPlayMinigame() {
-        return true; 
-    }
-
-    /**
-     * Runs the given minigame and applies its results to the pet.
-     *
-     * @param minigame minigame instance to play
-     * @return {@link MinigameResult} produced by the game, or {@code null} if game is {@code null}
-     */
-    private MinigameResult playMinigame(Minigame minigame) {
-        if (minigame == null) return null;
-
-        MinigameResult result = minigame.play(this);
-
-        if (result != null) {
-            // Apply happiness delta from the minigame result
-            stats.modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
-            System.out.println(result.message());
-        }
-
-        return result;
-    }
-
-    /**
-     * Selects a random minigame and plays it.
-     *
-     * @return result of the chosen minigame, or {@code null} if none available
-     */
-    public MinigameResult playRandomMinigame() {
-        List<Minigame> availableGames = new ArrayList<>();
-        availableGames.add(new TimingGame());
-        availableGames.add(new GuessingGame());
-        Minigame randomGame = availableGames.get(random.nextInt(availableGames.size()));
-        return playMinigame(randomGame);
+        return currentState.get().canPlay(this);
     }
 
     /**
@@ -274,7 +227,7 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public boolean shouldPromptSleep() {
         if (clock == null) return false;
-        if (currentState.get() instanceof AsleepState || sleptThisNight) return false;
+        if (!currentState.get().canSleep()) return false;
 
         double hour = getCurrentGameHour();
         return hour >= GameConfig.HOUR_SLEEP_WINDOW_START || hour < GameConfig.HOUR_SLEEP_WINDOW_END;
@@ -289,11 +242,9 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param timeDelta elapsed time in game hours
      */
     public void applyStatDecay(double timeDelta) {
-        // Use definition rates if available, otherwise fallback or config
-
         hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
         cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
-        
+
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
             hungerDecayAccum -= hungerDelta;
@@ -330,6 +281,36 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
+     * Applies the result of a minigame to the pet's stats.
+     *
+     * @param result result of the minigame played
+     */
+    public void applyMinigameResult(MinigameResult result) {
+        if (result == null) return;
+        stats.modifyStat(PetStats.STAT_HAPPINESS, result.happinessDelta());
+    }
+
+    /**
+     * Adds the given item and quantity to the pet's inventory.
+     *
+     * @param item     item to add
+     * @param quantity number of units to add
+     */
+    public void addToInventory(Item item, int quantity) {
+        inventory.add(item, quantity);
+    }
+
+    /**
+     * Returns a read-only property for the given stat.
+     *
+     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
+     * @return read-only integer property, or {@code null} if the stat does not exist
+     */
+    public ReadOnlyIntegerProperty getStatProperty(String statName) {
+        return stats.getStat(statName);
+    }
+
+    /**
      * Called each tick by the {@link GameClock}.
      *
      * <p>Updates potion durations, reward cooldown, and delegates to the current state.</p>
@@ -346,12 +327,11 @@ public class PetModel implements TimeListener, WeatherListener {
                 System.out.println("Effect Expired: " + potion.getName());
             }
         }
-        
+
         // 2. Update Reward Cooldown
         if (clock != null && rewardCooldown > 0) {
-            // FIX: timeDelta is ALREADY scaled by GameClock, so we use it directly.
-            // 1 unit of timeDelta = 1 in-game hour.
-            rewardCooldown -= timeDelta; 
+            // timeDelta is scaled by GameClock; 1 unit = 1 in-game hour.
+            rewardCooldown -= timeDelta;
             if (rewardCooldown < 0) {
                 rewardCooldown = 0;
             }
@@ -363,34 +343,9 @@ public class PetModel implements TimeListener, WeatherListener {
         }
     }
 
-    /**
-     * Reacts to weather changes from the {@link WeatherSystem}.
-     *
-     * @param newWeather newly active weather state
-     */
     @Override
     public void onWeatherChange(WeatherState newWeather) {
         System.out.println(name + " notices the weather changed to: " + newWeather.getName());
         // Weather effects are applied continuously through the happiness decay modifier
-    }
-
-    /**
-     * Adds the given item and quantity to the pet's inventory.
-     *
-     * @param item     item to add
-     * @param quantity number of units to add
-     */
-    public void addToInventory(Item item, int quantity) {
-        inventory.add(item, quantity);
-    }
-    
-    /**
-     * Returns a read-only property for the given stat.
-     *
-     * @param statName name of the stat (e.g. {@link PetStats#STAT_HAPPINESS})
-     * @return read-only integer property, or {@code null} if the stat does not exist
-     */
-    public ReadOnlyIntegerProperty getStatProperty(String statName) {
-        return stats.getStat(statName);
     }
 }

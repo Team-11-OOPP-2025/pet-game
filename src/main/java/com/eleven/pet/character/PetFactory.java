@@ -10,11 +10,6 @@ import com.eleven.pet.environment.weather.WeatherSystem;
  * to know about default {@link PetDefinition} or initialization details.</p>
  */
 public final class PetFactory {
-
-    private PetFactory() {
-        // utility class; prevent instantiation
-    }
-
     /**
      * Creates a new {@link PetModel} with the given name, weather system, and game clock.
      *

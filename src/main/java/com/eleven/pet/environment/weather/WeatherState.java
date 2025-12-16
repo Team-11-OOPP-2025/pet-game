@@ -7,6 +7,7 @@ import com.eleven.pet.vfx.effects.ParticleEffect;
  * <p>
  * Implementations are typically discovered via {@link java.util.ServiceLoader}
  * and used by {@link WeatherSystem}.
+ * </p>
  */
 public interface WeatherState {
     /**

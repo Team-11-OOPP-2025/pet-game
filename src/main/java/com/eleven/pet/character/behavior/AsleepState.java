@@ -4,7 +4,6 @@ import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 import com.google.auto.service.AutoService;
 
 /**
@@ -31,21 +30,18 @@ public class AsleepState implements PetState {
      */
     @Override
     public boolean handleConsume(PetModel pet, Item item) {
-        // Pet is asleep; ignore eating actions
         System.out.println(pet.getName() + " is asleep and cannot eat right now.");
         return false;
     }
 
     /**
-     * Rejects play requests while the pet is asleep.
+     * Indicates that the pet cannot play while asleep.
      *
-     * @param pet the sleeping pet
-     * @return always {@code null}, as no minigame can be started
+     * @return always {@code false}
      */
     @Override
-    public MinigameResult handlePlay(PetModel pet) {
-        System.out.println(pet.getName() + " is asleep and cannot play right now.");
-        return null;
+    public boolean canPlay(PetModel pet) {
+        return false;
     }
 
     /**
@@ -117,8 +113,8 @@ public class AsleepState implements PetState {
 
             pet.setHoursSleptRewardCount(pet.getHoursSleptRewardCount() + hoursToReward);
 
-            System.out.println("Sleep (" + hoursToReward + "h): Energy +" + finalEnergyGain 
-                    + " (x" + energyMult + "), Happiness +" + finalHappyGain 
+            System.out.println("Sleep (" + hoursToReward + "h): Energy +" + finalEnergyGain
+                    + " (x" + energyMult + "), Happiness +" + finalHappyGain
                     + " (x" + happyMult + ")");
         }
 
@@ -154,5 +150,15 @@ public class AsleepState implements PetState {
     @Override
     public String getStateName() {
         return STATE_NAME;
+    }
+
+    @Override
+    public double getTimeScale() {
+        return GameConfig.TIMESCALE_SLEEP; // Returns 2.0
+    }
+
+    @Override
+    public boolean canSleep() {
+        return false; // Cannot start sleeping if already asleep
     }
 }

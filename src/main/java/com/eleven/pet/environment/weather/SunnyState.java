@@ -8,6 +8,7 @@ import com.google.auto.service.AutoService;
  * Sunny weather state.
  * <p>
  * Increases the pet's happiness and does not show any particle effects.
+ * </p>
  */
 @AutoService(WeatherState.class)
 public class SunnyState implements WeatherState {

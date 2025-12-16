@@ -1,181 +1,187 @@
 package com.eleven.pet.minigames.impl;
 
-import com.eleven.pet.character.PetModel;
+import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
+import com.eleven.pet.ui.ViewConstants;
+import com.google.auto.service.AutoService;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
-/**
- * A simple timing-based {@link com.eleven.pet.minigames.Minigame} where the player
- * must stop a filling bar inside a target zone to win happiness for the pet.
- */
+import java.util.function.Consumer;
+
+@AutoService(Minigame.class)
 public class TimingGame implements Minigame {
 
     /**
-     * Lower bound of the target zone on the progress bar (inclusive), as a fraction of total width.
+     * @return the name of the minigame
      */
-    private static final double TARGET_MIN = 0.40; // 40%
-
-    /**
-     * Upper bound of the target zone on the progress bar (inclusive), as a fraction of total width.
-     */
-    private static final double TARGET_MAX = 0.60; // 60%
-
-    /**
-     * Amount the progress bar fills per frame.
-     * Expressed as a fraction of the full width per 100 ms.
-     */
-    private static final double FILL_SPEED = 0.01; // Progress per frame (1% per 100ms)
-    
     @Override
     public String getName() {
-        return "Timing Challenge";
+        return "Timing Game";
     }
-    
+
     /**
-     * Starts the timing mini-game for the given pet and returns the result once the
-     * JavaFX dialog has been closed.
-     *
-     * @param pet the {@link PetModel} participating in the mini-game
-     * @return the {@link MinigameResult} describing whether the player won and the
-     *         corresponding happiness delta
+     * @return a new instance of the timing game session
      */
     @Override
-    public MinigameResult play(PetModel pet) {
-        // Create a holder for the result
-        MinigameResult[] resultHolder = new MinigameResult[1];
-        
-        // Show dialog on JavaFX thread and wait
-        if (Platform.isFxApplicationThread()) {
-            resultHolder[0] = showMinigameDialogSync(pet);
-        } else {
-            Platform.runLater(() -> resultHolder[0] = showMinigameDialogSync(pet));
-        }
-        
-        return resultHolder[0];
+    public GameSession createSession() {
+        return new Session();
     }
-    
-    /**
-     * Creates and displays the modal JavaFX dialog that implements the timing game
-     * logic. This method is expected to run on the JavaFX Application Thread and
-     * blocks until the dialog is closed.
-     *
-     * @param pet the {@link PetModel} for which the game is played
-     * @return the {@link MinigameResult} based on the user's timing performance
-     */
-    private MinigameResult showMinigameDialogSync(PetModel pet) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle(getName());
-        dialog.setResizable(false);
-        
-        VBox root = new VBox(20);
-        root.setPadding(new Insets(30));
-        root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: #2c3e50;");
-        
-        // Instructions
-        Label instructions = new Label("Stop the bar between the markers!");
-        instructions.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
-        
-        // Progress bar container with markers
-        StackPane progressContainer = new StackPane();
-        progressContainer.setPrefHeight(50);
-        
-        ProgressBar progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(400);
-        progressBar.setPrefHeight(40);
-        progressBar.setStyle("-fx-accent: #3498db;");
-        
-        // Target zone markers
-        Line leftMarker = new Line();
-        leftMarker.setStartY(0);
-        leftMarker.setEndY(50);
-        leftMarker.setStroke(Color.LIME);
-        leftMarker.setStrokeWidth(4);
-        leftMarker.setTranslateX((double) -400 / 2 + (TARGET_MIN * 400)); // Position at 40%
-        
-        Line rightMarker = new Line();
-        rightMarker.setStartY(0);
-        rightMarker.setEndY(50);
-        rightMarker.setStroke(Color.LIME);
-        rightMarker.setStrokeWidth(4);
-        rightMarker.setTranslateX((double) -400 / 2 + (TARGET_MAX * 400)); // Position at 60%
-        
-        progressContainer.getChildren().addAll(progressBar, leftMarker, rightMarker);
-        
-        // Stop button
-        Button stopButton = new Button("STOP!");
-        stopButton.setPrefSize(200, 50);
-        stopButton.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-background-color: #e74c3c; -fx-text-fill: white;");
-        
-        root.getChildren().addAll(instructions, progressContainer, stopButton);
-        
-        // Result holder
-        MinigameResult[] result = new MinigameResult[1];
-        double[] currentProgress = {0.0};
-        boolean[] stopped = {false};
-        
-        // Timeline for filling the bar
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), _ -> {
-            if (!stopped[0] && currentProgress[0] < 1.0) {
-                currentProgress[0] += FILL_SPEED;
-                if (currentProgress[0] > 1.0) currentProgress[0] = 1.0;
-                progressBar.setProgress(currentProgress[0]);
+
+    private static class Session implements GameSession {
+
+        private Consumer<MinigameResult> onFinish;
+
+        public static final double TARGET_MIN = 0.40;
+        public static final double TARGET_MAX = 0.60;
+        public static final double FILL_SPEED = 0.02;
+
+        private static final int WIN_HAPPINESS = 20;
+        private static final int LOSE_HAPPINESS = -5;
+
+
+        private VBox viewLayout;
+        private ProgressBar timingBar;
+        private Button stopBtn;
+        private Label resultLabel;
+
+        private Timeline timingLoop;
+        private double progress = 0.0;
+        private boolean isRunning = false;
+
+        /**
+         * Returns the view for this timing game session.
+         *
+         * @return the game view
+         */
+        @Override
+        public Pane getView() {
+            if (viewLayout == null) {
+                createView();
+                startGame();
             }
-        }));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-        
-        // Stop button action
-        stopButton.setOnAction(_ -> {
-            if (!stopped[0]) {
-                stopped[0] = true;
-                timeline.stop();
-                
-                // Check if in target zone
-                boolean won = currentProgress[0] >= TARGET_MIN && currentProgress[0] <= TARGET_MAX;
-                
-                if (won) {
-                    result[0] = new MinigameResult(true, 20, 
-                        "🎉 Perfect timing! " + pet.getName() + " is so happy! (+20 happiness)");
-                } else {
-                    result[0] = new MinigameResult(false, -5, 
-                        "😔 Missed the zone! " + pet.getName() + " is disappointed. (-5 happiness)");
-                }
-                
-                dialog.close();
+            return viewLayout;
+        }
+
+        /**
+         * Starts the timing game session.
+         *
+         * @param onFinish callback to invoke when the game ends
+         */
+        @Override
+        public void start(java.util.function.Consumer<com.eleven.pet.minigames.MinigameResult> onFinish) {
+            this.onFinish = onFinish;
+            startGame();
+        }
+
+        private void createView() {
+            viewLayout = new VBox(20);
+            viewLayout.setAlignment(Pos.CENTER);
+            viewLayout.setStyle("-fx-background-color: #2c3e50; -fx-padding: 20; -fx-background-radius: 5;");
+
+            Label title = new Label("STOP IN THE ZONE!");
+            title.setTextFill(Color.WHITE);
+            title.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.BOLD, 16));
+
+            // Bar Container with Markers
+            StackPane barContainer = new StackPane();
+            barContainer.setMaxWidth(200);
+
+            timingBar = new ProgressBar(0);
+            timingBar.setPrefWidth(200);
+            timingBar.setPrefHeight(30);
+            timingBar.setStyle("-fx-accent: #3498db;");
+
+            barContainer.getChildren().add(timingBar);
+            addMarkers(barContainer);
+
+            stopBtn = new Button("STOP!");
+            stopBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS);
+            stopBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-family: '" + ViewConstants.FONT_FAMILY + "'; -fx-font-size: 14px; -fx-font-weight: bold;");
+            stopBtn.setOnAction(_ -> stopGame());
+
+            resultLabel = new Label();
+            resultLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, 14));
+            resultLabel.setTextFill(Color.WHITE);
+
+            viewLayout.getChildren().addAll(title, barContainer, stopBtn, resultLabel);
+        }
+
+        private void addMarkers(Pane container) {
+            double width = 200;
+            double startX = -width / 2.0;
+
+            Line l1 = new Line(0, 0, 0, 35);
+            l1.setStroke(Color.LIME);
+            l1.setStrokeWidth(3);
+            l1.setTranslateX(startX + (TARGET_MIN * width));
+
+            Line l2 = new Line(0, 0, 0, 35);
+            l2.setStroke(Color.LIME);
+            l2.setStrokeWidth(3);
+            l2.setTranslateX(startX + (TARGET_MAX * width));
+
+            container.getChildren().addAll(l1, l2);
+        }
+
+        private void startGame() {
+            progress = 0.0;
+            isRunning = true;
+            if (timingLoop != null) timingLoop.stop();
+
+            timingLoop = new Timeline(new KeyFrame(Duration.millis(16), e -> update()));
+            timingLoop.setCycleCount(Timeline.INDEFINITE);
+            timingLoop.play();
+        }
+
+        private void update() {
+            if (!isRunning) return;
+            progress += FILL_SPEED;
+            if (progress >= 1.0) {
+                progress = 1.0;
+                stopGame(); // Auto-fail
             }
-        });
-        
-        // Handle window close
-        dialog.setOnCloseRequest(_ -> {
-            timeline.stop();
-            if (result[0] == null) {
-                result[0] = new MinigameResult(false, -5, 
-                    pet.getName() + " gave up on the game. (-5 happiness)");
+            timingBar.setProgress(progress);
+        }
+
+        private void stopGame() {
+            if (!isRunning) return;
+            isRunning = false;
+            timingLoop.stop();
+            stopBtn.setDisable(true);
+
+            boolean won = progress >= TARGET_MIN && progress <= TARGET_MAX;
+
+            // View Update
+            String msg = won
+                    ? String.format("PERFECT! (+%d Happiness)", WIN_HAPPINESS)
+                    : String.format("Missed! (%d Happiness)", LOSE_HAPPINESS);
+            resultLabel.setText(msg);
+            resultLabel.setTextFill(won ? Color.LIME : Color.RED);
+
+            if (onFinish != null) {
+                // Delay slightly so the user sees "Correct!" before the window closes
+                PauseTransition delay = new PauseTransition(Duration.seconds(1.5));
+                delay.setOnFinished(_ -> {
+                    int happiness = won ? WIN_HAPPINESS : LOSE_HAPPINESS;
+                    onFinish.accept(new MinigameResult(won, happiness, msg));
+                });
+                delay.play();
             }
-        });
-        
-        Scene scene = new Scene(root, 500, 250);
-        dialog.setScene(scene);
-        dialog.showAndWait(); // This blocks until dialog is closed
-        
-        return result[0];
+        }
     }
 }

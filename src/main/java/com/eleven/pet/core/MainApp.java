@@ -34,7 +34,7 @@ public class MainApp extends Application {
     /**
      * Application entry point.
      *
-     * <p>This method is invoked by the JavaFX runtime after initialization.
+     * <p>This method is invoked by the JavaFX runtime after initialization.</p>
      *
      * @param primaryStage the primary stage for this application
      */
@@ -60,8 +60,10 @@ public class MainApp extends Application {
      * Initializes the persistence service with encryption.
      * Falls back to disabling persistence if initialization fails.
      *
-     * <p>If persistence cannot be initialized, {@code persistenceService}
+     * <p>
+     * If persistence cannot be initialized, {@code persistenceService}
      * is set to {@code null} and the game runs without saving.
+     * </p>
      */
     private void initializePersistence() {
         try {
@@ -134,7 +136,7 @@ public class MainApp extends Application {
      * Performs a clean shutdown of the application.
      *
      * <p>Stops the game engine, triggers a final save via the controller
-     * if possible, and then exits the JavaFX platform and JVM.
+     * if possible, and then exits the JavaFX platform and JVM.</p>
      */
     private void shutdown() {
         System.out.println("Shutting down...");

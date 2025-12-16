@@ -2,7 +2,6 @@ package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.inventory.Item;
-import com.eleven.pet.minigames.MinigameResult;
 
 /**
  * Defines the contract for a behavioral state of a {@link PetModel}.
@@ -19,18 +18,17 @@ public interface PetState {
      * @param pet  the pet whose state should handle the consumption
      * @param item the item to consume
      * @return {@code true} if the item was successfully consumed and applied,
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
     boolean handleConsume(PetModel pet, Item item);
 
     /**
-     * Handle a request for the pet to play a minigame.
+     * Checks if the pet is currently able to play a minigame.
      *
-     * @param pet the pet that should play
-     * @return the {@link MinigameResult} if a minigame was started,
-     *         or {@code null} if the action could not be performed
+     * @param pet the pet to check
+     * @return {@code true} if the pet can play, {@code false} if they are busy/asleep
      */
-    MinigameResult handlePlay(PetModel pet);
+    boolean canPlay(PetModel pet);
 
     /**
      * Handle a request for the pet to sleep or otherwise transition into
@@ -61,6 +59,19 @@ public interface PetState {
      * @return the identifier for this state
      */
     String getStateName();
+
+    /**
+     * Returns the time scale multiplier active during this state.
+     * Default is normal speed (1.0).
+     */
+    default double getTimeScale() {
+        return 1.0;
+    }
+
+    /**
+     * Determines if the pet is currently awake and eligible to sleep.
+     */
+    default boolean canSleep() {
+        return true; 
+    }
 }
-
-

@@ -24,6 +24,7 @@ import static com.eleven.pet.ui.ViewConstants.*;
  * <p>
  * Renders the room background, window particle effects, TV interaction area,
  * and a background clock synchronized with {@link GameClock} and {@link WeatherSystem}.
+ * </p>
  */
 public class WorldView extends StackPane {
 
@@ -38,22 +39,64 @@ public class WorldView extends StackPane {
     private static final double TV_WIDTH = 112;
     private static final double TV_HEIGHT = 72;
 
-    private static final double CLOCK_X = 480;
-    private static final double CLOCK_Y = 95;
-    private static final double CLOCK_WIDTH = 100;
-    private static final double CLOCK_HEIGHT = 50;
+    private static final double CLOCK_X = 455;
+    private static final double CLOCK_Y = 30;
+    private static final double CLOCK_WIDTH = 200;
+    private static final double CLOCK_HEIGHT = 100;
 
+    /**
+     * Game-time clock used to drive background day/night cycle and digital clock display.
+     */
     private final GameClock clock;
+
+    /**
+     * Shared asset loader for resolving images such as backgrounds and UI frames.
+     */
     private final AssetLoader assetLoader;
+
+    /**
+     * Particle system responsible for rendering window weather effects.
+     */
     private final ParticleSystem particleSystem;
+
+    /**
+     * Weather system that defines current weather and associated visual effects.
+     */
     private final WeatherSystem weatherSystem;
 
+    /**
+     * Image view used to render the room background (day/night variants).
+     */
     private ImageView backgroundView;
+
+    /**
+     * Container for the decorative background clock (frame + label).
+     */
     private StackPane backgroundClockPane;
+
+    /**
+     * Label displaying the in-game time in HH:mm format on the background clock.
+     */
     private Label backgroundClockLabel;
+
+    /**
+     * Invisible, clickable TV overlay area for attaching interaction handlers.
+     */
     private StackPane tvClickArea;
+
+    /**
+     * Pane inside the TV area used exclusively for dynamic content (minigames).
+     */
+    private StackPane tvContentPane;
+
+    /**
+     * Default daytime background image, used as a fallback when no clock is present.
+     */
     private Image backgroundDay;
 
+    /**
+     * Currently active weather particle effect; may be {@code null} if none is playing.
+     */
     private ParticleEffect currentWeatherEffect;
 
     /**
@@ -61,7 +104,8 @@ public class WorldView extends StackPane {
      * <p>
      * Initializes the background, particle effects, TV interaction area, and clock.
      *
-     * @param clock         the {@link GameClock} instance to synchronize the clock and background
+     * @param clock         the {@link GameClock} instance to synchronize the clock and background;
+     *                      may be {@code null} to render a static daytime scene
      * @param weatherSystem the {@link WeatherSystem} instance to render weather effects
      */
     public WorldView(GameClock clock, WeatherSystem weatherSystem) {
@@ -78,10 +122,19 @@ public class WorldView extends StackPane {
         observeEnvironment();
     }
 
+    /**
+     * Loads all static image assets required by this view (e.g. daytime background).
+     */
     private void loadAssets() {
         backgroundDay = assetLoader.getImage("backgrounds/DAY");
     }
 
+    /**
+     * Sets up the scalable room background layer and binds it to the view size.
+     * <p>
+     * If a {@link GameClock} is present, the background is immediately updated
+     * to match the current {@link DayCycle}.
+     */
     private void setupBackgroundLayer() {
         backgroundView = new ImageView();
         backgroundView.setPreserveRatio(false);
@@ -94,6 +147,10 @@ public class WorldView extends StackPane {
         getChildren().add(backgroundView);
     }
 
+    /**
+     * Initializes the particle layer for window weather effects and binds it
+     * to the reference window area using relative coordinates.
+     */
     private void setupParticleLayer() {
         var canvas = particleSystem.getCanvas();
         canvas.setMouseTransparent(true);
@@ -111,6 +168,10 @@ public class WorldView extends StackPane {
         getChildren().add(particlePane);
     }
 
+    /**
+     * Creates the invisible TV interaction overlay and binds its position and size
+     * to the reference TV area. The caller can obtain the overlay via {@link #getTvContentPane()}.
+     */
     private void setupTVLayer() {
         Pane tvOverlay = new Pane();
         tvOverlay.setPickOnBounds(false);
@@ -124,10 +185,30 @@ public class WorldView extends StackPane {
         tvClickArea.prefWidthProperty().bind(widthProperty().multiply(TV_WIDTH / REF_WIDTH));
         tvClickArea.prefHeightProperty().bind(heightProperty().multiply(TV_HEIGHT / REF_HEIGHT));
 
+        // Centered decorative image inside the TV area (clicks still go to the overlay)
+        Image tvCenterImage = assetLoader.getImage("ui/game-controller");
+        if (tvCenterImage != null) {
+            ImageView tvImageView = new ImageView(tvCenterImage);
+            tvImageView.setPreserveRatio(true);
+            tvImageView.setFitWidth(200);
+            tvImageView.setMouseTransparent(true);
+            tvClickArea.getChildren().add(tvImageView);
+        }
+
+        tvContentPane = new StackPane();
+        tvContentPane.setPickOnBounds(false);
+        tvContentPane.maxWidthProperty().bind(tvClickArea.widthProperty());
+        tvContentPane.maxHeightProperty().bind(tvClickArea.heightProperty());
+        tvClickArea.getChildren().add(tvContentPane);
+
         tvOverlay.getChildren().add(tvClickArea);
         getChildren().add(tvOverlay);
     }
 
+    /**
+     * Creates and positions the decorative background digital clock, including
+     * its frame and time label, and binds it to the reference coordinates.
+     */
     private void setupBackgroundClock() {
         backgroundClockPane = new StackPane();
         backgroundClockPane.setPickOnBounds(false);
@@ -141,7 +222,7 @@ public class WorldView extends StackPane {
         }
 
         backgroundClockLabel = new Label("12:00");
-        backgroundClockLabel.setFont(Font.font(FONT_FAMILY, FontWeight.MEDIUM, 20));
+        backgroundClockLabel.setFont(Font.font(FONT_FAMILY, FontWeight.MEDIUM, 40));
         backgroundClockLabel.setTextFill(Color.BLACK);
         backgroundClockLabel.setStyle("-fx-background-color: transparent;");
         backgroundClockPane.getChildren().add(backgroundClockLabel);
@@ -159,6 +240,12 @@ public class WorldView extends StackPane {
         getChildren().add(clockPane);
     }
 
+    /**
+     * Subscribes this view to environment changes such as time-of-day and weather.
+     * <p>
+     * Updates the background image, clock label, and weather particle effects
+     * whenever the corresponding properties change.
+     */
     private void observeEnvironment() {
         if (clock == null) return;
         clock.cycleProperty().addListener((_, _, cycle) -> updateBackground(cycle));
@@ -171,20 +258,42 @@ public class WorldView extends StackPane {
         updateWeatherEffects(weatherSystem.getCurrentWeather());
     }
 
+    /**
+     * Updates the room background image based on the current {@link DayCycle}.
+     *
+     * @param cycle the day cycle state determining which background to use
+     */
     private void updateBackground(DayCycle cycle) {
         Image bg = assetLoader.getImage("backgrounds/" + cycle.name());
         if (bg != null) backgroundView.setImage(bg);
     }
 
+    /**
+     * Updates the background digital clock label to reflect the current in-game time.
+     * <p>
+     * The time is displayed in 24-hour {@code HH:mm} format. Minutes are currently
+     * fixed to {@code 00}, as sub-hour precision is not yet represented visually.
+     *
+     * @param time the in-game time in hours, where the integer part represents
+     *             the hour of day in range {@code [0, 24)}
+     */
     private void updateClockLabel(double time) {
         int hours = (int) time % 24;
-        int minutes = (int) ((time % 1.0) * 60);
-        String timeString = String.format("%02d:%02d", hours, minutes);
+        //int minutes = (int) ((time % 1.0) * 60);
+        String timeString = String.format("%02d:%02d", hours, 00);
         if (backgroundClockLabel != null) {
             backgroundClockLabel.setText(timeString);
         }
     }
 
+    /**
+     * Starts or stops weather particle effects according to the provided state.
+     * <p>
+     * Any existing effect is cleanly stopped before the new one is started. If
+     * {@code weather} has no associated {@link ParticleEffect}, all effects are stopped.
+     *
+     * @param weather the new {@link WeatherState} to visualize; may be {@code null}
+     */
     private void updateWeatherEffects(WeatherState weather) {
         if (weather == null || particleSystem == null) return;
 
@@ -216,5 +325,12 @@ public class WorldView extends StackPane {
      */
     public StackPane getTvClickArea() {
         return tvClickArea;
+    }
+
+    /**
+     * Returns the pane used for dynamic TV content (minigames).
+     */
+    public StackPane getTvContentPane() {
+        return tvContentPane;
     }
 }

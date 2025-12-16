@@ -5,6 +5,7 @@ package com.eleven.pet.environment.time;
  * <p>
  * Implementations are notified on each game clock tick and can update
  * their internal state based on the elapsed (scaled) game time.
+ * </p>
  */
 public interface TimeListener {
 

@@ -15,6 +15,7 @@ import java.util.ServiceLoader;
  * It discovers all {@link WeatherState} implementations via {@link ServiceLoader},
  * tracks the current weather in a JavaFX {@link ObjectProperty}, and notifies
  * registered {@link WeatherListener listeners} when the weather changes.
+ * </p>
  */
 public class WeatherSystem {
     private final List<WeatherListener> listeners = new ArrayList<>();
@@ -51,7 +52,7 @@ public class WeatherSystem {
     public void changeWeather() {
         WeatherState newState = availableStates.get(random.nextInt(availableStates.size()));
         currentWeather.set(newState);
-        
+
         System.out.println("🌤️ Weather changed to: " + newState.getName());
 
         for (WeatherListener listener : listeners) {
@@ -63,6 +64,7 @@ public class WeatherSystem {
      * Returns a read-only JavaFX property representing the current weather.
      * <p>
      * This can be used for UI bindings.
+     * </p>
      *
      * @return read-only property for the current {@link WeatherState}
      */

@@ -14,6 +14,7 @@ import javafx.collections.ObservableMap;
  * <p>
  * Quantities are tracked per item ID and exposed via JavaFX properties
  * for UI binding.
+ * </p>
  */
 public class Inventory {
     private final Map<Integer, IntegerProperty> items = FXCollections.observableHashMap();
@@ -104,6 +105,7 @@ public class Inventory {
      * Gets the JavaFX property representing the quantity of a specific item.
      * <p>
      * If the item does not yet exist in the inventory, it will be added with quantity {@code 0}.
+     * </p>
      *
      * @param item item whose quantity property is requested
      * @return {@link IntegerProperty} bound to the item's quantity
@@ -116,6 +118,7 @@ public class Inventory {
      * Returns the observable map backing the inventory.
      * <p>
      * Keys are item IDs; values are quantity properties.
+     * </p>
      *
      * @return observable map of item IDs to quantity properties
      */
