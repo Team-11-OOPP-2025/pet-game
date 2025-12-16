@@ -271,6 +271,7 @@ public class PetController {
 
         session.start(result -> {
             model.applyMinigameResult(result);
+
             if (onUIExit != null) onUIExit.run();
         });
 
