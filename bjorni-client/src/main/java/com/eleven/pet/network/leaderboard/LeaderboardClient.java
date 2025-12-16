@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class LeaderboardClient implements LeaderboardService {
+    // TODO: Update this to be base url instead of full url
     private static final String API_URL = "http://localhost:8080/api/v1/leaderboard";
 
     private final HttpClient httpClient;
@@ -26,10 +27,14 @@ public class LeaderboardClient implements LeaderboardService {
         this.signatureGenerator = new Signature();
     }
 
+
+    // TODO: Implement a register player method to get PlayerId and SecretKey from server
+
     /**
      * @param playerName the name of the player
      * @param result     the result of the minigame
      */
+    // TODO: This method should take in PlayerId and SecretKey instead of playerName for better security
     @Override
     public void submitScore(String playerName, MinigameResult result) {
         // Leaderboard only cares about wins

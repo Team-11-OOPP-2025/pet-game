@@ -68,6 +68,9 @@ public class PetController {
                 clock.setTimeScale(newState.getTimeScale());
             }
         });
+
+        // TODO: Register the player here (PlayerId and Key) and trigger a save to persist the info
+        // DON'T FORGET TO UPDATE THE PetDTO AND SAVE FILE VERSIONING!
     }
 
     /**

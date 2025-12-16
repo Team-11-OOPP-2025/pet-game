@@ -34,6 +34,7 @@ public class ScoreController {
         }
 
         // TODO: Store based on a foreign key which is the player identifier
+        // In this simple example, we can use a dictionary or map to store total games won and (games won (name of game)) per player
         scores.add(entry);
     }
 
