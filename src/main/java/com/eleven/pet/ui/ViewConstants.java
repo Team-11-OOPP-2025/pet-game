@@ -23,11 +23,12 @@ public class ViewConstants {
     public static final Color COLOR_ENERGY = Color.web("#f39c12");
     public static final Color COLOR_CLEANLINESS = Color.web("#3498db");
 
+    public static final String PIXEL_BUTTON_STYLE_CLASS = "pixel-btn";
     public static final String PIXEL_BUTTON_PRIMARY = "pixel-btn-primary";
     public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
     public static final String PIXEL_BUTTON_GOLD = "pixel-btn-gold";
     public static final Integer PIXEL_BUTTON_WIDTH = 120;
-    
+
     // Styling
     public static final String STYLE_INVENTORY_PANEL =
             "-fx-background-color: #fdf5e6; " +
@@ -55,6 +56,4 @@ public class ViewConstants {
 
     // Layout Spacing
     public static final double STATS_BOX_SPACING = 20.0;
-
-    public static final String PIXEL_BUTTON_STYLE_CLASS = "pixel-btn";
 }

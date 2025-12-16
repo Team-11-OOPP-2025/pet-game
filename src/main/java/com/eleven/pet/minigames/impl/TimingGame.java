@@ -112,7 +112,7 @@ public class TimingGame implements Minigame {
             stopBtn = new Button("STOP!");
             stopBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS);
             stopBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-family: '" + ViewConstants.FONT_FAMILY + "'; -fx-font-size: 14px; -fx-font-weight: bold;");
-            stopBtn.setOnAction(e -> stopGame());
+            stopBtn.setOnAction(_ -> stopGame());
 
             resultLabel = new Label();
             resultLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, 14));

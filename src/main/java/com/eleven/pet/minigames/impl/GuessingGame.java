@@ -97,7 +97,7 @@ public class GuessingGame implements Minigame {
             guessField.setOnAction(e -> processGuess());
 
             submitBtn = new Button("Submit");
-            submitBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_PRIMARY, ViewConstants.PIXEL_BUTTON_PRIMARY);
+            submitBtn.getStyleClass().addAll(ViewConstants.PIXEL_BUTTON_STYLE_CLASS, ViewConstants.PIXEL_BUTTON_PRIMARY);
             submitBtn.setOnAction(e -> processGuess());
 
             resultLabel = new Label();

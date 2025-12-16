@@ -276,4 +276,32 @@ public class PetController {
 
         return new MiniGameView(session.getView());
     }
+
+    /**
+     * Marks the tutorial as completed and performs related actions.
+     */
+    public void completeTutorial() {
+        model.setTutorialCompleted(true);
+        // Force a save immediately
+        try {
+            if (persistence != null) {
+                persistence.save(model);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to save tutorial status: " + e.getMessage());
+        }
+
+        // Unpause the game after tutorial finishes and move forward half a day
+        togglePause();
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+    }
+
+    /**
+     * Initializes tutorial-specific logic, such as advancing time for certain prompts.
+     */
+    public void initTutorialLogic() {
+        // Advance time by half a day to test tutorial steps that depend on time (Sleep prompt)
+        clock.tick(GameConfig.DAY_LENGTH_SECONDS / 2);
+        togglePause();
+    }
 }

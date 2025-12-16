@@ -19,9 +19,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Main view composition for the pet game screen.
@@ -266,8 +267,8 @@ public class PetView {
         if (!isGameMode) return;
         isGameMode = false;
 
-        StackPane tvClickArea = worldView.getTvClickArea();
-        tvClickArea.getChildren().clear();
+        StackPane tvContentPane = worldView.getTvContentPane();
+        tvContentPane.getChildren().clear();
 
         ParallelTransition pt = new ParallelTransition();
 
