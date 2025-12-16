@@ -22,10 +22,11 @@ public class ScoreController {
     @PostMapping
     public void submitScore(@RequestBody LeaderboardEntry entry) {
         System.out.println(" Received Score: " + entry);
-        // TODO: Store based on a foreign key which is the game identifier
+        // TODO: Store based on a foreign key which is the player identifier
         scores.add(entry);
     }
 
+    // TODO: this is only for testing purposes, fix this to properly do as expected and to fetch data correctly
     @GetMapping
     public List<LeaderboardEntry> getScores() {
         return scores;
