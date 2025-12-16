@@ -1,13 +1,10 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-
 import com.eleven.pet.vfx.Particle;
 import com.eleven.pet.vfx.ParticleSystem;
 import com.eleven.pet.vfx.RainParticle;
 import com.eleven.pet.vfx.RainParticleFactory;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for particle and particle system behavior, including

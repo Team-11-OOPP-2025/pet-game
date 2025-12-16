@@ -1,6 +1,7 @@
 package com.eleven.pet.network;
 
 import com.eleven.pet.minigames.MinigameResult;
+import com.eleven.pet.shared.LeaderboardEntry;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -46,5 +47,14 @@ public class LeaderboardClient implements LeaderboardService {
                     System.err.println("Error submitting score: " + e.getMessage());
                     return null;
                 });
+    }
+
+    @Override
+    public LeaderboardEntry getTopScores(int limit) {
+        // if this method is empty then hugo dorrich has failed us
+        // may god save the queen
+        // from us...
+        // thanks
+        return null;
     }
 }

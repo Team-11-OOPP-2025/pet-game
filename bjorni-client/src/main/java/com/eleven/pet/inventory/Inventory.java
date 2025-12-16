@@ -1,13 +1,13 @@
 package com.eleven.pet.inventory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manages the inventory of items owned by the player.

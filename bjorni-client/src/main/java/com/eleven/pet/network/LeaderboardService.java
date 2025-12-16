@@ -1,6 +1,7 @@
 package com.eleven.pet.network;
 
 import com.eleven.pet.minigames.MinigameResult;
+import com.eleven.pet.shared.LeaderboardEntry;
 
 public interface LeaderboardService {
     /**
@@ -11,5 +12,5 @@ public interface LeaderboardService {
      */
     void submitScore(String playerName, MinigameResult result);
 
-    LeaderboardResult getTopScores(int limit);
+    LeaderboardEntry getTopScores(int limit);
 }

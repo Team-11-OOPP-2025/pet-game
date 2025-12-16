@@ -1,12 +1,11 @@
 package com.eleven.pet.character;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.eleven.pet.core.GameConfig;
-
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manages pet stats such as hunger, happiness, energy, and cleanliness.
