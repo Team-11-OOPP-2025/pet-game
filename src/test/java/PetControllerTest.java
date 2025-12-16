@@ -110,7 +110,8 @@ public class PetControllerTest {
         PetModel model = PetFactory.createNewPet("TestPet", null, clock);
         persistence = new MockPersistenceService(tempDir.resolve("test-save.dat"));
         weatherSystem = new WeatherSystem();
-        controller = new PetController(model, clock, weatherSystem, persistence);
+        // leaderboard is null as it's not needed for these tests
+        controller = new PetController(model, clock, weatherSystem, persistence, null);
     }
 
     /**

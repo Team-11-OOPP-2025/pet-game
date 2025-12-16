@@ -5,6 +5,8 @@ import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
+import com.eleven.pet.network.LeaderboardClient;
+import com.eleven.pet.network.LeaderboardService;
 import com.eleven.pet.storage.GcmEncryptionService;
 import com.eleven.pet.storage.KeyLoader;
 import com.eleven.pet.storage.PersistenceService;
@@ -30,6 +32,7 @@ public class MainApp extends Application {
     private PetController controller;
     private GameEngine gameEngine;
     private PersistenceService persistenceService;
+    private LeaderboardService leaderboardClient;
 
     /**
      * Application entry point.
@@ -42,12 +45,14 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) {
         AssetLoader.getInstance().loadAll();
 
+        leaderboardClient = new LeaderboardClient();
+
         initializePersistence();
         PetModel model = loadOrCreatePet();
 
         gameEngine = new GameEngine(model, clock, weatherSystem);
 
-        controller = new PetController(model, clock, weatherSystem, persistenceService);
+        controller = new PetController(model, clock, weatherSystem, persistenceService, leaderboardClient);
         PetView view = new PetView(model, controller, clock, weatherSystem);
 
         controller.initAutosave();

@@ -9,8 +9,7 @@ import java.net.http.HttpResponse;
 
 public class LeaderboardClient implements LeaderboardService {
     private static final String API_URL = "https://example.com/api/v1/leaderboard/";
-
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     /**
      * @param playerName the name of the player

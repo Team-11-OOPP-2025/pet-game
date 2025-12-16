@@ -10,6 +10,7 @@ import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.MiniGameController;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
+import com.eleven.pet.network.LeaderboardService;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
@@ -35,6 +36,7 @@ public class PetController {
     private final GameClock clock;
     private final WeatherSystem weather;
     private final PersistenceService persistence;
+    private final LeaderboardService leaderboard;
 
     private final BooleanProperty inventoryOpenProperty = new SimpleBooleanProperty(false);
     private Timeline autosaveTimer;
@@ -44,16 +46,19 @@ public class PetController {
     /**
      * Creates a new {@code PetController}.
      *
-     * @param model       the underlying {@link PetModel} representing the pet state
-     * @param clock       the {@link GameClock} used for time scaling and pausing
-     * @param weather     the {@link WeatherSystem} used to change in-game weather
-     * @param persistence the {@link PersistenceService} used for saving the game state
+     * @param model             the underlying {@link PetModel} representing the pet state
+     * @param clock             the {@link GameClock} used for time scaling and pausing
+     * @param weather           the {@link WeatherSystem} used to change in-game weather
+     * @param persistence       the {@link PersistenceService} used for saving the game state
+     * @param leaderboardService the {@link LeaderboardService} used for submitting scores
      */
-    public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence) {
+    public PetController(PetModel model, GameClock clock, WeatherSystem weather, PersistenceService persistence, LeaderboardService leaderboardService) {
         this.model = model;
         this.clock = clock;
         this.weather = weather;
         this.persistence = persistence;
+        this.leaderboard = leaderboardService;
+
         initControllerLogic();
     }
 
@@ -271,7 +276,7 @@ public class PetController {
 
         session.start(result -> {
             model.applyMinigameResult(result);
-
+            leaderboard.submitScore(model.getName(), result);
             if (onUIExit != null) onUIExit.run();
         });
 
