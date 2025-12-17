@@ -1,5 +1,6 @@
 package com.eleven.pet.shared;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,8 +18,9 @@ import java.io.Serializable;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class PlayerRegistration implements Serializable {
-    
+
     /**
      * The unique public identifier for the player (UUID).
      * This ID is sent in the {@code X-Player-ID} header of subsequent requests.
@@ -30,16 +32,4 @@ public class PlayerRegistration implements Serializable {
      * This key must never be shared or logged in plain text.
      */
     private String secretKey;
-    
-    /**
-     * Constructs a new registration credential set.
-     *
-     * @param playerId  the unique UUID string for the player.
-     * @param secretKey the unique UUID string used as the cryptographic secret.
-     */
-    public PlayerRegistration(String playerId, String secretKey) {
-        this.playerId = playerId;
-        this.secretKey = secretKey;
-    }
-    
 }

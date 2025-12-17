@@ -16,5 +16,17 @@ package com.eleven.pet.shared;
  * @param gameName   The identifier of the specific minigame played (e.g., "FoodCatch", "PetPet").
  * @param timeStamp  The timestamp of the achievement in milliseconds since the Unix Epoch.
  */
-public record LeaderboardEntry(String playerName, boolean won, String gameName, long timeStamp) {
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class LeaderboardEntry {
+    public String playerName;
+    public int score;
+    public String gameName;
+    public long timestamp;
 }

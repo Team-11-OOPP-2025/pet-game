@@ -30,4 +30,12 @@ public interface LeaderboardService {
      * @return a CompletableFuture containing the player registration details (ID and Secret Key)
      */
     CompletableFuture<PlayerRegistration> registerPlayer();
+
+    /**
+     * Sets the player's credentials for authentication.
+     *
+     * @param playerId  the player's ID
+     * @param secretKey the player's secret key
+     */
+    void setCredentials(String playerId, String secretKey);
 }

@@ -156,10 +156,10 @@ public class LeaderboardView extends StackPane {
 
         // Player Name & Game
         VBox infoBox = new VBox(2);
-        Label nameLbl = new Label(entry.playerName());
+        Label nameLbl = new Label(entry.getPlayerName());
         nameLbl.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.BOLD, 16));
 
-        Label gameLbl = new Label(entry.gameName());
+        Label gameLbl = new Label(entry.getGameName());
         gameLbl.setFont(Font.font(ViewConstants.FONT_FAMILY, 12));
         gameLbl.setTextFill(Color.GRAY);
 
@@ -167,7 +167,7 @@ public class LeaderboardView extends StackPane {
         HBox.setHgrow(infoBox, Priority.ALWAYS); // Push score to the right
 
         // Score
-        Label scoreLbl = new Label(String.valueOf(entry.won() ? 1 : 0));
+        Label scoreLbl = new Label(String.valueOf(entry.getScore()));
         scoreLbl.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.BOLD, 20));
         scoreLbl.setTextFill(Color.web("#228b22")); // Forest Green
 

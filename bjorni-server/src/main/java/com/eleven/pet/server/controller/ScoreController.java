@@ -2,10 +2,9 @@ package com.eleven.pet.server.controller;
 
 import com.eleven.pet.shared.LeaderboardEntry;
 import com.eleven.pet.shared.Signature;
-
+import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.ObjectMapper;
 
-import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -105,7 +104,7 @@ public class ScoreController {
     public List<LeaderboardEntry> getScores(@RequestParam(value = "limit", defaultValue = "50") int limit) {
         synchronized (scores) {
             return scores.stream()
-                .sorted(Comparator.comparingLong(LeaderboardEntry::timeStamp).reversed())
+                    .sorted(Comparator.comparingLong(LeaderboardEntry::getTimestamp).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
         }

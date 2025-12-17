@@ -41,28 +41,10 @@ public class LeaderboardClient implements LeaderboardService {
     private String playerId;
     private String secretKey;
 
-    /**
-     * Constructs a new LeaderboardClient and attempts to register the player immediately.
-     * <p>
-     * <strong>Note:</strong> This constructor blocks execution waiting for the
-     * registration network request to complete via {@code join()}. If registration fails,
-     * error details are printed to {@code System.err}, and the client may remain unauthenticated.
-     */
     public LeaderboardClient() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         this.jsonMapper = new ObjectMapper();
         this.signatureGenerator = new Signature();
-
-        try {
-            // Block until registration finishes, or throw
-            PlayerRegistration registration = registerPlayer().join();
-            this.playerId = registration.getPlayerId();
-            this.secretKey = registration.getSecretKey();
-        } catch (Exception e) {
-            System.err.println("Failed to register player for leaderboard: " + e.getMessage());
-        }
     }
 
     /**
@@ -90,31 +72,14 @@ public class LeaderboardClient implements LeaderboardService {
     }
 
     /**
-     * Gets the currently registered Player ID.
-     *
-     * @return the unique player identifier string.
-     */
-    public String getPlayerId() {
-        return playerId;
-    }
-
-    /**
-     * Gets the secret key used for HMAC signature generation.
-     *
-     * @return the secret key string.
-     */
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    /**
      * Manually sets the client credentials.
      * <p>
      * Useful if credentials are loaded from storage rather than generating a new registration.
-     *
+     * </p>
      * @param playerId  the unique player identifier.
      * @param secretKey the secret key for request signing.
      */
+    @Override
     public void setCredentials(String playerId, String secretKey) {
         this.playerId = playerId;
         this.secretKey = secretKey;
@@ -141,7 +106,7 @@ public class LeaderboardClient implements LeaderboardService {
         try {
             LeaderboardEntry entry = new LeaderboardEntry(
                     playerName,
-                    true,
+                    1,
                     result.gameName(),
                     System.currentTimeMillis()
             );
@@ -194,10 +159,11 @@ public class LeaderboardClient implements LeaderboardService {
                 .thenApply(body -> {
                     try {
                         // 3. Deserialize the JSON List into Java Objects
-                        return jsonMapper.readValue(body, new TypeReference<List<LeaderboardEntry>>() {});
+                        return jsonMapper.readValue(body, new TypeReference<>() {
+                        });
                     } catch (Exception e) {
                         System.err.println("Failed to parse leaderboard scores: " + e.getMessage());
-                        return Collections.<LeaderboardEntry>emptyList();
+                        return Collections.emptyList();
                     }
                 });
     }

@@ -1,8 +1,6 @@
 package com.eleven.pet.server.controller;
 
 import com.eleven.pet.shared.PlayerRegistration;
-import com.eleven.pet.shared.Signature;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,13 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-    
+
     /**
      * In-memory storage mapping PlayerID -> SecretKey.
      * Thread-safe to allow concurrent registrations.
      */
     private final ConcurrentHashMap<String, String> validKeys = new ConcurrentHashMap<>();
-    private final Signature signatureUtil = new Signature();
 
     /**
      * Registers a new player and generates a unique set of credentials.
@@ -38,7 +35,7 @@ public class AuthController {
      * Generates a random UUID for the Player ID and a random UUID for the Secret Key.
      * These are stored internally and returned to the client.
      *
-     * @return a {@link PlayerRegistration} object containing the new {@code playerId} 
+     * @return a {@link PlayerRegistration} object containing the new {@code playerId}
      * and {@code secretKey}.
      */
     @PostMapping("/register")
