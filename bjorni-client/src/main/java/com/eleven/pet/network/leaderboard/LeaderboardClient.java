@@ -2,7 +2,9 @@ package com.eleven.pet.network.leaderboard;
 
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.shared.LeaderboardEntry;
+import com.eleven.pet.shared.PlayerRegistration;
 import com.eleven.pet.shared.Signature;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
@@ -14,27 +16,44 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class LeaderboardClient implements LeaderboardService {
-    // TODO: Update this to be base url instead of full url
-    private static final String API_URL = "http://localhost:8080/api/v1/leaderboard";
+    private static final String BASE_URL = "http://localhost:8080/api/v1";
+    private static final String API_URL = BASE_URL + "/leaderboard";
+    private static final String AUTH_URL = BASE_URL + "/auth/register";
 
     private final HttpClient httpClient;
     private final ObjectMapper jsonMapper;
     private final Signature signatureGenerator;
 
+    private String playerId;
+    private String secretKey;
+
     public LeaderboardClient() {
         this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         this.jsonMapper = new ObjectMapper();
         this.signatureGenerator = new Signature();
+        registerPlayer().thenAccept(registration -> {
+            this.playerId = registration.getPlayerId();
+            this.secretKey = registration.getSecretKey();
+        }).join();
     }
 
-
-    // TODO: Implement a register player method to get PlayerId and SecretKey from server
+    public CompletableFuture<PlayerRegistration> registerPlayer() {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(AUTH_URL)).POST(HttpRequest.BodyPublishers.noBody()).build();
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenApply(body -> {
+                    try {
+                        return jsonMapper.readValue(body, PlayerRegistration.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to parse registration response", e);
+                    }
+                });
+    }
 
     /**
      * @param playerName the name of the player
      * @param result     the result of the minigame
      */
-    // TODO: This method should take in PlayerId and SecretKey instead of playerName for better security
     @Override
     public void submitScore(String playerName, MinigameResult result) {
         // Leaderboard only cares about wins
@@ -43,7 +62,6 @@ public class LeaderboardClient implements LeaderboardService {
         }
 
         try {
-            // TODO: Add unique identifier to the client
             LeaderboardEntry entry = new LeaderboardEntry(
                     playerName,
                     true,
@@ -52,14 +70,15 @@ public class LeaderboardClient implements LeaderboardService {
             );
 
             String jsonBody = jsonMapper.writeValueAsString(entry);
-
-            // TODO: Change to inject shared secret on build or default to hardcoded during developemnt env.
-            String signature = signatureGenerator.calculateHMAC(jsonBody, "SHARED_KEY");
+            
+            // Calculate signature using the secure secret key
+            String signature = signatureGenerator.calculateHMAC(jsonBody, secretKey);
 
             // Build the HTTP request
             HttpRequest request = HttpRequest.newBuilder(URI.create(API_URL))
                     .header("Content-Type", "application/json")
                     .header("X-HMAC-Signature", signature)
+                    .header("X-Player-ID", playerId)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
@@ -76,18 +95,32 @@ public class LeaderboardClient implements LeaderboardService {
                         return null;
                     });
         } catch (Exception e) {
-            // Replace with Log4j... hopefully no vuln this time xD
             e.printStackTrace();
         }
     }
 
     /**
      * Fetches the top scores asynchronously.
-     *
-     * @return A Future containing the list of scores.
      */
     @Override
     public CompletableFuture<List<LeaderboardEntry>> getTopScores(int limit) {
-        return null;
+        // 1. Build the GET request with the limit parameter
+        String urlWithParams = API_URL + "?limit=" + limit;
+        
+        HttpRequest request = HttpRequest.newBuilder(URI.create(urlWithParams))
+                .GET()
+                .build();
+
+        // 2. Send it asynchronously
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenApply(body -> {
+                    try {
+                        // 3. Deserialize the JSON List into Java Objects
+                        return jsonMapper.readValue(body, new TypeReference<List<LeaderboardEntry>>() {});
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to parse leaderboard scores", e);
+                    }
+                });
     }
 }

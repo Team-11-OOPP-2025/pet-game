@@ -6,6 +6,13 @@ import java.io.Serializable;
 
 @Data
 public class PlayerRegistration implements Serializable {
-    // TODO: The unique identifier for the player
-    // generated secret key for HMAC signing by the server
+    
+    private String playerId;
+    private String secretKey;
+    
+        public PlayerRegistration(String playerId, String secretKey) {
+            this.playerId = playerId;
+        this.secretKey = secretKey;
+    }
+    
 }
