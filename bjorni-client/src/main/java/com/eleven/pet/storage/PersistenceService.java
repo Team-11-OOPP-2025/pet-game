@@ -74,6 +74,8 @@ public class PersistenceService {
             dto.setTutorialCompleted(model.isTutorialCompleted());
             dto.setCurrentStateName(model.getCurrentState().getStateName());
             dto.setLastSaveTimestamp(System.currentTimeMillis());
+            dto.setPlayerId(model.getPlayerId());
+            dto.setSecretKey(model.getSecretKey());
 
             dto.setStatsData(extractStats(model.getStats()));
             dto.setInventoryData(extractInventory(model.getInventory()));
@@ -127,6 +129,7 @@ public class PersistenceService {
             PetModel model = PetFactory.createNewPet(dto.getPetName(), weatherSystem, gameClock);
 
             String stateName = dto.getCurrentStateName();
+
             PetState restoredState = StateRegistry.getInstance().getState(stateName);
 
             // Prevent loading into AsleepState directly as the clock may have advanced
@@ -140,6 +143,8 @@ public class PersistenceService {
             model.setTutorialCompleted(dto.isTutorialCompleted());
             model.setCurrentSleepDuration(dto.getSleepStartTime());
             model.setSleptThisNight(dto.isSleptThisNight());
+            model.setPlayerId(dto.getPlayerId());
+            model.setSecretKey(dto.getSecretKey());
 
             // Load reward cooldown
             model.setRewardCooldown(dto.getRewardCooldown());

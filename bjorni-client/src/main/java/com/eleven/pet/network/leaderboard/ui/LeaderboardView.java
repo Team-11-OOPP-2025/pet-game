@@ -66,7 +66,7 @@ public class LeaderboardView extends StackPane {
 
         // Status/Loading Label
         statusLabel = new Label("Loading...");
-        statusLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.NORMAL, 14));
+        statusLabel.setFont(Font.font(ViewConstants.FONT_FAMILY, FontWeight.NORMAL, 16));
         statusLabel.setTextFill(Color.GRAY);
 
         // Close Button
@@ -121,7 +121,7 @@ public class LeaderboardView extends StackPane {
         statusLabel.setText("Fetching scores...");
         statusLabel.setVisible(true);
 
-        client.getTopScores(50).thenAccept(scores -> {
+        client.getTopScores(10).thenAccept(scores -> {
             // UI updates must happen on JavaFX Application Thread
             Platform.runLater(() -> {
                 statusLabel.setVisible(false);

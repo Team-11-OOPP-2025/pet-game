@@ -1,92 +1,98 @@
 package com.eleven.pet.server.controller;
 
+import com.eleven.pet.server.model.PlayerStats;
 import com.eleven.pet.shared.LeaderboardEntry;
 import com.eleven.pet.shared.Signature;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/**
- * REST Controller for managing leaderboard operations.
- * <p>
- * This controller handles the secure submission of scores and the retrieval of leaderboard rankings.
- * <p>
- * <strong>Security:</strong> Submissions are protected via HMAC signatures. The controller delegates
- * key retrieval to the {@link AuthController} to verify the authenticity of the request payload.
- * <p>
- * <strong>Concurrency:</strong> The underlying score storage is synchronized to handle concurrent
- * read/write operations safely.
- */
 @RestController
 @RequestMapping("/api/v1/leaderboard")
+@Tag(name = "Leaderboard", description = "Endpoints for submitting and retrieving leaderboard scores")
 public class ScoreController {
-    // Replace this with a dependency-injected database or persistent storage
-    private final List<LeaderboardEntry> scores = new ArrayList<>();
+    // Map<PlayerID, Stats> - Aggregates scores by the unique ID from the header
+    // in a DB approach this would be a table with PlayerID as FK
+    // Future improvement could be to use Redis or another in-memory DB for persistence across restarts
+    private final ConcurrentHashMap<String, PlayerStats> playerStats = new ConcurrentHashMap<>();
+
     private final Signature signatureUtil = new Signature();
     private final ObjectMapper jsonMapper = new ObjectMapper();
 
     private final AuthController authController;
 
-    /**
-     * Constructs the controller with the required authentication service.
-     *
-     * @param authController the controller used to retrieve shared secret keys for player validation.
-     */
     public ScoreController(AuthController authController) {
         this.authController = authController;
     }
 
     /**
-     * Securely accepts a new score submission.
+     * Submits a player's score to the leaderboard.
+     *
      * <p>
      * Endpoint: {@code POST /api/v1/leaderboard}
-     * <p>
-     * <strong>Verification Steps:</strong>
-     * <ol>
-     * <li>Retrieves the secret key for the given {@code X-Player-ID}.</li>
-     * <li>Re-calculates the HMAC signature of the request body using that key.</li>
-     * <li>Compares the calculated signature against the provided {@code X-HMAC-Signature}.</li>
-     * </ol>
-     * If verification fails, a {@link SecurityException} is thrown.
+     * </p>
      *
-     * @param hmacSignature the cryptographic signature provided in the {@code X-HMAC-Signature} header.
-     * @param playerId      the ID of the player provided in the {@code X-Player-ID} header.
-     * @param entry         the {@link LeaderboardEntry} payload containing score details.
+     * @param clientSignature the cryptographic signature provided in the {@code X-HMAC-Signature} header.
+     * @param playerId        the ID of the player provided in the {@code X-Player-ID} header.
+     * @param rawJsonBody     the raw JSON body of the request containing the score submission.
      * @throws SecurityException if the player ID is unknown or the signature does not match.
-     * @throws Exception         if JSON serialization or HMAC calculation fails.
      */
     @PostMapping
-    public void submitScore(
-        @RequestHeader(value = "X-HMAC-Signature") String hmacSignature,
-        @RequestHeader(value = "X-Player-ID") String playerId,
-        @RequestBody LeaderboardEntry entry) throws Exception {
+    @Operation(summary = "Submit a player's score",
+            description = "Submits a player's score to the leaderboard with HMAC authentication.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Score submitted successfully."),
+            @ApiResponse(responseCode = "400", description = "Bad Request: Missing required headers."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid player ID or signature."),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error: An error occurred while processing the request.")
+    })
+    public ResponseEntity<String> submitScore(
+            @RequestHeader(value = "X-HMAC-Signature") String clientSignature,
+            @RequestHeader(value = "X-Player-ID") String playerId,
+            @RequestBody String rawJsonBody) throws SecurityException {
+        try {
+            if (clientSignature == null || playerId == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("400 Bad Request: Missing required headers.");
+            }
 
-        // 1. Retrieve the specific key for this player
-        String secretKey = authController.getSharedKey(playerId);
+            String secretKey = authController.getSharedKey(playerId);
+            if (secretKey == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("401 Unauthorized: You are not authorized to perform this action.");
+            }
 
-        // 2. Safety Check: If the key is null, this player isn't registered!
-        if (secretKey == null) {
-             // Ideally, this should also be generic "Unauthorized" to prevent User Enumeration
-            throw new SecurityException("Unknown Player ID: " + playerId);
-        }
+            String calculatedSignature = signatureUtil.calculateHMAC(rawJsonBody, secretKey);
+            if (!calculatedSignature.equals(clientSignature)) {
+                // Principle of the least knowledge: Do not reveal which part of the authentication failed
+                // basic security practice to avoid giving clues to potential attackers
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("401 Unauthorized: You are not authorized to perform this action.");
+            }
+            LeaderboardEntry entry = jsonMapper.readValue(rawJsonBody, LeaderboardEntry.class);
 
-        // 3. Re-calculate the HMAC using the retrieved key
-        String jsonBody = jsonMapper.writeValueAsString(entry);
-        String calculatedSignature = signatureUtil.calculateHMAC(jsonBody, secretKey);
+            // Update Stats (Using ID from Header as key)
+            playerStats.compute(playerId, (_, stats) -> {
+                if (stats == null) {
+                    stats = new PlayerStats(entry.getPlayerName());
+                }
+                stats.playerName = entry.getPlayerName(); // Update name if changed
+                stats.recordWin(entry.getGameName());
+                return stats;
+            });
 
-        // 4. Verify match
-        if (!calculatedSignature.equals(hmacSignature)) {
-            // Principle of least knowledge: Do not reveal specific details about why auth failed
-            throw new SecurityException("Unauthorized");
-        }
-
-        // If we pass all checks, accept the score
-        synchronized (scores) {
-            scores.add(entry);
+            return ResponseEntity.ok("200 OK: Score submitted successfully.");
+        } catch (Exception e) {
+            // Should log the exception in a logging framework (e.g., Log4j, SLF4J)
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("500 Internal Server Error: An error occurred while processing the request.");
         }
     }
 
@@ -94,19 +100,33 @@ public class ScoreController {
      * Retrieves the latest scores, sorted by timestamp.
      * <p>
      * Endpoint: {@code GET /api/v1/leaderboard}
-     * <p>
+     * </p>
      * The results are sorted in descending order (newest first).
      *
      * @param limit the maximum number of entries to return (default: 50).
      * @return a list of {@link LeaderboardEntry} objects.
      */
     @GetMapping
-    public List<LeaderboardEntry> getScores(@RequestParam(value = "limit", defaultValue = "50") int limit) {
-        synchronized (scores) {
-            return scores.stream()
-                    .sorted(Comparator.comparingLong(LeaderboardEntry::getTimestamp).reversed())
+    @Operation(summary = "Retrieve top leaderboard scores",
+            description = "Fetches the top scores from the leaderboard, sorted by score.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved leaderboard scores.")
+    })
+    public List<LeaderboardEntry> getScores(@RequestParam(value = "limit", defaultValue = "10") int limit) {
+        return playerStats.values().stream().map(stats -> {
+                    // Reconstruction of LeaderboardEntry from PlayerStats
+                    return new LeaderboardEntry(
+                            stats.getPlayerName(),
+                            stats.getTotalWins(),
+                            stats.getTopPlayedGame(),
+                            stats.getLastTimestamp()
+                    );
+                })
+                // Sort by score descending (higher scores first)
+                .sorted(Comparator.comparingLong(LeaderboardEntry::getScore).reversed())
+                // Applt limit
                 .limit(limit)
+                // Collect to list
                 .collect(Collectors.toList());
-        }
     }
 }

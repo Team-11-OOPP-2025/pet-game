@@ -1,7 +1,5 @@
 package com.eleven.pet.shared;
 
-
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +21,7 @@ public class LeaderboardEntry {
     /**
      * The score achieved by the player. 1 or 0
      */
-    public int score;
+    public long score;
     /**
      * The identifier of the specific minigame played (e.g., "TimingGame", "GuessingGame").
      */
