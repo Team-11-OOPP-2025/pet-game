@@ -1,5 +1,9 @@
 package com.eleven.pet.character;
 
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
@@ -9,17 +13,18 @@ import com.eleven.pet.environment.time.TimeListener;
 import com.eleven.pet.environment.weather.WeatherListener;
 import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
-import com.eleven.pet.inventory.*;
+import com.eleven.pet.inventory.ActivePotion;
+import com.eleven.pet.inventory.Inventory;
+import com.eleven.pet.inventory.Item;
+import com.eleven.pet.inventory.ItemRegistry;
+import com.eleven.pet.inventory.StatPotionDefinition;
 import com.eleven.pet.minigames.MinigameResult;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
-
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Core domain model for a single pet instance.
@@ -200,6 +205,31 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public void performClean() {
         currentState.get().handleClean(this);
+    }
+
+    /**
+     * Feeds the pet, increasing hunger by the specified amount.
+     * Centralizes the business logic for eating.
+     *
+     * @param hungerRestored amount of hunger to restore
+     * @return {@code true} if the pet was successfully fed
+     */
+    public boolean eat(int hungerRestored) {
+        if (!stats.hasStat(PetStats.STAT_HUNGER)) {
+            return false;
+        }
+        stats.modifyStat(PetStats.STAT_HUNGER, hungerRestored);
+        return true;
+    }
+
+    /**
+     * Applies penalties for missing sleep overnight.
+     * Centralizes the business logic for missed sleep penalties.
+     */
+    public void applyMissedSleepPenalty() {
+        System.out.println(name + " stayed up all night! Penalty applied.");
+        stats.modifyStat(PetStats.STAT_ENERGY, -GameConfig.MISSED_SLEEP_ENERGY_PENALTY);
+        stats.modifyStat(PetStats.STAT_HAPPINESS, -GameConfig.MISSED_SLEEP_HAPPINESS_PENALTY);
     }
 
     public boolean canPlayMinigame() {

@@ -73,14 +73,22 @@ public class AwakeState implements PetState {
 
     /**
      * Clean the pet, providing a fixed cleanliness and small happiness benefit.
+     * Requires at least 5 energy.
      *
      * @param pet the {@link PetModel} being cleaned
      */
     @Override
     public void handleClean(PetModel pet) {
+        int currentEnergy = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
+        if (currentEnergy < 5) {
+            System.out.println(pet.getName() + " is too tired to be cleaned right now.");
+            return;
+        }
+
         // Simple cleaning effect: improve cleanliness and a bit of happiness
-        pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, 20);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 5);
+        pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, 10);
+        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 2);
+        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -5);
         System.out.println(pet.getName() + " has been cleaned.");
     }
 
@@ -126,9 +134,7 @@ public class AwakeState implements PetState {
      * @param pet the {@link PetModel} to penalize
      */
     private void applyMissedSleepPenalty(PetModel pet) {
-        System.out.println(pet.getName() + " stayed up all night! Penalty applied.");
-        pet.getStats().modifyStat(PetStats.STAT_ENERGY, -GameConfig.MISSED_SLEEP_ENERGY_PENALTY);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, -GameConfig.MISSED_SLEEP_HAPPINESS_PENALTY);
+        pet.applyMissedSleepPenalty();
     }
 
     /**

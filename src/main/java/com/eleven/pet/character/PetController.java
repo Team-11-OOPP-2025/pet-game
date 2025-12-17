@@ -1,5 +1,11 @@
 package com.eleven.pet.character;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.daily_reward.Chest;
@@ -11,16 +17,11 @@ import com.eleven.pet.minigames.MiniGameController;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
 import com.eleven.pet.storage.PersistenceService;
+
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.layout.Pane;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Controller for the virtual pet.
@@ -266,6 +267,9 @@ public class PetController {
             onUIExit.run();
             return null;
         }
+
+        // Deduct energy cost for playing minigame
+        model.getStats().modifyStat(PetStats.STAT_ENERGY, -10);
 
         GameSession session = gameFactory.createSession();
 

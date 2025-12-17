@@ -1,5 +1,9 @@
 package com.eleven.pet.ui;
 
+import java.util.List;
+
+import static com.eleven.pet.ui.ViewConstants.FONT_FAMILY;
+
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,10 +20,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
 
-import java.util.List;
-
-import static com.eleven.pet.ui.ViewConstants.FONT_FAMILY;
-
 public class TutorialView extends StackPane {
     private final Runnable onFinish;
     private final List<Node> highlightTargets;
@@ -29,7 +29,7 @@ public class TutorialView extends StackPane {
     private final String[] steps = {
             "Welcome to Björni!\n\nThis is your new virtual pet companion.",
             "Check Stats!\n\nKeep an eye on Hunger, Happiness,\nEnergy, and Cleanliness here.",
-            "Play Minigames!\n\nClick the TV to play games\nand earn happiness points.",
+            "Play Minigames!\n\nClick the TV to play games and earn happiness.\nBe careful - playing costs energy!",
             "Daily Rewards!\n\nClick the REWARDS button to claim\nyour daily rewards.",
             "Inventory!\n\nClick FEED to open your Inventory\nand give your pet treats.",
             "Clean Björni!\n\nClick CLEAN to clean\nand keep your pet healthy.",
