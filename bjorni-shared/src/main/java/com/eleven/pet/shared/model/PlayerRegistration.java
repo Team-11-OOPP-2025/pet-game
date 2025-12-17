@@ -1,4 +1,4 @@
-package com.eleven.pet.shared;
+package com.eleven.pet.shared.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

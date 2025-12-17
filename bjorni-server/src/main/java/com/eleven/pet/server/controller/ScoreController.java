@@ -1,8 +1,8 @@
 package com.eleven.pet.server.controller;
 
 import com.eleven.pet.server.model.PlayerStats;
-import com.eleven.pet.shared.LeaderboardEntry;
 import com.eleven.pet.shared.Signature;
+import com.eleven.pet.shared.model.LeaderboardEntry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -67,14 +67,14 @@ public class ScoreController {
 
             String secretKey = authController.getSharedKey(playerId);
             if (secretKey == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("401 Unauthorized: You are not authorized to perform this action.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("403 Forbidden: You are not authorized to perform this action.");
             }
 
             String calculatedSignature = signatureUtil.calculateHMAC(rawJsonBody, secretKey);
             if (!calculatedSignature.equals(clientSignature)) {
                 // Principle of the least knowledge: Do not reveal which part of the authentication failed
                 // basic security practice to avoid giving clues to potential attackers
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("401 Unauthorized: You are not authorized to perform this action.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("403 Forbidden: You are not authorized to perform this action.");
             }
             LeaderboardEntry entry = jsonMapper.readValue(rawJsonBody, LeaderboardEntry.class);
 

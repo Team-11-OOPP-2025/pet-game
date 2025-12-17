@@ -21,5 +21,6 @@
         <javafx.version>25.0.1</javafx.version>
         <jackson.version>2.20</jackson.version>
         <lombok.version>1.18.42</lombok.version>
+        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
     </properties>
 </project>

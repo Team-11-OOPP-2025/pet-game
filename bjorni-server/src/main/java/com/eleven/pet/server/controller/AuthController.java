@@ -1,6 +1,6 @@
 package com.eleven.pet.server.controller;
 
-import com.eleven.pet.shared.PlayerRegistration;
+import com.eleven.pet.shared.model.PlayerRegistration;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

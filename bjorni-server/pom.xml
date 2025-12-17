@@ -13,6 +13,7 @@
 
     <properties>
         <spring.boot.version>4.0.0</spring.boot.version>
+        <mockito.version>5.20.0</mockito.version>
     </properties>
 
     <dependencyManagement>
@@ -46,6 +47,27 @@
             <version>3.0.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -68,7 +90,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
@@ -79,6 +101,16 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine}
+                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                    </argLine>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>

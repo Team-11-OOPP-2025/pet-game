@@ -1,8 +1,8 @@
 package com.eleven.pet.network.leaderboard;
 
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.shared.LeaderboardEntry;
-import com.eleven.pet.shared.PlayerRegistration;
+import com.eleven.pet.shared.model.LeaderboardEntry;
+import com.eleven.pet.shared.model.PlayerRegistration;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

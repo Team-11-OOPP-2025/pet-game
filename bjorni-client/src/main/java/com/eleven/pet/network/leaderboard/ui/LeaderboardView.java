@@ -1,7 +1,7 @@
 package com.eleven.pet.network.leaderboard.ui;
 
 import com.eleven.pet.network.leaderboard.LeaderboardService;
-import com.eleven.pet.shared.LeaderboardEntry;
+import com.eleven.pet.shared.model.LeaderboardEntry;
 import com.eleven.pet.ui.ViewConstants;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
