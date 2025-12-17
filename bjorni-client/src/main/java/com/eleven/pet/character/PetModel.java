@@ -33,6 +33,9 @@ public class PetModel implements TimeListener, WeatherListener {
     private static final Random random = new Random();
 
     private final String name;
+    private String playerId;
+    private String secretKey;
+
     private final PetStats stats = new PetStats();
     private final ObjectProperty<PetState> currentState;
     private final WeatherSystem weatherSystem;

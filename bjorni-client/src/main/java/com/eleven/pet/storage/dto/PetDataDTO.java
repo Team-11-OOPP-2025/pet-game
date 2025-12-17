@@ -22,6 +22,16 @@ public class PetDataDTO {
     private String version = GameConfig.SAVE_FILE_VERSION;
 
     /**
+     * Unique Player ID used for leaderboard submission.
+     */
+    private String playerId;
+
+    /**
+     * Secret Key used for signing leaderboard requests.
+     */
+    private String secretKey;
+
+    /**
      * Display name of the pet chosen by the player.
      */
     private String petName;

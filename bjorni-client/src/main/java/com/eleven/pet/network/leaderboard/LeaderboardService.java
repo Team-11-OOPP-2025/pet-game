@@ -2,6 +2,7 @@ package com.eleven.pet.network.leaderboard;
 
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.shared.LeaderboardEntry;
+import com.eleven.pet.shared.PlayerRegistration;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,4 +23,11 @@ public interface LeaderboardService {
      * @return a CompletableFuture that resolves to a list of LeaderboardEntry objects
      */
     CompletableFuture<List<LeaderboardEntry>> getTopScores(int limit);
+
+    /**
+     * Registers a new player with the leaderboard service.
+     *
+     * @return a CompletableFuture containing the player registration details (ID and Secret Key)
+     */
+    CompletableFuture<PlayerRegistration> registerPlayer();
 }

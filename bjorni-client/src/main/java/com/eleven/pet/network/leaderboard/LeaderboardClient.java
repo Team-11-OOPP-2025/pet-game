@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,14 +32,14 @@ public class LeaderboardClient implements LeaderboardService {
         this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         this.jsonMapper = new ObjectMapper();
         this.signatureGenerator = new Signature();
-        registerPlayer().thenAccept(registration -> {
-            this.playerId = registration.getPlayerId();
-            this.secretKey = registration.getSecretKey();
-        }).join();
     }
 
+    @Override
     public CompletableFuture<PlayerRegistration> registerPlayer() {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(AUTH_URL)).POST(HttpRequest.BodyPublishers.noBody()).build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(AUTH_URL))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+                
         return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body)
                 .thenApply(body -> {
@@ -50,13 +51,21 @@ public class LeaderboardClient implements LeaderboardService {
                 });
     }
 
-    /**
-     * @param playerName the name of the player
-     * @param result     the result of the minigame
-     */
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setCredentials(String playerId, String secretKey) {
+        this.playerId = playerId;
+        this.secretKey = secretKey;
+    }
+
     @Override
     public void submitScore(String playerName, MinigameResult result) {
-        // Leaderboard only cares about wins
         if (!result.won()) {
             return;
         }
@@ -70,11 +79,8 @@ public class LeaderboardClient implements LeaderboardService {
             );
 
             String jsonBody = jsonMapper.writeValueAsString(entry);
-            
-            // Calculate signature using the secure secret key
             String signature = signatureGenerator.calculateHMAC(jsonBody, secretKey);
 
-            // Build the HTTP request
             HttpRequest request = HttpRequest.newBuilder(URI.create(API_URL))
                     .header("Content-Type", "application/json")
                     .header("X-HMAC-Signature", signature)
@@ -82,7 +88,6 @@ public class LeaderboardClient implements LeaderboardService {
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 
-            // Asynchronously send the request to the server (non-blocking)
             httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                     .thenApply(HttpResponse::statusCode)
                     .thenAccept(statusCode -> {
@@ -99,9 +104,6 @@ public class LeaderboardClient implements LeaderboardService {
         }
     }
 
-    /**
-     * Fetches the top scores asynchronously.
-     */
     @Override
     public CompletableFuture<List<LeaderboardEntry>> getTopScores(int limit) {
         // 1. Build the GET request with the limit parameter
@@ -119,7 +121,8 @@ public class LeaderboardClient implements LeaderboardService {
                         // 3. Deserialize the JSON List into Java Objects
                         return jsonMapper.readValue(body, new TypeReference<List<LeaderboardEntry>>() {});
                     } catch (Exception e) {
-                        throw new RuntimeException("Failed to parse leaderboard scores", e);
+                        System.err.println("Failed to parse leaderboard scores: " + e.getMessage());
+                        return Collections.<LeaderboardEntry>emptyList();
                     }
                 });
     }

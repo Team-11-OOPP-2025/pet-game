@@ -10,6 +10,7 @@ import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.MiniGameController;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
+import com.eleven.pet.network.leaderboard.LeaderboardClient;
 import com.eleven.pet.network.leaderboard.LeaderboardService;
 import com.eleven.pet.storage.PersistenceService;
 import javafx.animation.Timeline;
@@ -69,8 +70,39 @@ public class PetController {
             }
         });
 
-        // TODO: Register the player here (PlayerId and Key) and trigger a save to persist the info
-        // DON'T FORGET TO UPDATE THE PetDTO AND SAVE FILE VERSIONING!
+        // Initialize Player Registration
+        if (leaderboard instanceof LeaderboardClient client) {
+            if (model.getPlayerId() != null && model.getSecretKey() != null) {
+                // Scenario A: Player already registered (loaded from save file)
+                client.setCredentials(model.getPlayerId(), model.getSecretKey());
+                System.out.println("Restored leaderboard credentials for Player ID: " + model.getPlayerId());
+            } else {
+                // Scenario B: New Player. Register async, update model, then save.
+                client.registerPlayer().thenAccept(registration -> {
+                    // 1. Update Model
+                    synchronized (model) {
+                        model.setPlayerId(registration.getPlayerId());
+                        model.setSecretKey(registration.getSecretKey());
+                    }
+                    
+                    // 2. Activate Client
+                    client.setCredentials(registration.getPlayerId(), registration.getSecretKey());
+
+                    // 3. Persist Credentials to disk
+                    if (persistence != null) {
+                        try {
+                            persistence.save(model);
+                            System.out.println("Registered and persisted new player credentials.");
+                        } catch (GameException e) {
+                            System.err.println("Failed to persist player credentials: " + e.getMessage());
+                        }
+                    }
+                }).exceptionally(e -> {
+                    System.err.println("Failed to register player: " + e.getMessage());
+                    return null;
+                });
+            }
+        }
     }
 
     /**

@@ -63,7 +63,7 @@ public final class GameConfig {
     public static final Path SAVE_PATH = Paths.get("savegame.dat");
 
     /** Version tag stored in save files to detect incompatibilities. */
-    public static final String SAVE_FILE_VERSION = "0.0.4";
+    public static final String SAVE_FILE_VERSION = "0.0.5";
 
     /** Interval between weather changes, in seconds of real time. */
     public static final int WEATHER_CHANGE_INTERVAL = (int) (DAY_LENGTH_SECONDS / 3); // Every 8-ish in-game hours

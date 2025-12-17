@@ -40,6 +40,7 @@ public class ScoreController {
 
         // 2. Safety Check: If the key is null, this player isn't registered!
         if (secretKey == null) {
+             //Ideally, this should also be generic "Unauthorized" to prevent User Enumeration
             throw new SecurityException("Unknown Player ID: " + playerId);
         }
 
@@ -49,7 +50,8 @@ public class ScoreController {
 
         // 4. Verify match
         if (!calculatedSignature.equals(hmacSignature)) {
-            throw new SecurityException("Invalid HMAC signature");
+            // Principle of least knowledge: Do not reveal specific details about why auth failed
+            throw new SecurityException("Unauthorized");
         }
 
         // If we pass all checks, accept the score
@@ -63,10 +65,9 @@ public class ScoreController {
      * GET http://localhost:8080/api/v{version}/leaderboard?limit=50
      */
     @GetMapping
-    public List<LeaderboardEntry> getScores(@RequestParam(defaultValue = "50") int limit) {
+    public List<LeaderboardEntry> getScores(@RequestParam(value = "limit", defaultValue = "50") int limit) {
         synchronized (scores) {
             return scores.stream()
-                // FIX: Use 'timeStamp' with a capital S to match the Record definition
                 .sorted(Comparator.comparingLong(LeaderboardEntry::timeStamp).reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
