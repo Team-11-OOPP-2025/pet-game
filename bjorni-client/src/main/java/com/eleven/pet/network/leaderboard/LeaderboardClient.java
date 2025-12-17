@@ -1,9 +1,9 @@
 package com.eleven.pet.network.leaderboard;
 
 import com.eleven.pet.minigames.MinigameResult;
-import com.eleven.pet.shared.Signature;
 import com.eleven.pet.shared.model.LeaderboardEntry;
 import com.eleven.pet.shared.model.PlayerRegistration;
+import com.eleven.pet.shared.util.Signature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

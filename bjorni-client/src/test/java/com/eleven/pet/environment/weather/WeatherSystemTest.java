@@ -1,4 +1,5 @@
-import com.eleven.pet.environment.weather.*;
+package com.eleven.pet.environment.weather;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

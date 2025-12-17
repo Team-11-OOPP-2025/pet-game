@@ -1,3 +1,5 @@
+package com.eleven.pet.vfx;
+
 import com.eleven.pet.vfx.effects.DustParticleEffect;
 import com.eleven.pet.vfx.effects.NoParticleEffect;
 import org.junit.jupiter.api.Test;

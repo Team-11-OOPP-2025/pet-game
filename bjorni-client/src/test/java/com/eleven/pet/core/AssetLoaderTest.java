@@ -1,4 +1,5 @@
-import com.eleven.pet.core.AssetLoader;
+package com.eleven.pet.core;
+
 import javafx.scene.image.Image;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

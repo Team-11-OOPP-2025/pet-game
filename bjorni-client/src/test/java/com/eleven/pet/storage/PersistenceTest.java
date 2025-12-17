@@ -1,3 +1,5 @@
+package com.eleven.pet.storage;
+
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
@@ -5,8 +7,6 @@ import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.StateRegistry;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Inventory;
-import com.eleven.pet.storage.EncryptionService;
-import com.eleven.pet.storage.PersistenceService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

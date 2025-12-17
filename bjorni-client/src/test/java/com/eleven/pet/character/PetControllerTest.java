@@ -1,6 +1,5 @@
-import com.eleven.pet.character.PetController;
-import com.eleven.pet.character.PetFactory;
-import com.eleven.pet.character.PetModel;
+package com.eleven.pet.character;
+
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.StateRegistry;

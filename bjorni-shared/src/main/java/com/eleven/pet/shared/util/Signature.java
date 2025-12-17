@@ -1,4 +1,4 @@
-package com.eleven.pet.shared;
+package com.eleven.pet.shared.util;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;

@@ -2,8 +2,8 @@ package com.eleven.pet.server;
 
 import com.eleven.pet.server.controller.AuthController;
 import com.eleven.pet.server.controller.ScoreController;
-import com.eleven.pet.shared.Signature;
 import com.eleven.pet.shared.model.LeaderboardEntry;
+import com.eleven.pet.shared.util.Signature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

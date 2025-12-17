@@ -1,6 +1,6 @@
+package com.eleven.pet.storage;
+
 import com.eleven.pet.core.GameException;
-import com.eleven.pet.storage.GcmEncryptionService;
-import com.eleven.pet.storage.KeyLoader;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.SecretKey;

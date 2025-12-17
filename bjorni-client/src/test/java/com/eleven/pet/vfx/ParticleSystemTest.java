@@ -1,7 +1,5 @@
-import com.eleven.pet.vfx.Particle;
-import com.eleven.pet.vfx.ParticleSystem;
-import com.eleven.pet.vfx.RainParticle;
-import com.eleven.pet.vfx.RainParticleFactory;
+package com.eleven.pet.vfx;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

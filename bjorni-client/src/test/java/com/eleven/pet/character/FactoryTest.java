@@ -1,5 +1,5 @@
-import com.eleven.pet.character.PetFactory;
-import com.eleven.pet.character.PetModel;
+package com.eleven.pet.character;
+
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import org.junit.jupiter.api.Test;

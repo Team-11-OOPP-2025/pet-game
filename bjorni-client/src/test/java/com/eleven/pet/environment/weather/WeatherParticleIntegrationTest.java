@@ -1,7 +1,5 @@
-import com.eleven.pet.environment.weather.CloudyState;
-import com.eleven.pet.environment.weather.RainyState;
-import com.eleven.pet.environment.weather.SunnyState;
-import com.eleven.pet.environment.weather.WeatherState;
+package com.eleven.pet.environment.weather;
+
 import com.eleven.pet.vfx.effects.NoParticleEffect;
 import com.eleven.pet.vfx.effects.ParticleEffect;
 import com.eleven.pet.vfx.effects.RainParticleEffect;

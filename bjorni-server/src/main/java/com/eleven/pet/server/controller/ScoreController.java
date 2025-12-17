@@ -1,8 +1,8 @@
 package com.eleven.pet.server.controller;
 
 import com.eleven.pet.server.model.PlayerStats;
-import com.eleven.pet.shared.Signature;
 import com.eleven.pet.shared.model.LeaderboardEntry;
+import com.eleven.pet.shared.util.Signature;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

@@ -1,8 +1,7 @@
+package com.eleven.pet.inventory;
+
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.inventory.Inventory;
-import com.eleven.pet.inventory.Item;
-import com.eleven.pet.inventory.ItemRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
