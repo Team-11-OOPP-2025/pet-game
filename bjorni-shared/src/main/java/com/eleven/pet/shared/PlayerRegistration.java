@@ -12,7 +12,7 @@ import java.io.Serializable;
  * This class is used to securely transport the generated credentials from the
  * server to the client immediately after registration. It contains the
  * unique identity of the player and the shared secret used for HMAC signing.
- * <p>
+ * </p>
  * <strong>Security Note:</strong> This object should only be transmitted over
  * secure channels (HTTPS) as it contains the sensitive {@code secretKey}.
  */

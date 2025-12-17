@@ -69,6 +69,7 @@ public class PetController {
             }
         });
 
+        if (leaderboard == null) return;
         // Initialize Player Registration
         if (model.getPlayerId() != null && model.getSecretKey() != null) {
             // Scenario A: Player already registered (loaded from save file)

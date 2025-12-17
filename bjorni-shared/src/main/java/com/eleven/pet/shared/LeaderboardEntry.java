@@ -1,32 +1,35 @@
 package com.eleven.pet.shared;
 
-/**
- * Immutable data carrier representing a single score submission or leaderboard row.
- * <p>
- * This record serves as the primary DTO (Data Transfer Object) for the leaderboard API.
- * It is serialized to JSON for network transmission in both:
- * <ul>
- * <li>Score submissions (Client &rarr; Server)</li>
- * <li>Leaderboard retrieval (Server &rarr; Client)</li>
- * </ul>
- *
- * @param playerName The display name of the player who achieved the result.
- * @param won        Indicates if the game session resulted in a win.
- * (Note: Typically, only winning scores are submitted to the leaderboard).
- * @param gameName   The identifier of the specific minigame played (e.g., "FoodCatch", "PetPet").
- * @param timeStamp  The timestamp of the achievement in milliseconds since the Unix Epoch.
- */
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data Transfer Object (DTO) representing a single entry in the leaderboard.
+ * <p>
+ * This class encapsulates the details of a player's achievement in a minigame,
+ * including their name, score, the game played, and the timestamp of the achievement.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class LeaderboardEntry {
+    /**
+     * The display name of the player who achieved the result.
+     */
     public String playerName;
+    /**
+     * The score achieved by the player. 1 or 0
+     */
     public int score;
+    /**
+     * The identifier of the specific minigame played (e.g., "TimingGame", "GuessingGame").
+     */
     public String gameName;
+    /**
+     * The timestamp of the achievement in milliseconds since the Unix Epoch.
+     */
     public long timestamp;
 }
