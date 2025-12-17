@@ -11,10 +11,20 @@ import java.nio.file.Paths;
  */
 public final class GameConfig {
 
-    /** Default window width in pixels. */
-    public static final int WINDOW_WIDTH = 1920;
-    /** Default window height in pixels. */
-    public static final int WINDOW_HEIGHT = 1080;
+    /** * The internal design width the game logic and UI expect.
+     * Use this for coordinate calculations. 
+     */
+    public static final int DESIGN_WIDTH = 1920;
+    /** * The internal design height the game logic and UI expect. 
+     * Use this for coordinate calculations.
+     */
+    public static final int DESIGN_HEIGHT = 1080;
+
+    /** Default window width in pixels (scaled down for laptops). */
+    public static final int WINDOW_WIDTH = 1280;
+    /** Default window height in pixels (scaled down for laptops). */
+    public static final int WINDOW_HEIGHT = 720;
+    
     /** Application window title. */
     public static final String APP_TITLE = "Björni";
 

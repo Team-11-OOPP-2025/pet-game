@@ -15,6 +15,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import javax.crypto.SecretKey;
@@ -108,12 +109,41 @@ public class MainApp extends Application {
 
     /**
      * Configures and shows the main application stage.
+     * Handles dynamic window sizing by wrapping the game content in a scaling container.
      *
-     * @param stage the primary stage
-     * @param root  the root pane of the scene
+     * @param stage      the primary stage
+     * @param gameContent the root pane of the game UI
      */
-    private void configureStage(Stage stage, Pane root) {
+    private void configureStage(Stage stage, Pane gameContent) {
+        // 1. Enforce Design Resolution on the Game Content
+        gameContent.setPrefSize(GameConfig.DESIGN_WIDTH, GameConfig.DESIGN_HEIGHT);
+        gameContent.setMinSize(GameConfig.DESIGN_WIDTH, GameConfig.DESIGN_HEIGHT);
+        gameContent.setMaxSize(GameConfig.DESIGN_WIDTH, GameConfig.DESIGN_HEIGHT);
+
+        // 2. Create a Root Container for Scaling (Letterboxing)
+        StackPane root = new StackPane(gameContent);
+        root.setStyle("-fx-background-color: black;"); // Black bars for letterboxing
+
         Scene scene = new Scene(root, GameConfig.WINDOW_WIDTH, GameConfig.WINDOW_HEIGHT);
+
+        // 3. Setup Scaling Logic
+        // Scales the gameContent to fit the window while preserving aspect ratio.
+        Runnable updateScale = () -> {
+            double width = scene.getWidth();
+            double height = scene.getHeight();
+
+            if (width > 0 && height > 0) {
+                double scaleX = width / GameConfig.DESIGN_WIDTH;
+                double scaleY = height / GameConfig.DESIGN_HEIGHT;
+                double scale = Math.min(scaleX, scaleY); // Fit inside
+                
+                gameContent.setScaleX(scale);
+                gameContent.setScaleY(scale);
+            }
+        };
+
+        scene.widthProperty().addListener((obs, oldVal, newVal) -> updateScale.run());
+        scene.heightProperty().addListener((obs, oldVal, newVal) -> updateScale.run());
 
         // Load CSS
         URL cssUrl = getClass().getResource("/styles.css");
@@ -126,7 +156,9 @@ public class MainApp extends Application {
         stage.setTitle(GameConfig.APP_TITLE);
         stage.getIcons().setAll(AssetLoader.getInstance().getIcons("icons/bjorni"));
         stage.setScene(scene);
-        stage.setResizable(false);
+        
+        // 4. Enable Resizing
+        stage.setResizable(true);
 
         // Handle "X" button click
         stage.setOnCloseRequest(event -> {
@@ -135,6 +167,9 @@ public class MainApp extends Application {
         });
 
         stage.show();
+        
+        // Initial scale calculation
+        Platform.runLater(updateScale);
     }
 
     /**
