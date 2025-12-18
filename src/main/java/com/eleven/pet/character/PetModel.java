@@ -70,11 +70,11 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param weatherSystem weather system to subscribe to, may be {@code null}
      * @param clock         game clock to subscribe to, may be {@code null}
      */
-    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
+    public PetModel(String name, PetDefinition definition, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
-        this.definition = new PetDefinition("Bear"); // Default definition
+        this.definition = definition;
 
         // Initialize stats
         stats.registerStat(PetStats.STAT_HUNGER, 50);
