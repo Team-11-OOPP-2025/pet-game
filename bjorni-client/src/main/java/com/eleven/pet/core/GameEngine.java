@@ -90,7 +90,7 @@ public class GameEngine {
 
         boolean newDayStarted = clock.tick(deltaSeconds);
         if (newDayStarted) {
-            model.replenishDailyFood();
+            model.replenishDailyInventory();
         }
     }
 
@@ -103,7 +103,7 @@ public class GameEngine {
     private void startWeatherTimer() {
         // Set initial weather immediately
         weatherSystem.changeWeather();
-        
+
         weatherTimer = new Timeline(new KeyFrame(
                 Duration.seconds(GameConfig.WEATHER_CHANGE_INTERVAL),
                 _ -> weatherSystem.changeWeather()

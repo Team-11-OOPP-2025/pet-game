@@ -19,6 +19,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -72,11 +73,11 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param weatherSystem weather system to subscribe to, may be {@code null}
      * @param clock         game clock to subscribe to, may be {@code null}
      */
-    public PetModel(String name, WeatherSystem weatherSystem, GameClock clock) {
+    public PetModel(String name, PetDefinition definition, WeatherSystem weatherSystem, GameClock clock) {
         this.name = name;
         this.weatherSystem = weatherSystem;
         this.clock = clock;
-        this.definition = new PetDefinition("Bear"); // Default definition
+        this.definition = definition;
 
         // Initialize stats
         stats.registerStat(PetStats.STAT_HUNGER, 50);
@@ -94,7 +95,7 @@ public class PetModel implements TimeListener, WeatherListener {
         if (weatherSystem != null) weatherSystem.subscribe(this);
 
         // Set up daily inventory items
-        replenishDailyFood();
+        replenishDailyInventory();
     }
 
     /**
@@ -152,8 +153,8 @@ public class PetModel implements TimeListener, WeatherListener {
         System.out.println(name + " changed state to: " + newState.getStateName());
         String soundName = newState.getSoundName();
         if (soundName != null) {
-        AssetLoader.getInstance().playSound(soundName);
-    }
+            AssetLoader.getInstance().playSound(soundName);
+        }
     }
 
     /**
@@ -215,16 +216,24 @@ public class PetModel implements TimeListener, WeatherListener {
     }
 
     /**
-     * Replenishes daily food items into the pet's inventory.
+     * Replenishes daily inventory items into the pet's inventory.
      *
-     * <p>The amount and type of food are randomized within configured bounds.</p>
+     * <p>The amount and type of Items are randomized within configured bounds.</p>
      */
-    public void replenishDailyFood() {
+    public void replenishDailyInventory() {
         System.out.println("Replenishing Daily Food");
         for (int i = 0; i < random.nextInt(1, 6); i++) {
-            Item foodItem = ItemRegistry.get(i);
-            int amount = random.nextInt(1, 4);
-            inventory.add(foodItem, amount);
+            Item rndmDailyItem = ItemRegistry.getRandomItem();
+
+            if (Objects.requireNonNull(rndmDailyItem).getClass() == FoodItem.class) {
+                int quantity = random.nextInt(GameConfig.DAILY_FOOD_MIN, GameConfig.DAILY_FOOD_MAX + 1);
+                inventory.add(rndmDailyItem, quantity);
+                System.out.println("Added to Inventory: " + quantity + " x " + rndmDailyItem.name());
+            } else if (Objects.requireNonNull(rndmDailyItem).getClass() == CleaningItem.class) {
+                int quantity = random.nextInt(GameConfig.DAILY_CLEANING_MIN, GameConfig.DAILY_CLEANING_MAX + 1);
+                inventory.add(rndmDailyItem, quantity);
+                System.out.println("Added to Inventory: " + quantity + " x " + rndmDailyItem.name());
+            }
         }
     }
 
@@ -272,7 +281,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         if (currentHunger < 30) happinessRate *= 2.0;
         if (currentClean < 30) happinessRate *= 1.5;
-        
+
         // Apply weather happiness modifier
         if (weatherSystem != null && weatherSystem.getCurrentWeather() != null) {
             double weatherModifier = weatherSystem.getCurrentWeather().getHappinessModifier();

@@ -1,5 +1,6 @@
-package com.eleven.pet.character;
-
+import com.eleven.pet.character.PetFactory;
+import com.eleven.pet.character.PetModel;
+import com.eleven.pet.character.PetStats;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ public class PetStatsTest {
      */
     @BeforeEach
     public void setup() {
-        PetModel petModel = new PetModel(null, null, null);
+        PetModel petModel = PetFactory.createNewPet(null, null, null);
         stats = petModel.getStats();
     }
 
