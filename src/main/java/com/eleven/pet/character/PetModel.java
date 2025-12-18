@@ -213,7 +213,7 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public void replenishDailyFood() {
         System.out.println("Replenishing Daily Food");
-        for (int i = 0; i < random.nextInt(1, 4); i++) {
+        for (int i = 0; i < random.nextInt(1, 6); i++) {
             Item foodItem = ItemRegistry.get(i);
             int amount = random.nextInt(1, 4);
             inventory.add(foodItem, amount);

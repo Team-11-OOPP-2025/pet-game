@@ -161,4 +161,9 @@ public class AsleepState implements PetState {
     public boolean canSleep() {
         return false; // Cannot start sleeping if already asleep
     }
+
+    @Override
+    public String getSoundName() {
+        return "snoring";
+    }
 }

@@ -38,4 +38,9 @@ public record FoodItem(int id, String name, String imageFileName, int statsResto
         }
         return false;
     }
+
+    @Override
+    public String getSoundName() {
+        return "eat";
+    }
 }
