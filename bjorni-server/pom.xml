@@ -126,6 +126,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
+                    <!-- Maven will auto generate this classpath for the javaagent -->
                     <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
             </plugin>
