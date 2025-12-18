@@ -1,4 +1,4 @@
-# Virtual Pet Evolution (Björni)
+# Björni by Team 11
 
 ## 🐻 Meet Björni
 
@@ -6,110 +6,95 @@ Björni is more than just a collection of pixels; he is a fully simulated digita
 
 Unlike static virtual pets that wait for user input, Björni lives in a breathing world:
 
-- **He follows the Sun**: Driven by an internal `GameClock`, Björni knows when it is day or night. When the sun sets, his energy drains faster, and he will eventually need to sleep to recover.
-- **He feels the Weather**: The `WeatherSystem` determines if it is raining, sunny, or cloudy. Björni's happiness fluctuates based on these conditions—he prefers sunny days but might need extra attention during a storm.
-- **He has Complex Needs**: Björni is governed by a strict state machine. You cannot force him to play when he is asleep, and you cannot feed him if he is too full. You must learn his schedule to keep him happy.
+* **He follows the Sun**: Driven by an internal `GameClock`, Björni knows when it is day or night. When the sun sets, his energy drains faster, and he will eventually need to sleep to recover.
+* **He feels the Weather**: The `WeatherSystem` determines if it is raining, sunny, or cloudy. Björni's happiness fluctuates based on these conditions—he prefers sunny days but might need extra attention during a storm.
+* **He has Complex Needs**: Björni is governed by a strict state machine. You cannot force him to play when he is asleep, and you cannot feed him if he is too full.
 
 ### The Björni Personality
 
-- **Species**: Digital Brown Bear (*Ursus digitalis*)
-- **Favorite Weather**: Sunshine (High Happiness Modifier)
-- **Sleep Schedule**: Strictly nocturnal (sleeps when `DayCycle` = NIGHT)
-- **Temperament**: Generally happy, but will refuse to interact if his Energy drops below critical levels.
-
-> **💡 Implementation Tip: "The Hibernation Feature"** > When the user closes the application, Björni enters Hibernation Mode (serialization). The game uses AES-GCM encryption to secure his "cave" (the save file), ensuring that his state is perfectly preserved until he wakes up again.
+* **Species**: Digital Brown Bear (*Ursus digitalis*)
+* **Sleep Schedule**: Strictly nocturnal (sleeps when `DayCycle` = NIGHT).
+* **Hibernation Feature**: When the application closes, Björni’s state is preserved using **AES-GCM encryption** to secure the save file.
 
 ## Project Overview
 
-Virtual Pet Evolution is a robust, model-heavy desktop simulation game built with **Java 23** and **JavaFX**. Far from a simple toy application, it uses a **Package-by-Feature** architecture to organize code by domain (Character, Environment, Storage) rather than technical layer.
+Virtual Pet Evolution is a robust, model-heavy desktop simulation game built with **Java 23** and **JavaFX 25**. The project has evolved into a professional **Multi-Module Maven Architecture**, separating the simulation logic, the server-side infrastructure, and shared data models.
 
-The project demonstrates advanced software engineering principles, including:
+### Architecture & Engineering Principles
 
-- **Reactive MVC Architecture**: A decomposed View layer that observes the Model via JavaFX Properties.
-- **Cryptographic Persistence**: Secure state saving with AES-GCM.
-- **Decoupled Game Loop**: Separation of simulation ticks from rendering frames.
-- **State-Driven Behavior**: A Finite State Machine (FSM) enforcing game rules.
+* **Multi-Module Build**: Decomposed into `bjorni-shared`, `bjorni-server`, and `bjorni-client`.
+* **Reactive MVC**: A View layer that observes the Model via JavaFX Properties.
+* **Secure Network Integrity**: HMAC-signed score submissions to prevent data tampering.
+* **Interface-Driven Design**: The UI is decoupled from network implementations via the `LeaderboardService` interface.
 
 ## Features
 
-- **Living Desktop Pet**: Interact with Björni by feeding, playing, cleaning, and letting him sleep.
-- **Embedded Minigame System**: Click the in-game TV to zoom in and play fully interactive minigames (like *Guessing Game* or *Timing Challenge*) directly on the virtual screen.
-- **Inventory System**: Collect food items (Apples, Pears, etc.) and manage them via a reactive Inventory UI.
-- **Dynamic Day/Night Cycle**: A `GameClock` drives visual transitions (Day/Night backgrounds) and affects stat decay rates.
-- **Reactive Weather System**: Cycles between Sunny, Rainy, and Cloudy states, triggering particle effects (rain) and happiness modifiers.
-- **Needs & Stats System**: Hunger, Happiness, Energy, and Cleanliness are tracked and decay over time based on `GameConfig`.
-- **Secure Save System**: Game state is serialized into a `PetDataDTO` and encrypted using `GcmEncryptionService`.
-- **Autosave**: Background routines ensure Björni's progress is never lost.
+* **Living Desktop Pet**: Interact with Björni through feeding, playing, cleaning, and sleeping.
+* **Global Leaderboard**: A secure, Spring Boot-backed system for submitting and fetching high scores.
+* **Daily Reward System**: Interactive `Chest` components that grant random item rewards to the pet's inventory.
+* **Embedded Minigames**: Fully interactive games (e.g., *Guessing Game*, *Timing Challenge*) that run directly on the virtual TV screen.
+* **Secure Persistence**: Game state is serialized into a `PetDataDTO` and encrypted using the `GcmEncryptionService`.
 
-## Architectural Overview
+## Module Breakdown
 
-The project follows a modular architecture ensuring high cohesion and low coupling.
+### 1. Shared Module (`bjorni-shared`)
 
-### 1. Core Engine (`com.eleven.pet.core`)
-The "Engine Room" of the application.
-- **MainApp**: Entry point handling Dependency Injection (wiring) and window setup.
-- **GameEngine**: Encapsulates the `AnimationTimer` "Game Loop," ticking systems 60 times/sec.
-- **AssetLoader**: Singleton that caches images and loads custom fonts (e.g., Minecraft/Pixel style).
+Contains the common domain models and utilities used by both the client and the server.
 
-### 2. UI Layer (`com.eleven.pet.ui` & subpackages)
-The project uses a **Reactive MVC** pattern where Views observe the Model directly but send actions to the Controller. The UI is decomposed into specialized components:
-- **WorldView**: Manages the environment, backgrounds, weather particle effects, and the interactive TV area.
-- **HUDView**: Handles status bars (Hunger, Happiness) and main action buttons. It communicates with the Controller to toggle other UI states (like the Inventory).
-- **InventoryView**: A reactive grid displaying `Item` stacks. It listens to the `PetController` for visibility toggles.
-- **PetAvatarView**: Dedicated to rendering the character. It uses `SpriteSheetAnimation` to switch visuals based on the pet's emotional state (Happy, Sad, Sleeping).
+* **Models**: `LeaderboardEntry`, `PlayerRegistration`.
+* **Security**: `Signature` utility for HMAC calculation.
 
-### 3. Character Feature (`com.eleven.pet.character`)
-**Model ("The Brain")**:
-- **PetModel**: The domain root. Holds `PetStats`, `Inventory`, and the current `PetState`. It adheres to the **Open/Closed Principle** by exposing a generic `getStatProperty(name)` for UI binding.
-- **behavior.***: The State Machine logic (`AwakeState`, `AsleepState`).
+### 2. Server Module (`bjorni-server`)
 
-**Controller ("The Orchestrator")**:
-- **PetController**: Coordinates user inputs, manages UI state (like `inventoryOpen`), and bridges the Model with Persistence and Minigames.
+A **Spring Boot 4.0** application providing the game's REST API.
 
-### 4. Minigames (`com.eleven.pet.minigames`)
-A pluggable system for in-game activities.
-- **Minigame Interface**: Defines how a game starts and provides its own JavaFX `Pane`.
-- **Embedded Architecture**: Games run inside the `WorldView`'s TV pane rather than separate windows, maintaining immersion.
+* **AuthController**: Handles player registration and key management.
+* **ScoreController**: Manages leaderboard data and validates signed score submissions.
+* **OpenAPI Integration**: Automated documentation via SpringDoc.
 
-### 5. Environment Systems (`com.eleven.pet.environment`)
-- **Time**: `GameClock` and `DayCycle` manage time flow.
-- **Weather**: `WeatherSystem` switches strategies (`SunnyState`, `RainyState`) to apply global modifiers.
+### 3. Client Module (`bjorni-client`)
+
+The primary JavaFX application and simulation engine.
+
+* **Core Engine**: Manages the `GameLoop` and high-performance asset caching via `AssetLoader`.
+* **Character Logic**: Implements the Finite State Machine for Björni's behavior.
+* **Network Client**: An asynchronous `LeaderboardClient` using Java's `HttpClient` for non-blocking API calls.
 
 ## Key Design Patterns
 
-### Model-View-Controller (MVC)
-The application strictly separates data (Model), visualization (View), and logic (Controller). Views use the **Observer Pattern** to reactively update when the Model changes (e.g., health bar shrinking).
-
-### State Pattern
-- **PetState** defines behaviors like `handleFeed` or `handleSleep`.
-- **StateRegistry** allows dynamic lookup of states.
-
-### Strategy Pattern
-- Used in **WeatherSystem** (`SunnyState`, `RainyState`) to swap environmental rules at runtime.
-- Used in **Minigames** to allow the Controller to plug different games into the TV view.
-
-### Singleton Pattern
-- **AssetLoader** provides centralized, cached access to heavy resources like images and fonts.
+* **State Pattern**: Used for `PetState` (Awake/Asleep) and `WeatherState` (Sunny/Rainy/Cloudy).
+* **Strategy Pattern**: Employed in the `WeatherSystem` to swap environmental rules at runtime.
+* **Dependency Inversion**: The `LeaderboardView` depends on the `LeaderboardService` interface rather than the concrete client.
+* **Singleton**: The `AssetLoader` provides centralized, cached access to UI resources.
 
 ## Technical Stack
 
-- **Language**: Java 23
-- **UI Framework**: JavaFX (Canvas for particles, Scene Graph for UI)
-- **Persistence**: Jackson (JSON) + `javax.crypto` (AES-GCM)
-- **Concurrency**: `javafx.animation.AnimationTimer` (Game Loop), `Timeline` (Events)
+* **Client**: Java 23, JavaFX 25, Jackson (JSON), Lombok.
+* **Server**: Spring Boot 4.0, SpringDoc OpenAPI, Mockito.
+* **Security**: HMAC-SHA256 for network signatures, AES-GCM for file encryption.
 
 ## Setup & Run
 
 ### Prerequisites
-- JDK 23+ installed.
-- Maven installed.
 
-### Run with Maven
+* JDK 23+
+* Maven 3.9+
+
+### Running the Server
+
 ```bash
-mvn clean javafx:run
+cd bjorni-server
+mvn spring-boot:run
+
 ```
 
-On first launch, the game generates a cryptographic key for the secure save file.
+### Running the Client
+
+```bash
+cd bjorni-client
+mvn javafx:run
+
+```
 
 ## Design & Architecture Deep Dive
 
@@ -119,13 +104,14 @@ The heart of the simulation is the **PetModel**. Instead of scattering rules acr
 
 **Minigame Integration**: The Minigame system allows for infinite expandability. New games can be added by implementing the `Minigame` interface and registering them in the Controller. They automatically inherit the "TV Mode" zoom and display logic without touching the core rendering code.
 
+
 ## Authors
 
-  - Filip Helin ([@Cleanmain](https://github.com/Cleanmain))
-  - Hugo Dörrich ([@hugodor2005](https://github.com/hugodor2005))
-  - Melwin Heimby ([@heim1024](https://github.com/heim1024))
-  - Raghib Hussain ([@Anajrim01](https://github.com/Anajrim01))
+* Filip Helin ([@Cleanmain](https://github.com/Cleanmain))
+* Hugo Dörrich ([@hugodor2005](https://github.com/hugodor2005))
+* Melwin Heimby ([@heim1024](https://github.com/heim1024))
+* Raghib Hussain ([@Anajrim01](https://github.com/Anajrim01))
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 (GPL‑3.0) - see the [LICENSE](https://github.com/Team-11-OOPP-2025/pet-game/blob/main/LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 (GPL‑3.0).
