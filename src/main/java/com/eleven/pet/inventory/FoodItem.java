@@ -2,6 +2,7 @@ package com.eleven.pet.inventory;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
+import com.eleven.pet.core.AssetLoader;
 
 /**
  * Simple consumable item that restores a fixed amount of hunger.

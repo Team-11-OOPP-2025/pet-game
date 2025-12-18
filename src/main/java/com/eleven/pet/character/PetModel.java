@@ -3,6 +3,7 @@ package com.eleven.pet.character;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.time.TimeListener;
@@ -146,6 +147,10 @@ public class PetModel implements TimeListener, WeatherListener {
         if (newState == null) return;
         currentState.set(newState);
         System.out.println(name + " changed state to: " + newState.getStateName());
+        String soundName = newState.getSoundName();
+        if (soundName != null) {
+        AssetLoader.getInstance().playSound(soundName);
+    }
     }
 
     /**

@@ -63,10 +63,6 @@ public class PetController {
             if (newState != null) {
                 clock.setTimeScale(newState.getTimeScale());
             }
-            String soundName = newState.getSoundName();
-            if (soundName != null) {
-                AssetLoader.getInstance().playSound(soundName);
-            }
         });
     }
 

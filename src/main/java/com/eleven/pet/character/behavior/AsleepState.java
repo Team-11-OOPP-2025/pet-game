@@ -2,6 +2,7 @@ package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
 import com.google.auto.service.AutoService;
@@ -53,6 +54,7 @@ public class AsleepState implements PetState {
     public void handleSleep(PetModel pet) {
         // Manual Wake Up
         System.out.println("Player woke up " + pet.getName() + " manually.");
+            
         wakeUp(pet);
     }
 
