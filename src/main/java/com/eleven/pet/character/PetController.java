@@ -269,12 +269,16 @@ public class PetController {
 
         GameSession session = gameFactory.createSession();
 
+        // Always initiate the view to prepare the UI
+        // before the game logic starts
+        Pane gamePane = session.getView();
+
         session.start(result -> {
             model.applyMinigameResult(result);
             if (onUIExit != null) onUIExit.run();
         });
 
-        return new MiniGameView(session.getView());
+        return new MiniGameView(gamePane);
     }
 
     /**

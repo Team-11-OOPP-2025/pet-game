@@ -10,7 +10,6 @@ import com.eleven.pet.environment.time.GameClock;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -34,10 +33,10 @@ import static com.eleven.pet.ui.ViewConstants.*;
 public class HUDView extends StackPane {
 
     // Layout Constants
-    private static final double BAR_HEIGHT_LARGE = 76; //old: 38 --> new: 76
-    private static final double BAR_HEIGHT_SMALL = 50; //old: 25 --> new: 50
-    private static final double BAR_WIDTH_LARGE = 450; //old: 225 --> new: 450
-    private static final double BAR_WIDTH_SMALL = 300; //old: 150 --> new: 300
+    private static final double BAR_HEIGHT_LARGE = 76;
+    private static final double BAR_HEIGHT_SMALL = 50;
+    private static final double BAR_WIDTH_LARGE = 450;
+    private static final double BAR_WIDTH_SMALL = 300;
 
     // Position of the Stats Container (Top-Left)
     private static final Insets MARGIN_STATS_BOX = new Insets(90, 0, 0, 20);
@@ -46,7 +45,6 @@ public class HUDView extends StackPane {
     private static final Insets MARGIN_BTN_FEED = new Insets(0, 0, 90, 20);
     private static final Insets MARGIN_BTN_CLEAN = new Insets(0, 0, 90, 150);
     private static final Insets MARGIN_BTN_SLEEP = new Insets(0, 0, 150, 20);
-    private static final Insets MARGIN_BTN_PLAY = new Insets(0, 20, 90, 0);
 
     private final PetModel model;
     private final PetController controller;
