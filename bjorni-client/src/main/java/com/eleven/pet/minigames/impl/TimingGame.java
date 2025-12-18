@@ -1,10 +1,13 @@
 package com.eleven.pet.minigames.impl;
 
+import java.util.function.Consumer;
+
 import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.ui.ViewConstants;
 import com.google.auto.service.AutoService;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -20,8 +23,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
-
-import java.util.function.Consumer;
 
 @AutoService(Minigame.class)
 public class TimingGame implements Minigame {
@@ -48,7 +49,7 @@ public class TimingGame implements Minigame {
 
         public static final double TARGET_MIN = 0.40;
         public static final double TARGET_MAX = 0.60;
-        public static final double FILL_SPEED = 0.02;
+        public static final double FILL_SPEED = 0.0075;
 
         private static final int WIN_HAPPINESS = 20;
         private static final int LOSE_HAPPINESS = -5;
@@ -143,9 +144,13 @@ public class TimingGame implements Minigame {
             isRunning = true;
             if (timingLoop != null) timingLoop.stop();
 
-            timingLoop = new Timeline(new KeyFrame(Duration.millis(16), e -> update()));
-            timingLoop.setCycleCount(Timeline.INDEFINITE);
-            timingLoop.play();
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
+            delay.setOnFinished(_ -> {
+                timingLoop = new Timeline(new KeyFrame(Duration.millis(16), e -> update()));
+                timingLoop.setCycleCount(Timeline.INDEFINITE);
+                timingLoop.play();
+            });
+            delay.play();
         }
 
         private void update() {

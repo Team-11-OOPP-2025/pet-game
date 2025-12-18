@@ -3,6 +3,7 @@ package com.eleven.pet.character;
 import com.eleven.pet.character.behavior.AwakeState;
 import com.eleven.pet.character.behavior.PetState;
 import com.eleven.pet.character.behavior.StateRegistry;
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.time.TimeListener;
@@ -149,6 +150,10 @@ public class PetModel implements TimeListener, WeatherListener {
         if (newState == null) return;
         currentState.set(newState);
         System.out.println(name + " changed state to: " + newState.getStateName());
+        String soundName = newState.getSoundName();
+        if (soundName != null) {
+        AssetLoader.getInstance().playSound(soundName);
+    }
     }
 
     /**
@@ -216,7 +221,7 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     public void replenishDailyFood() {
         System.out.println("Replenishing Daily Food");
-        for (int i = 0; i < random.nextInt(1, 4); i++) {
+        for (int i = 0; i < random.nextInt(1, 6); i++) {
             Item foodItem = ItemRegistry.get(i);
             int amount = random.nextInt(1, 4);
             inventory.add(foodItem, amount);

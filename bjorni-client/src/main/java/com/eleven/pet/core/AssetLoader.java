@@ -3,12 +3,15 @@ package com.eleven.pet.core;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
+import javafx.scene.media.AudioClip; // Modern JavaFX audio class
 
 import java.io.InputStream;
+import java.net.URL; // Standard networking URL
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * AssetLoader is responsible for loading and caching image assets and fonts.
@@ -19,7 +22,10 @@ import java.util.Map;
 public class AssetLoader {
     private static AssetLoader instance;
     private final Map<String, Image> imageCache = new HashMap<>();
-
+    private final Map<String, AudioClip> soundCache = new HashMap<>();
+    
+    // Base path for all sounds
+    private static final String SOUND_ROOT = "/audio/";
     // Base path for all images
     private static final String IMAGE_ROOT = "/images/";
     // Base path for all fonts
@@ -35,6 +41,45 @@ public class AssetLoader {
             instance = new AssetLoader();
         }
         return instance;
+    }
+
+
+    /**
+     * Loads and plays a sound effect.
+     * @param relativePath the name of the sound file (without extension) inside /resources/sounds/
+     */
+    public void playSound(String relativePath) {
+        AudioClip clip = soundCache.computeIfAbsent(relativePath, this::loadSound);
+        if (clip != null) {
+            // Stop if currently playing to allow rapid re-triggering or overlapping
+            if (clip.isPlaying()) {
+                clip.stop();
+            }
+            clip.play();
+        }
+    }
+
+    /**
+     * Loads an audio clip from disk.
+     */
+    private AudioClip loadSound(String relativePath) {
+        // Supported audio extensions
+        String[] extensions = {".wav", ".mp3"};
+
+        for (String ext : extensions) {
+            String fullPath = SOUND_ROOT + relativePath + ext;
+            try {
+                // Use java.net.URL to find the resource
+                URL url = getClass().getResource(fullPath);
+                if (url != null) {
+                    return new AudioClip(url.toExternalForm());
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading sound: " + fullPath);
+            }
+        }
+        System.err.println("Sound not found: " + relativePath);
+        return null;
     }
 
     /**

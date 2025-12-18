@@ -2,6 +2,7 @@ package com.eleven.pet.inventory;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
+import com.eleven.pet.core.AssetLoader;
 
 /**
  * Simple consumable item that restores a fixed amount of hunger.
@@ -37,5 +38,10 @@ public record FoodItem(int id, String name, String imageFileName, int statsResto
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String getSoundName() {
+        return "eat";
     }
 }

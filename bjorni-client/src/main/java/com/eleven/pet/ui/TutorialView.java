@@ -32,8 +32,8 @@ public class TutorialView extends StackPane {
             "Play Minigames!\n\nClick the TV to play games\nand earn happiness points.",
             "Daily Rewards!\n\nClick the REWARDS button to claim\nyour daily rewards.",
             "Inventory!\n\nClick FEED to open your Inventory\nand give your pet treats.",
-            "Clean Björni!\n\nClick CLEAN to clean\nand keep your pet healthy.",
-            "Sleep!\n\nWhen it's time to sleep,\nthis button lets Björni sleep."
+            "Clean Björni!\n\nClick CLEAN to clean your pet.\nCleaning requires energy!",
+            "Sleep!\n\nWhen it's time to sleep,\nclick this button. Sleeping restores energy!"
     };
 
     private Label textLabel;
