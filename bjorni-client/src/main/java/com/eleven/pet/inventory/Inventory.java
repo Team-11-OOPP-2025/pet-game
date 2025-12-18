@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class Inventory {
     private final Map<Integer, IntegerProperty> items = FXCollections.observableHashMap();
-
+  
     /**
      * Adds multiple instances of an item to the inventory.
      *

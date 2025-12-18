@@ -28,7 +28,13 @@ public class ItemRegistry {
             10,  // 10 sec duration
             3.0   // 3x multiplier
         )));
+        
+        // Cleaning Items
+        ItemRegistry.register(new CleaningItem(0, "Soap", "soap", 20));
+        
+    
     }
+        
 
     /**
      * Registers an {@link Item} in the registry.
