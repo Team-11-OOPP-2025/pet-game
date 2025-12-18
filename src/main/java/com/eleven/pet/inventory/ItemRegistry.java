@@ -22,7 +22,7 @@ public class ItemRegistry {
         ItemRegistry.register(new FoodItem(3, "Grape", "grape", -15));
         
         // Potion Items
-        ItemRegistry.register(new StatPotion(0, new StatPotionDefinition(
+        ItemRegistry.register(new StatPotion(4, new StatPotionDefinition(
             "EnergyPotion",
             "ENERGY",
             10,  // 10 sec duration
@@ -30,7 +30,7 @@ public class ItemRegistry {
         )));
         
         // Cleaning Items
-        ItemRegistry.register(new CleaningItem(0, "Soap", "soap", 20));
+        ItemRegistry.register(new CleaningItem(5, "Soap", "soap", 20));
         
     
     }

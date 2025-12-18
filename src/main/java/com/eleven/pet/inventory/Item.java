@@ -53,4 +53,14 @@ public interface Item {
      * @return {@code true} if the item was successfully applied
      */
     boolean use(PetModel pet);
+
+    /**
+     * Returns the sound name to be played when this item is used.
+     *
+     * @return sound name
+     */
+    default String getSoundName() {
+        return null;
+    }
+
 }

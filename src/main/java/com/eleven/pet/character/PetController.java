@@ -1,5 +1,6 @@
 package com.eleven.pet.character;
 
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.daily_reward.Chest;
@@ -111,8 +112,17 @@ public class PetController {
      * @param item the {@link Item} to consume
      */
     public void handleConsumeAction(Item item) {
-        if (model.performConsume(item)) System.out.println("Pet has been fed.");
-        else System.out.println("No food available.");
+        if (model.performConsume(item)) {
+            System.out.println("Pet has consumed item: " + item.name());
+
+            String soundName = item.getSoundName();
+            if (soundName != null) {
+                AssetLoader.getInstance().playSound(soundName);
+            }
+            
+        } else {
+            System.out.println("Item could not be consumed.");
+        }
     }
 
     /**

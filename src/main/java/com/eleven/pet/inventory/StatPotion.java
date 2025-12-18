@@ -77,4 +77,9 @@ public class StatPotion implements Item {
     public String imageFileName() {
         return "energypotion";
     }
+
+    @Override
+    public String getSoundName() {
+        return "drink";
+    }
 }

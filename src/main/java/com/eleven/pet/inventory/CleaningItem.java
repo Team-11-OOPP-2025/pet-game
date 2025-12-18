@@ -31,5 +31,10 @@ public record CleaningItem(int id, String name, String imageFileName, int statsR
         }
         return false;
     }
+
+    @Override
+    public String getSoundName() {
+        return "clean";
+    }
     
 }
