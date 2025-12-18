@@ -73,7 +73,8 @@ public class AwakeState implements PetState {
 
     /**
      * Clean the pet, providing a fixed cleanliness and small happiness benefit.
-     * Requires at least 5 energy.
+     * Requires at least 5 energy. Only gives happiness bonus if cleanliness is below 50.
+     * Prevents cleaning if cleanliness is already at 100.
      *
      * @param pet the {@link PetModel} being cleaned
      */
@@ -85,9 +86,20 @@ public class AwakeState implements PetState {
             return;
         }
 
-        // Simple cleaning effect: improve cleanliness and a bit of happiness
+        int currentCleanliness = pet.getStats().getStat(PetStats.STAT_CLEANLINESS).get();
+        if (currentCleanliness >= 100) {
+            System.out.println(pet.getName() + " is already perfectly clean!");
+            return;
+        }
+
+        // Simple cleaning effect: improve cleanliness
         pet.getStats().modifyStat(PetStats.STAT_CLEANLINESS, 10);
-        pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 2);
+        
+        // Only give happiness bonus if pet was dirty (below 50)
+        if (currentCleanliness < 50) {
+            pet.getStats().modifyStat(PetStats.STAT_HAPPINESS, 2);
+        }
+        
         pet.getStats().modifyStat(PetStats.STAT_ENERGY, -5);
         System.out.println(pet.getName() + " has been cleaned.");
     }
