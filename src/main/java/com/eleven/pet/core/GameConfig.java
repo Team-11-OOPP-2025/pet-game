@@ -58,8 +58,6 @@ public final class GameConfig {
     public static final int MISSED_SLEEP_ENERGY_PENALTY = 30;
     /** Happiness penalty applied if sleep is missed. */
     public static final int MISSED_SLEEP_HAPPINESS_PENALTY = 20;
-    /** Energy threshold below which sleep is recommended/required. */
-    public static final int SLEEP_ENERGY_THRESHOLD = 20;
 
     /** Minimum allowed value for any pet stat. */
     public static final int MIN_STAT_VALUE = 0;
@@ -81,4 +79,20 @@ public final class GameConfig {
     /** Cooldown between daily rewards, in‑game hours. */
     public static final double DAILY_REWARD_COOLDOWN = 24.0;
 
+    /**
+     * Minimum daily food replenishment amount.
+     */
+    public static final int DAILY_FOOD_MIN = 3;
+    /**
+     * Maximum daily food replenishment amount.
+     */
+    public static final int DAILY_FOOD_MAX = 8;
+    /**
+     * Minimum daily cleaning amount.
+     */
+    public static final int DAILY_CLEANING_MIN = 0;
+    /**
+     * Maximum daily cleaning amount.
+     */
+    public static final int DAILY_CLEANING_MAX = 2; // YOU MUST RATION! OR BE UNHAPPY!
 }
