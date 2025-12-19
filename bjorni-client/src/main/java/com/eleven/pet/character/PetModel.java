@@ -361,6 +361,10 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     @Override
     public void onTick(double timeDelta) {
+        // CONVERSION: Convert scaled seconds to game hours
+        // Formula: (Seconds Passed / Seconds Per Day) * 24 Hours
+        double hoursElapsed = (timeDelta / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+
         // 1. Update Potions
         for (ActivePotion potion : activePotions) {
             potion.tick(timeDelta);
@@ -381,7 +385,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         // 3. Existing State Logic
         if (currentState.get() != null) {
-            currentState.get().onTick(this, timeDelta);
+            currentState.get().onTick(this, hoursElapsed);
         }
     }
 
