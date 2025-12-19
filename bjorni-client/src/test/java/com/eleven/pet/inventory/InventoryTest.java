@@ -2,6 +2,7 @@ package com.eleven.pet.inventory;
 
 import com.eleven.pet.character.PetFactory;
 import com.eleven.pet.character.PetModel;
+import com.eleven.pet.core.GameConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,9 +55,18 @@ public class InventoryTest {
     @Test
     void testReplenishItem() {
         PetModel pet = PetFactory.createNewPet("TestPet", null, null);
-        int size = pet.getInventory().getAllOwnedItems().size();
-        int min = 1;
-        int max = 5;
-        assertTrue((size >= min && size <= max), "owned items size not within range");
+        Inventory inv = pet.getInventory();
+        int totalQuantity = inv.getAllOwnedItems().size();
+
+        // mininum amount of item is either gonna be DAILY_FOOD_MIN or DAILY_CLEANING_MIN
+        int perItemMin = Math.min(GameConfig.DAILY_FOOD_MIN, GameConfig.DAILY_CLEANING_MIN);
+
+        // max is either gonna be DAILY_FOOD_MAX or DAILY_CLEANING_MAX times 5 (replenish loops 1..5 times)
+        // However, this is a weak test since the randomness can be changed.
+        int perItemMax = Math.max(GameConfig.DAILY_FOOD_MAX, GameConfig.DAILY_CLEANING_MAX);
+        int maxPossible = perItemMax * 5; // replenish loops 1..5 times
+
+        assertTrue(totalQuantity >= perItemMin && totalQuantity <= maxPossible,
+                "total owned items quantity not within expected range");
     }
 }

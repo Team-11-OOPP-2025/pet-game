@@ -246,7 +246,7 @@ public class PetModel implements TimeListener, WeatherListener {
      * <p>The amount and type of Items are randomized within configured bounds.</p>
      */
     public void replenishDailyInventory() {
-        System.out.println("Replenishing Daily Food");
+        System.out.println("Replenishing Daily Inventory for " + name + "...");
         for (int i = 0; i < random.nextInt(1, 6); i++) {
             Item rndmDailyItem = ItemRegistry.getRandomItem();
 
