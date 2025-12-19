@@ -143,7 +143,7 @@ public class PetView {
             // 2: TV (TvClickArea)
             // 3: Daily Rewards
             // 4: Inventory (Feed Button)
-            // 5: Clean (Clean Button)
+            // 5: Clean (Through inventory)
             // 6: Sleep (Sleep Button)
             List<Node> targets = Arrays.asList(
                     null,
@@ -151,7 +151,7 @@ public class PetView {
                     worldView.getTvClickArea(),
                     rewardBtn,
                     hudView.getFeedBtn(),
-                    hudView.getCleanBtn(),
+                    hudView.getFeedBtn(),
                     hudView.getSleepBtn()
             );
 

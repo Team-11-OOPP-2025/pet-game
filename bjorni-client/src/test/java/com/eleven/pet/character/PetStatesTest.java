@@ -72,7 +72,8 @@ public class PetStatesTest {
             }
 
             @Override
-            public void handleClean(PetModel pet) {
+            public boolean handleClean(PetModel pet) {
+                return false;
             }
 
             @Override

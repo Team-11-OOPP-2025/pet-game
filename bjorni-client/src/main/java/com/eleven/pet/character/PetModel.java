@@ -207,8 +207,8 @@ public class PetModel implements TimeListener, WeatherListener {
     /**
      * Requests the current state to handle a cleaning interaction.
      */
-    public void performClean() {
-        currentState.get().handleClean(this);
+    public boolean performClean() {
+        return currentState.get().handleClean(this);
     }
 
     /**

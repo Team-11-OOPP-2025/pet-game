@@ -43,7 +43,6 @@ public class HUDView extends StackPane {
 
     // Button Positions
     private static final Insets MARGIN_BTN_FEED = new Insets(0, 0, 90, 20);
-    private static final Insets MARGIN_BTN_CLEAN = new Insets(0, 0, 90, 150);
     private static final Insets MARGIN_BTN_SLEEP = new Insets(0, 0, 150, 20);
 
     private final PetModel model;
@@ -63,8 +62,6 @@ public class HUDView extends StackPane {
     private Button feedBtn;
     @Getter
     private Button sleepBtn;
-    @Getter
-    private Button cleanBtn;
 
     /**
      * Creates a new HUD view for the given pet and clock.
@@ -120,11 +117,8 @@ public class HUDView extends StackPane {
      * and binds them to the {@link PetController}.
      */
     private void setupControlLayer() {
-        feedBtn = createActionButton("FEED", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
+        feedBtn = createActionButton("INVENTORY", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, () -> controller.setInventoryOpen(true));
         addToLayout(feedBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_FEED);
-
-        cleanBtn = createActionButton("CLEAN", PIXEL_BUTTON_PRIMARY, PIXEL_BUTTON_WIDTH, controller::handleCleanAction);
-        addToLayout(cleanBtn, Pos.BOTTOM_LEFT, MARGIN_BTN_CLEAN);
 
         sleepBtn = createActionButton("SLEEP", PIXEL_BUTTON_SLEEP, PIXEL_BUTTON_WIDTH, controller::handleSleepAction);
         sleepBtn.setVisible(false);

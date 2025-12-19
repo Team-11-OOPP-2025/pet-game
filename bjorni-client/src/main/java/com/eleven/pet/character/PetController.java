@@ -171,13 +171,6 @@ public class PetController {
     }
 
     /**
-     * Performs a cleaning action on the pet or its environment.
-     */
-    public void handleCleanAction() {
-        model.performClean();
-    }
-
-    /**
      * Toggles the paused state of the game clock.
      */
     public void togglePause() {

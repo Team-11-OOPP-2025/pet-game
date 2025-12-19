@@ -63,8 +63,9 @@ public class AsleepState implements PetState {
      * @param pet the sleeping pet
      */
     @Override
-    public void handleClean(PetModel pet) {
+    public boolean handleClean(PetModel pet) {
         System.out.println(pet.getName() + " is asleep and cannot be cleaned right now.");
+        return false;
     }
 
     /**

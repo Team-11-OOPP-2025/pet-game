@@ -31,8 +31,8 @@ public class TutorialView extends StackPane {
             "Check Stats!\n\nKeep an eye on Hunger, Happiness,\nEnergy, and Cleanliness here.",
             "Play Minigames!\n\nClick the TV to play games and earn happiness.\nBe careful - playing costs energy!",
             "Daily Rewards!\n\nClick the REWARDS button to claim\nyour daily rewards.",
-            "Inventory!\n\nClick FEED to open your Inventory\nand give your pet treats.",
-            "Clean Björni!\n\nClick CLEAN to clean your pet.\nCleaning requires energy!",
+            "Inventory!\n\nClick INVENTORY to open your Inventory\nand give your pet treats.",
+            "Clean Björni!\n\nClick INVENTORY and find the soap(s) to clean your pet.\nCleaning requires energy!",
             "Sleep!\n\nWhen it's time to sleep,\nclick this button. Sleeping restores energy!"
     };
 
@@ -117,7 +117,7 @@ public class TutorialView extends StackPane {
         if (target != null && target.getScene() != null) {
             // 1. Get bounds of target in Scene coordinates (this includes the global scaling)
             Bounds targetInScene = target.localToScene(target.getBoundsInLocal());
-            
+
             // 2. Transform Scene bounds back to Local coordinates of this overlay view
             // This un-does the scaling so the cutout matches the 1920x1080 design space
             Bounds targetInLocal = this.sceneToLocal(targetInScene);

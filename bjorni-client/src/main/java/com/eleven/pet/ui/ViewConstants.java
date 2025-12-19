@@ -28,7 +28,7 @@ public class ViewConstants {
     public static final String PIXEL_BUTTON_SLEEP = "pixel-btn-sleep";
     public static final String PIXEL_BUTTON_GOLD = "pixel-btn-gold";
     public static final String PIXEL_BUTTON_DANGER = "pixel-btn-danger";
-    public static final Integer PIXEL_BUTTON_WIDTH = 120;
+    public static final Integer PIXEL_BUTTON_WIDTH = 180;
 
     // Styling
     public static final String STYLE_INVENTORY_PANEL =

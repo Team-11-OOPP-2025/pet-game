@@ -42,8 +42,9 @@ public interface PetState {
      * Handle a request to clean the pet.
      *
      * @param pet the pet being cleaned
+     * @return {@code true} if the pet was successfully cleaned, {@code false} otherwise
      */
-    void handleClean(PetModel pet);
+    boolean handleClean(PetModel pet);
 
     /**
      * Periodic update hook called while this state is active.

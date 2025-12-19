@@ -79,17 +79,17 @@ public class AwakeState implements PetState {
      * @param pet the {@link PetModel} being cleaned
      */
     @Override
-    public void handleClean(PetModel pet) {
+    public boolean handleClean(PetModel pet) {
         int currentEnergy = pet.getStats().getStat(PetStats.STAT_ENERGY).get();
         if (currentEnergy < 5) {
             System.out.println(pet.getName() + " is too tired to be cleaned right now.");
-            return;
+            return false;
         }
 
         int currentCleanliness = pet.getStats().getStat(PetStats.STAT_CLEANLINESS).get();
         if (currentCleanliness >= 100) {
             System.out.println(pet.getName() + " is already perfectly clean!");
-            return;
+            return false;
         }
 
         // Simple cleaning effect: improve cleanliness
@@ -102,6 +102,7 @@ public class AwakeState implements PetState {
         
         pet.getStats().modifyStat(PetStats.STAT_ENERGY, -5);
         System.out.println(pet.getName() + " has been cleaned.");
+        return true;
     }
 
     /**
