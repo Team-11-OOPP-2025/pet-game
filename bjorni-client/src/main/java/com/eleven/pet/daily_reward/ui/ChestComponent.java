@@ -35,8 +35,7 @@ public class ChestComponent extends StackPane {
 
     // --- Configuration Constants ---
     // These should match the single frame size
-    private static final int SHEET_WIDTH = 150;
-    private static final int SHEET_HEIGHT = 118;
+
     private static final int GRID_COLS = 1;
     private static final int TOTAL_FRAMES = 2;
     private static final float FRAME_DURATION = 0.1f;
