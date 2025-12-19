@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.core.GameException;
 import com.eleven.pet.daily_reward.Chest;
@@ -112,8 +112,17 @@ public class PetController {
      * @param item the {@link Item} to consume
      */
     public void handleConsumeAction(Item item) {
-        if (model.performConsume(item)) System.out.println("Pet has been fed.");
-        else System.out.println("No food available.");
+        if (model.performConsume(item)) {
+            System.out.println("Pet has consumed item: " + item.name());
+
+            String soundName = item.getSoundName();
+            if (soundName != null) {
+                AssetLoader.getInstance().playSound(soundName);
+            }
+            
+        } else {
+            System.out.println("Item could not be consumed.");
+        }
     }
 
     /**
@@ -273,12 +282,16 @@ public class PetController {
 
         GameSession session = gameFactory.createSession();
 
+        // Always initiate the view to prepare the UI
+        // before the game logic starts
+        Pane gamePane = session.getView();
+
         session.start(result -> {
             model.applyMinigameResult(result);
             if (onUIExit != null) onUIExit.run();
         });
 
-        return new MiniGameView(session.getView());
+        return new MiniGameView(gamePane);
     }
 
     /**

@@ -114,21 +114,26 @@ public class TutorialView extends StackPane {
 
         Shape overlayShape = screenRect;
 
-        if (target != null) {
-            // Calculate bounds of target relative to this view
-            Bounds bounds = target.localToScene(target.getBoundsInLocal());
-            // Since TutorialView is root (or fills root), scene coords are roughly local coords.
-            // However, to be precise if TutorialView isn't 0,0:
-            Bounds myBounds = this.localToScene(this.getBoundsInLocal());
+        if (target != null && target.getScene() != null) {
+            // 1. Get bounds of target in Scene coordinates (this includes the global scaling)
+            Bounds targetInScene = target.localToScene(target.getBoundsInLocal());
+            
+            // 2. Transform Scene bounds back to Local coordinates of this overlay view
+            // This un-does the scaling so the cutout matches the 1920x1080 design space
+            Bounds targetInLocal = this.sceneToLocal(targetInScene);
 
-            double x = bounds.getMinX() - myBounds.getMinX();
-            double y = bounds.getMinY() - myBounds.getMinY();
+            if (targetInLocal != null) {
+                double x = targetInLocal.getMinX();
+                double y = targetInLocal.getMinY();
+                double w = targetInLocal.getWidth();
+                double h = targetInLocal.getHeight();
 
-            // Create the cutout shape (slightly larger than target)
-            Rectangle cutout = new Rectangle(x - 10, y - 10, bounds.getWidth() + 20, bounds.getHeight() + 20);
+                // Create the cutout shape (slightly larger than target)
+                Rectangle cutout = new Rectangle(x - 10, y - 10, w + 20, h + 20);
 
-            // Subtract cutout from screen
-            overlayShape = Shape.subtract(screenRect, cutout);
+                // Subtract cutout from screen
+                overlayShape = Shape.subtract(screenRect, cutout);
+            }
         }
 
         overlayShape.setFill(Color.rgb(0, 0, 0, 0.75));

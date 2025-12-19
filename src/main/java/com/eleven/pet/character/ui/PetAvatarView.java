@@ -239,7 +239,7 @@ public class PetAvatarView extends StackPane {
         animCrying = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 1f);
         animCrying.setLoop(true);
 
-        animSleeping = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 1.5f);
+        animSleeping = new SpriteSheetAnimation(SHEET_WIDTH, SHEET_HEIGHT, GRID_COLS, 2, 0.7f);
         animSleeping.setLoop(true);
     }
 

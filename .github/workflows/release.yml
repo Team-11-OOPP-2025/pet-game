@@ -16,31 +16,51 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up JDK 23
         uses: actions/setup-java@v4
         with:
           java-version: '23'
           distribution: 'temurin'
           cache: maven
-          
+
+      - name: Install Xvfb (Virtual Display)
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Build with Maven
-        run: mvn -B package -Dencryption.key=${{ secrets.ENCRYPTION_KEY }} --file pom.xml
+        # Builds the root project and all modules
+        run: xvfb-run --auto-servernum mvn -B package -Dencryption.key=${{ secrets.ENCRYPTION_KEY }} --file pom.xml
         env:
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
-      - name: Rename artifact
-        # Added the \; at the end of the command below
+      - name: Upload Test Report on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          # Captures reports from ALL modules
+          path: "**/target/surefire-reports/"
+
+      - name: Prepare Artifacts
         run: |
-          find target/ -type f -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" -exec mv {} target/pet-game.jar \;
+          mkdir release-artifacts
           
-      # Create the GitHub Release
-      - name: Create Release and Upload Artifact
+          # 1. Find and move the Client JAR
+          # Adjust 'bjorni-client' to your actual module folder name
+          find bjorni-client/target/ -maxdepth 1 -type f -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" -exec mv {} release-artifacts/pet-game-client.jar \;
+          
+          # 2. Find and move the Server JAR
+          # Adjust 'bjorni-server' to your actual module folder name
+          find bjorni-server/target/ -maxdepth 1 -type f -name "*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" -exec mv {} release-artifacts/pet-game-server.jar \;
+
+      - name: Create Release and Upload Artifacts
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
           prerelease: true
           name: "Release ${{ github.event.inputs.version }}"
-          files: target/pet-game.jar
+          # Uploads everything in the folder we just made
+          files: release-artifacts/*
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

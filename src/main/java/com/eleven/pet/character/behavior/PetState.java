@@ -74,4 +74,13 @@ public interface PetState {
     default boolean canSleep() {
         return true; 
     }
+
+    /**
+     * Returns the sound name to be played when the pet enters this state.
+     *
+     * @return sound name, or {@code null} for no sound
+     */
+    default String getSoundName() {
+        return null;
+    }
 }

@@ -1,6 +1,7 @@
 package com.eleven.pet.ui;
 
 import com.eleven.pet.core.AssetLoader;
+import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.environment.time.DayCycle;
 import com.eleven.pet.environment.time.GameClock;
 import com.eleven.pet.environment.weather.WeatherState;
@@ -273,18 +274,23 @@ public class WorldView extends StackPane {
      * <p>
      * The time is displayed in 24-hour {@code HH:mm} format. Minutes are currently
      * fixed to {@code 00}, as sub-hour precision is not yet represented visually.
+     * </p>
      *
      * @param time the in-game time in hours, where the integer part represents
      *             the hour of day in range {@code [0, 24)}
      */
     private void updateClockLabel(double time) {
-        int hours = (int) time % 24;
-        //int minutes = (int) ((time % 1.0) * 60);
-        String timeString = String.format("%02d:%02d", hours, 00);
-        if (backgroundClockLabel != null) {
-            backgroundClockLabel.setText(timeString);
-        }
+        // 0.0 -> 0:00, GameConfig.DAY_LENGTH_SECONDS -> 24:00 (wraps to 0:00)
+        double dayFraction = time / GameConfig.DAY_LENGTH_SECONDS; // 0.0–1.0
+
+        double totalHours = dayFraction * 24.0;   // 0.0–24.0
+        int hours = (int) totalHours;            // 0–23
+        int minutes = (int) ((totalHours - hours) * 60.0); // 0–59
+
+        String timeString = String.format("%02d:%02d", hours, minutes);
+        backgroundClockLabel.setText(timeString);
     }
+
 
     /**
      * Starts or stops weather particle effects according to the provided state.

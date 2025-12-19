@@ -5,11 +5,12 @@ import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
 import com.eleven.pet.character.behavior.AsleepState;
 import com.eleven.pet.character.behavior.PetState;
+import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.environment.time.GameClock;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -32,26 +33,24 @@ import static com.eleven.pet.ui.ViewConstants.*;
 public class HUDView extends StackPane {
 
     // Layout Constants
-    private static final double BAR_HEIGHT_LARGE = 38;
-    private static final double BAR_HEIGHT_SMALL = 25;
-    private static final double BAR_WIDTH_LARGE = 225;
-    private static final double BAR_WIDTH_SMALL = 150;
+    private static final double BAR_HEIGHT_LARGE = 76;
+    private static final double BAR_HEIGHT_SMALL = 50;
+    private static final double BAR_WIDTH_LARGE = 450;
+    private static final double BAR_WIDTH_SMALL = 300;
 
     // Position of the Stats Container (Top-Left)
     private static final Insets MARGIN_STATS_BOX = new Insets(90, 0, 0, 20);
-    private static final Insets MARGIN_CLOCK = new Insets(20, 0, 0, 0);
 
     // Button Positions
     private static final Insets MARGIN_BTN_FEED = new Insets(0, 0, 90, 20);
     private static final Insets MARGIN_BTN_CLEAN = new Insets(0, 0, 90, 150);
     private static final Insets MARGIN_BTN_SLEEP = new Insets(0, 0, 150, 20);
-    private static final Insets MARGIN_BTN_PLAY = new Insets(0, 20, 90, 0);
 
     private final PetModel model;
     private final PetController controller;
     private final GameClock clock;
+    AssetLoader assetLoader = AssetLoader.getInstance();
 
-    private Label timeLabel;
     private Rectangle hungerFill;
     private Rectangle energyFill;
     private Rectangle cleanFill;
@@ -93,16 +92,16 @@ public class HUDView extends StackPane {
      */
     private void setupHUDLayer() {
         // Create the Bars
-        StackPane happyBar = createStatBar(null, "😃", COLOR_HAPPINESS, BAR_WIDTH_LARGE, BAR_HEIGHT_LARGE);
+        StackPane happyBar = createStatBar(null, assetLoader.getImage("icons/happiness"), COLOR_HAPPINESS, BAR_WIDTH_LARGE, BAR_HEIGHT_LARGE);
         happinessFill = (Rectangle) happyBar.getChildren().get(1);
 
-        StackPane hungerBar = createStatBar(null, "🍖 ", COLOR_HUNGER, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
+        StackPane hungerBar = createStatBar(null, assetLoader.getImage("icons/food"), COLOR_HUNGER, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
         hungerFill = (Rectangle) hungerBar.getChildren().get(1);
 
-        StackPane energyBar = createStatBar(null, "⚡️ ", COLOR_ENERGY, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
+        StackPane energyBar = createStatBar(null, assetLoader.getImage("icons/energy"), COLOR_ENERGY, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
         energyFill = (Rectangle) energyBar.getChildren().get(1);
 
-        StackPane cleanBar = createStatBar(null, "🧽 ", COLOR_CLEANLINESS, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
+        StackPane cleanBar = createStatBar(null, assetLoader.getImage("icons/clean"), COLOR_CLEANLINESS, BAR_WIDTH_SMALL, BAR_HEIGHT_SMALL);
         cleanFill = (Rectangle) cleanBar.getChildren().get(1);
 
         // Stack them vertically using VBox
@@ -113,9 +112,7 @@ public class HUDView extends StackPane {
         // Add VBox to Layout (So the bars move together)
         addToLayout(statsBox, Pos.TOP_LEFT, MARGIN_STATS_BOX);
 
-        // Clock
-        timeLabel = createClockWidget();
-        addToLayout(timeLabel, Pos.TOP_CENTER, MARGIN_CLOCK);
+ 
     }
 
     /**
@@ -144,7 +141,7 @@ public class HUDView extends StackPane {
      * @param height preferred bar height in pixels
      * @return configured {@link StackPane} representing the bar
      */
-    private StackPane createStatBar(String label, String icon, Color color, double width, double height) {
+    private StackPane createStatBar(String label, Image icon, Color color, double width, double height) {
         StackPane container = new StackPane();
         container.setMinSize(width, height);
         container.setMaxSize(width, height);
@@ -167,14 +164,18 @@ public class HUDView extends StackPane {
         textContainer.setAlignment(Pos.CENTER_LEFT);
         textContainer.setPadding(new Insets(0, 0, 0, 10));
 
-        Text iconText = new Text(icon);
-        iconText.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 12));
+        javafx.scene.image.ImageView iconView = new javafx.scene.image.ImageView(icon);
+
+        // Set the icon height to 60-70% of the bar height so it fits comfortably
+        iconView.setFitHeight(height * 0.65); 
+        iconView.setPreserveRatio(true);      // Keeps the icon from looking stretched
+        iconView.setSmooth(false);
 
         if (label == null) label = "";
         Text labelText = new Text(label);
         labelText.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, label.equals("Happiness") ? 16 : 14));
 
-        textContainer.getChildren().addAll(iconText, labelText);
+        textContainer.getChildren().addAll(iconView, labelText);
 
         container.getChildren().addAll(track, fill, textContainer);
         return container;
@@ -198,19 +199,6 @@ public class HUDView extends StackPane {
             btn.setOnAction(_ -> action.run());
         }
         return btn;
-    }
-
-    /**
-     * Creates the main clock label used to display in-game time.
-     *
-     * @return configured {@link Label} instance
-     */
-    private Label createClockWidget() {
-        Label lbl = new Label("00:00");
-        lbl.setFont(Font.font(FONT_FAMILY, FontWeight.BOLD, 36));
-        lbl.setTextFill(Color.WHITE);
-        lbl.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 10; -fx-padding: 10 20;");
-        return lbl;
     }
 
     /**
@@ -284,13 +272,10 @@ public class HUDView extends StackPane {
         if (clock == null) return;
 
         clock.gameTimeProperty().addListener((_, _, time) -> {
-            double t = time.doubleValue();
-            updateClockLabel(t);
             boolean canSleep = controller.isSleepAllowed();
             sleepBtn.setVisible(canSleep);
         });
 
-        updateClockLabel(clock.getGameTime());
     }
 
     /**
@@ -299,12 +284,7 @@ public class HUDView extends StackPane {
      * @param time in-game time in hours, where the integer part is hours and
      *             the fractional part represents minutes (e.g. 13.5 = 13:30)
      */
-    private void updateClockLabel(double time) {
-        int hours = (int) time % 24;
-        int minutes = (int) ((time % 1.0) * 60);
-        String timeString = String.format("%02d:%02d", hours, minutes);
-        timeLabel.setText(timeString);
-    }
+
 
     /**
      * Enables or disables the sleep button based on whether the pet is sleeping.
