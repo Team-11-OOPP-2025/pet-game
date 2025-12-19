@@ -41,11 +41,11 @@ public final class GameConfig {
     public static final int SLEEP_HAPPINESS_PER_HOUR = 2;
 
     /** Length of a full in‑game day, in real‑time seconds. */
-    public static final double DAY_LENGTH_SECONDS = 24.0;
+    public static final double DAY_LENGTH_SECONDS = 300.0;
     /** Default timescale multiplier for normal gameplay. */
     public static final double TIMESCALE_NORMAL = 1.0;
     /** Timescale multiplier applied while sleeping. */
-    public static final double TIMESCALE_SLEEP = 2.0;
+    public static final double TIMESCALE_SLEEP = 4.0;
 
     /** Default in‑game wake‑up hour. */
     public static final double HOUR_WAKE_UP = 8.0;
