@@ -284,8 +284,13 @@ public class PetModel implements TimeListener, WeatherListener {
      * @param timeDelta elapsed time in game hours
      */
     public void applyStatDecay(double timeDelta) {
-        hungerDecayAccum -= definition.hungerDecayRate() * timeDelta;
-        cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * timeDelta;
+        // 1. Convert the input (seconds) to game hours, as decay rates are "per hour".
+        // Formula: (Seconds Passed / Seconds Per Day) * 24 Hours
+        double hoursElapsed = (timeDelta / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
+
+        // 2. Use 'hoursElapsed' for accumulation instead of 'timeDelta'
+        hungerDecayAccum -= definition.hungerDecayRate() * hoursElapsed;
+        cleanlinessDecayAccum -= definition.cleanlinessDecayRate() * hoursElapsed;
 
         if (hungerDecayAccum <= -1.0 || hungerDecayAccum >= 1.0) {
             int hungerDelta = (int) Math.floor(hungerDecayAccum);
@@ -310,10 +315,11 @@ public class PetModel implements TimeListener, WeatherListener {
         // Apply weather happiness modifier
         if (weatherSystem != null && weatherSystem.getCurrentWeather() != null) {
             double weatherModifier = weatherSystem.getCurrentWeather().getHappinessModifier();
-            happinessRate /= weatherModifier; // Higher modifier = slower decay 
+            happinessRate /= weatherModifier; // Higher modifier = slower decay
         }
 
-        happinessDecayAccum -= happinessRate * timeDelta;
+        // 3. Use 'hoursElapsed' here as well
+        happinessDecayAccum -= happinessRate * hoursElapsed;
 
         if (Math.abs(happinessDecayAccum) >= 1.0) {
             int happyDelta = (int) Math.floor(happinessDecayAccum);
@@ -361,10 +367,6 @@ public class PetModel implements TimeListener, WeatherListener {
      */
     @Override
     public void onTick(double timeDelta) {
-        // CONVERSION: Convert scaled seconds to game hours
-        // Formula: (Seconds Passed / Seconds Per Day) * 24 Hours
-        double hoursElapsed = (timeDelta / GameConfig.DAY_LENGTH_SECONDS) * 24.0;
-
         // 1. Update Potions
         for (ActivePotion potion : activePotions) {
             potion.tick(timeDelta);
@@ -385,7 +387,7 @@ public class PetModel implements TimeListener, WeatherListener {
 
         // 3. Existing State Logic
         if (currentState.get() != null) {
-            currentState.get().onTick(this, hoursElapsed);
+            currentState.get().onTick(this, timeDelta);
         }
     }
 
