@@ -1,8 +1,6 @@
 package com.eleven.pet.inventory;
 
 import com.eleven.pet.character.PetModel;
-import com.eleven.pet.character.PetStats;
-import com.eleven.pet.core.AssetLoader;
 
 /**
  * Simple consumable item that restores a fixed amount of hunger.
@@ -30,14 +28,7 @@ public record FoodItem(int id, String name, String imageFileName, int statsResto
      */
     @Override
     public boolean use(PetModel pet) {
-        // Let the Item handle the Pet's stats so the behavior is delegated to the Item
-        // rather than the Model itself for better separation of concerns
-        // This also allows for easier addition of new Item types in the future
-        if (pet.getStats().hasStat(PetStats.STAT_HUNGER)) {
-            pet.getStats().modifyStat(PetStats.STAT_HUNGER, statsRestore);
-            return true;
-        }
-        return false;
+        return pet.eat(statsRestore);
     }
 
     @Override

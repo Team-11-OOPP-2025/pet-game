@@ -211,6 +211,31 @@ public class PetModel implements TimeListener, WeatherListener {
         currentState.get().handleClean(this);
     }
 
+    /**
+     * Feeds the pet, increasing hunger by the specified amount.
+     * Centralizes the business logic for eating.
+     *
+     * @param hungerRestored amount of hunger to restore
+     * @return {@code true} if the pet was successfully fed
+     */
+    public boolean eat(int hungerRestored) {
+        if (!stats.hasStat(PetStats.STAT_HUNGER)) {
+            return false;
+        }
+        stats.modifyStat(PetStats.STAT_HUNGER, hungerRestored);
+        return true;
+    }
+
+    /**
+     * Applies penalties for missing sleep overnight.
+     * Centralizes the business logic for missed sleep penalties.
+     */
+    public void applyMissedSleepPenalty() {
+        System.out.println(name + " stayed up all night! Penalty applied.");
+        stats.modifyStat(PetStats.STAT_ENERGY, -GameConfig.MISSED_SLEEP_ENERGY_PENALTY);
+        stats.modifyStat(PetStats.STAT_HAPPINESS, -GameConfig.MISSED_SLEEP_HAPPINESS_PENALTY);
+    }
+
     public boolean canPlayMinigame() {
         return currentState.get().canPlay(this);
     }

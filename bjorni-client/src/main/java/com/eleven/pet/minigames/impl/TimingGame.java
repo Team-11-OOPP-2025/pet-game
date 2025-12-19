@@ -1,13 +1,10 @@
 package com.eleven.pet.minigames.impl;
 
-import java.util.function.Consumer;
-
 import com.eleven.pet.minigames.GameSession;
 import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.MinigameResult;
 import com.eleven.pet.ui.ViewConstants;
 import com.google.auto.service.AutoService;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -23,6 +20,8 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+
+import java.util.function.Consumer;
 
 @AutoService(Minigame.class)
 public class TimingGame implements Minigame {
@@ -146,7 +145,7 @@ public class TimingGame implements Minigame {
 
             PauseTransition delay = new PauseTransition(Duration.seconds(0.5));
             delay.setOnFinished(_ -> {
-                timingLoop = new Timeline(new KeyFrame(Duration.millis(16), e -> update()));
+                timingLoop = new Timeline(new KeyFrame(Duration.millis(16), _ -> update()));
                 timingLoop.setCycleCount(Timeline.INDEFINITE);
                 timingLoop.play();
             });

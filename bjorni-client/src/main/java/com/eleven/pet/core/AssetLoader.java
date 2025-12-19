@@ -2,11 +2,11 @@ package com.eleven.pet.core;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
-import javafx.scene.media.AudioClip; // Modern JavaFX audio class
 
 import java.io.InputStream;
-import java.net.URL; // Standard networking URL
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

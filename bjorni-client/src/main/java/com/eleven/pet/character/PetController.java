@@ -157,7 +157,7 @@ public class PetController {
             if (soundName != null) {
                 AssetLoader.getInstance().playSound(soundName);
             }
-            
+
         } else {
             System.out.println("Item could not be consumed.");
         }
@@ -314,6 +314,9 @@ public class PetController {
             onUIExit.run();
             return null;
         }
+
+        // Deduct energy cost for playing minigame
+        model.getStats().modifyStat(PetStats.STAT_ENERGY, -10);
 
         GameSession session = gameFactory.createSession();
 

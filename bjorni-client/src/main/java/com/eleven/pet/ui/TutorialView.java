@@ -29,7 +29,7 @@ public class TutorialView extends StackPane {
     private final String[] steps = {
             "Welcome to Björni!\n\nThis is your new virtual pet companion.",
             "Check Stats!\n\nKeep an eye on Hunger, Happiness,\nEnergy, and Cleanliness here.",
-            "Play Minigames!\n\nClick the TV to play games\nand earn happiness points.",
+            "Play Minigames!\n\nClick the TV to play games and earn happiness.\nBe careful - playing costs energy!",
             "Daily Rewards!\n\nClick the REWARDS button to claim\nyour daily rewards.",
             "Inventory!\n\nClick FEED to open your Inventory\nand give your pet treats.",
             "Clean Björni!\n\nClick CLEAN to clean your pet.\nCleaning requires energy!",
