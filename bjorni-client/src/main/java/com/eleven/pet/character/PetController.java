@@ -13,7 +13,6 @@ import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
 import com.eleven.pet.network.leaderboard.LeaderboardService;
 import com.eleven.pet.storage.PersistenceService;
-
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

@@ -1,9 +1,5 @@
 package com.eleven.pet.ui;
 
-import java.util.List;
-
-import static com.eleven.pet.ui.ViewConstants.FONT_FAMILY;
-
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,6 +15,10 @@ import javafx.scene.shape.Shape;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.TextAlignment;
+
+import java.util.List;
+
+import static com.eleven.pet.ui.ViewConstants.FONT_FAMILY;
 
 public class TutorialView extends StackPane {
     private final Runnable onFinish;

@@ -2,7 +2,6 @@ package com.eleven.pet.character.behavior;
 
 import com.eleven.pet.character.PetModel;
 import com.eleven.pet.character.PetStats;
-import com.eleven.pet.core.AssetLoader;
 import com.eleven.pet.core.GameConfig;
 import com.eleven.pet.inventory.Item;
 import com.google.auto.service.AutoService;

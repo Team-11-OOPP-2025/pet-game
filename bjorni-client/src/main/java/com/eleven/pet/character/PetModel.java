@@ -12,7 +12,6 @@ import com.eleven.pet.environment.weather.WeatherState;
 import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.*;
 import com.eleven.pet.minigames.MinigameResult;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
