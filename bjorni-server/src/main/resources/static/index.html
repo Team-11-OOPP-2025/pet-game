@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Björni Live</title>
+    <style>
+        /* Pixel Art / Dark Theme Palette matching the game */
+        :root {
+            --bg: #2d2b55;
+            --card: #1e1c3b;
+            --accent: #ff9e64;
+            --text: #ffffff;
+            --button-shadow: #b35900;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        p.subtitle {
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        /* Login Form */
+        #login-screen {
+            width: 100%;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input {
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            background: var(--card);
+            color: white;
+            font-family: inherit;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        /* Game Screen */
+        #game-screen {
+            display: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* The Big Interaction Button */
+        .btn-treat {
+            background: var(--accent);
+            border: 4px solid #fff;
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 25px 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 var(--button-shadow);
+            transition: transform 0.1s, box-shadow 0.1s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-treat:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 var(--button-shadow);
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: var(--card);
+            border: 2px solid #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
+        }
+
+        .leaderboard h3 {
+            text-align: center;
+            margin-top: 0;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 10px;
+        }
+
+        .entry {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #555;
+            padding: 10px 0;
+        }
+
+        .entry:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        .score {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .status {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🐻 Björni Live</h1>
+<p class="subtitle">Join the Hive Mind!</p>
+
+<!-- Login Screen -->
+<div id="login-screen">
+    <input type="text" id="username" placeholder="Enter Your Name" maxlength="12">
+    <button class="btn-treat" onclick="doLogin()" style="background: #81f499; box-shadow: 0 8px 0 #2e8b57;">JOIN GAME
+    </button>
+</div>
+
+<!-- Game Screen -->
+<div id="game-screen" class="hidden">
+    <button class="btn-treat" onclick="sendTreat()">🍬 GIVE TREAT</button>
+
+    <div class="leaderboard">
+        <h3>🏆 Top Contributors</h3>
+        <div id="scores">
+            <div class="status">Waiting for updates...</div>
+        </div>
+    </div>
+
+    <p style="margin-top:20px; font-size: 0.8rem; opacity: 0.6; cursor: pointer;" onclick="logout()">[ Logout ]</p>
+</div>
+
+<script>
+    const API_URL = "";
+    let sessionToken = localStorage.getItem('bjorni_session');
+    let sessionName = localStorage.getItem('bjorni_name');
+
+    // --- Init ---
+    if (sessionToken) {
+        showGame();
+    }
+
+    // --- Auth Logic ---
+    function doLogin() {
+        const nameInput = document.getElementById('username').value.trim();
+        if (!nameInput) return;
+
+        fetch(API_URL + '/api/v1/live/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: nameInput})
+        })
+            .then(res => res.json())
+            .then(data => {
+                sessionToken = data.token;
+                sessionName = data.name;
+                localStorage.setItem('bjorni_session', sessionToken);
+                localStorage.setItem('bjorni_name', sessionName);
+                showGame();
+            })
+            .catch(err => alert("Could not join server. Is it running?"));
+    }
+
+    function logout() {
+        localStorage.removeItem('bjorni_session');
+        location.reload();
+    }
+
+    function showGame() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        loadLeaderboard();
+        setInterval(loadLeaderboard, 3000); // Start polling
+    }
+
+    // --- Game Logic ---
+    function sendTreat() {
+        const btn = document.querySelector('#game-screen .btn-treat');
+        const originalText = btn.textContent;
+
+        btn.textContent = "SENT! 🚀";
+
+        fetch(API_URL + '/api/v1/live/treat', {
+            method: 'POST',
+            headers: {'X-Session-Token': sessionToken}
+        }).catch(console.error);
+
+        setTimeout(() => {
+            btn.textContent = originalText;
+        }, 300);
+    }
+
+    async function loadLeaderboard() {
+        try {
+            const response = await fetch(API_URL + '/api/v1/live/leaderboard');
+            const data = await response.json();
+            const container = document.getElementById('scores');
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="status">Be the first to treat!</div>';
+                return;
+            }
+
+            container.innerHTML = data.map((entry, index) => `
+                    <div class="entry">
+                        <div>
+                            <span class="rank">#${index + 1}</span>
+                            <span style="${entry.name === sessionName ? 'color:#81f499' : ''}">${entry.name}</span>
+                        </div>
+                        <span class="score">${entry.score}</span>
+                    </div>
+                `).join('');
+        } catch (e) {
+            console.error("Leaderboard error", e);
+        }
+    }
+</script>
+</body>
+</html>

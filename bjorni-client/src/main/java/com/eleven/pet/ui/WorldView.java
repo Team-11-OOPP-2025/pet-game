@@ -58,7 +58,7 @@ public class WorldView extends StackPane {
     /**
      * Particle system responsible for rendering window weather effects.
      */
-    private final ParticleSystem particleSystem;
+    public final ParticleSystem particleSystem;
 
     /**
      * Weather system that defines current weather and associated visual effects.

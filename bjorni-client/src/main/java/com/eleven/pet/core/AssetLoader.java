@@ -208,7 +208,9 @@ public class AssetLoader {
                 "sprites/SpriteSheetHappy",
                 "sprites/SpriteSheetSleeping",
                 "sprites/SpriteSheetSad",
-                "sprites/SpriteSheetCrying"
+                "sprites/SpriteSheetCrying",
+
+                "vfx/treat"
         };
 
         for (String asset : assets) {

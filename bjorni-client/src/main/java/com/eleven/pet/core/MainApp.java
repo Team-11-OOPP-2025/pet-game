@@ -53,8 +53,11 @@ public class MainApp extends Application {
 
         gameEngine = new GameEngine(model, clock, weatherSystem);
 
+        PetView view = null;
         controller = new PetController(model, clock, weatherSystem, persistenceService, leaderboardClient);
-        PetView view = new PetView(model, controller, clock, weatherSystem);
+        view = new PetView(model, controller, clock, weatherSystem);
+
+        controller.setView(view);
 
         controller.initAutosave();
         gameEngine.start();
@@ -111,7 +114,7 @@ public class MainApp extends Application {
      * Configures and shows the main application stage.
      * Handles dynamic window sizing by wrapping the game content in a scaling container.
      *
-     * @param stage      the primary stage
+     * @param stage       the primary stage
      * @param gameContent the root pane of the game UI
      */
     private void configureStage(Stage stage, Pane gameContent) {
@@ -136,7 +139,7 @@ public class MainApp extends Application {
                 double scaleX = width / GameConfig.DESIGN_WIDTH;
                 double scaleY = height / GameConfig.DESIGN_HEIGHT;
                 double scale = Math.min(scaleX, scaleY); // Fit inside
-                
+
                 gameContent.setScaleX(scale);
                 gameContent.setScaleY(scale);
             }
@@ -156,7 +159,7 @@ public class MainApp extends Application {
         stage.setTitle(GameConfig.APP_TITLE);
         stage.getIcons().setAll(AssetLoader.getInstance().getIcons("icons/bjorni"));
         stage.setScene(scene);
-        
+
         // 4. Enable Resizing
         stage.setResizable(true);
 
@@ -167,7 +170,7 @@ public class MainApp extends Application {
         });
 
         stage.show();
-        
+
         // Initial scale calculation
         Platform.runLater(updateScale);
     }

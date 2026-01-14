@@ -13,13 +13,21 @@ import com.eleven.pet.minigames.Minigame;
 import com.eleven.pet.minigames.ui.MiniGameView;
 import com.eleven.pet.network.leaderboard.LeaderboardService;
 import com.eleven.pet.storage.PersistenceService;
+import com.eleven.pet.ui.PetView;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.layout.Pane;
+import lombok.Setter;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +51,8 @@ public class PetController {
     private Timeline autosaveTimer;
     private ExecutorService saveExecutor;
     private volatile boolean isShutdown = false;
+    @Setter
+    private PetView view;
 
     /**
      * Creates a new {@code PetController}.
@@ -61,6 +71,7 @@ public class PetController {
         this.leaderboard = leaderboardService;
 
         initControllerLogic();
+        pollForTreats();
     }
 
     private void initControllerLogic() {
@@ -362,5 +373,40 @@ public class PetController {
      */
     public LeaderboardService getLeaderboardService() {
         return leaderboard;
+    }
+
+
+    private void pollForTreats() {
+        Thread poller = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(2000);
+                    // Run in background thread!
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(URI.create("http://localhost:8080/api/v1/live/poll"))
+                                    .GET().build();
+                            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                            int treats = Integer.parseInt(response.body());
+                            if (treats > 0) {
+                                // Update UI on JavaFX Thread
+                                Platform.runLater(() -> {
+                                    System.out.println("Audience gave " + treats + " treats!");
+                                    model.getStats().modifyStat(PetStats.STAT_HAPPINESS, treats);
+                                    view.playTreatEffect(treats * 5);
+                                });
+                            }
+                        } catch (Exception e) { /* Ignore errors during demo */ }
+                    });
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        });
+        poller.setDaemon(true); // Ensure this thread dies when the app closes
+        poller.start();
     }
 }

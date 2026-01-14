@@ -357,7 +357,7 @@ public class PetAvatarView extends StackPane {
      * @param happiness current happiness value from the model
      */
     private void refreshPetState(int happiness) {
-        if (model == null) return;
+        if (model == null || controller == null) return;
 
         PetState currentState = model.getCurrentState();
 

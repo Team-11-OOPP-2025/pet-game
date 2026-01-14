@@ -10,6 +10,8 @@ import com.eleven.pet.environment.weather.WeatherSystem;
 import com.eleven.pet.inventory.ui.InventoryView;
 import com.eleven.pet.network.leaderboard.LeaderboardService;
 import com.eleven.pet.network.leaderboard.ui.LeaderboardView;
+import com.eleven.pet.vfx.effects.ParticleEffect;
+import com.eleven.pet.vfx.effects.TreatParticleEffect;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -362,5 +364,13 @@ public class PetView {
         StackPane.setMargin(scoreBtn, new Insets(20, 0, 0, 20));
 
         root.getChildren().add(scoreBtn);
+    }
+
+    public void playTreatEffect(int count) {
+        ParticleEffect newWeatherEffect = new TreatParticleEffect(count);
+        newWeatherEffect.start(worldView.particleSystem);
+        PauseTransition stopTimer = new PauseTransition(Duration.seconds(3));
+        stopTimer.setOnFinished(_ -> newWeatherEffect.stop(worldView.particleSystem));
+        stopTimer.play();
     }
 }
